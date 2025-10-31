@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, FileEdit, BarChart3, TrendingUp, Calendar, ChevronDown, Menu, X, Mail, User, LogOut } from 'lucide-react';
+import { Home, FileEdit, BarChart3, TrendingUp, Calendar, ChevronDown, User,  } from 'lucide-react';
 
 export default function SlideBar({ isSidebarOpen }) {
   const [expandedMenu, setExpandedMenu] = useState('system');
@@ -14,7 +14,6 @@ export default function SlideBar({ isSidebarOpen }) {
     { label: 'Đổi mật khẩu học viên', path: '/change-pass-student' },
     { label: 'Đổi mật khẩu TC', path: '/change-pass-tc' },
     { label: 'Thông tin tài khoản', path: '/account' },
-    { label: 'Logout', path: '/logout' },
   ];
 
   const scheduleItems = [

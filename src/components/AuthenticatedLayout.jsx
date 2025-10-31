@@ -21,7 +21,6 @@ function AuthenticatedLayout() {
             >
                 {/* Header */}
                 <Header
-                    isSidebarOpen={isSidebarOpen}
                     toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
                 />
 
