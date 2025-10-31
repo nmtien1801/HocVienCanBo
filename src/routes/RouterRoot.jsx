@@ -5,6 +5,7 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
 import AuthenticatedLayout from "../components/AuthenticatedLayout";
 import Dashboard from "../pages/system/Dashboard";
 import ScheduleMonth from "../pages/schedule/Schedule_teach_month.jsx";
@@ -24,31 +25,15 @@ import Notification from "../pages/notification/Notification.jsx";
 import ChangePassStudent from "../pages/system/ChangePassStudent.jsx";
 import ChangePassTC from "../pages/system/ChangePassTC.jsx";
 import Account from "../pages/system/Account.jsx";
-
-const useSelector = (selector) => {
-  const mockState = {
-    auth: { isAuthenticated: true },
-  };
-  return selector(mockState);
-};
-const useDispatch = () => () => console.log('Dispatch MOCK called');
-
-const Login = () => (
-  <div className="flex justify-center items-center h-screen bg-gray-100">
-    <div className="p-10 bg-white rounded-lg shadow-xl">
-      <h2 className="text-2xl font-bold text-gray-800">Login Page</h2>
-      <p className="text-gray-600 mt-2">Dùng mock state để chuyển hướng.</p>
-      <p className="mt-4 text-sm text-red-500">Giả lập: Bạn được coi là đã đăng nhập.</p>
-    </div>
-  </div>
-);
+import Home from "../pages/auth/Home.jsx";
+import Login from "../pages/auth/Login.jsx";
 
 const ProtectedRoute = ({ children }) => {
   const isAuthenticated = useSelector((state) => state.auth?.isAuthenticated);
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
+  // if (!isAuthenticated) {
+  //   return <Navigate to="/home" replace />;
+  // }
 
   return children;
 };
@@ -58,6 +43,7 @@ function RouterRoot() {
     <Router>
       <Routes>
         {/* public route */}
+        <Route path="/home" element={<Home />} />
         <Route path="/login" element={<Login />} />
 
         {/* private route */}
@@ -99,7 +85,7 @@ function RouterRoot() {
           {/* Notification */}
           <Route path="notification" element={<Notification />} />
         </Route>
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/home" replace />} />
       </Routes>
     </Router>
   );

@@ -49,11 +49,7 @@ export default function SlideBar({ isSidebarOpen }) {
             {/* Header */}
             <div className="bg-[#026aa8] p-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="bg-white rounded-full p-2 w-10 h-10 flex items-center justify-center">
-                  <div className="bg-red-600 rounded-full w-8 h-8 flex items-center justify-center text-white text-xs font-bold">
-                    HCA
-                  </div>
-                </div>
+                <img src="/logo.png" alt="logo" className="w-8 h-8 object-contain" />
                 <span className="font-semibold text-lg whitespace-nowrap">
                   HOC VIEN CAN BO
                 </span>
@@ -210,7 +206,11 @@ export default function SlideBar({ isSidebarOpen }) {
               </div>
             </nav>
           </div>
-        ) : 'S.Bar'}
+        ) : (
+          <div className="p-4 flex items-center justify-center h-16">
+            <img src="/logo.png" alt="logo" className="w-8 h-8 object-contain" />
+          </div>
+        )}
       </div>
     </div>
   );

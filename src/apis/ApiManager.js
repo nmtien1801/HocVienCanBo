@@ -12,7 +12,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-    const token = localStorage.getItem("access_Token"); // hoặc AsyncStorage nếu RN
+    const token = localStorage.getItem("access_Token");
     if (token) {
         config.headers["Authorization"] = `Bearer ${token}`;
     }
@@ -24,8 +24,8 @@ export const ApiManager = {
         const res = await api.get(url, { params });
         return res.data;
     },
-    post: async (url, data) => {
-        const res = await api.post(url, data);
+    post: async (url, body, query) => {
+        const res = await api.post(url, body, { params: query });
         return res.data;
     },
     put: async (url, data) => {
