@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
-  Outlet,
+    Outlet,
 } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import SlideBar from "./Sidebar";
@@ -26,7 +26,7 @@ function AuthenticatedLayout() {
                 />
 
                 {/* Main Content */}
-                <main className="flex-grow overflow-auto p-4 pt-20">
+                <main className="flex-grow overflow-auto">
                     <Outlet />
                 </main>
             </div>

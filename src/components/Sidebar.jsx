@@ -9,22 +9,22 @@ export default function SlideBar({ isSidebarOpen }) {
     setExpandedMenu(prev => prev === menu ? null : menu);
   };
 
-  const scheduleItems = [
-    { label: 'Lịch dạy tháng', path: '/lich-day-thang' },
-    { label: 'Tra cứu lịch học - môn học', path: '/tra-cuu-lich-hoc' },
-    { label: 'Lịch thi tháng', path: '/lich-thi-thang' },
-    { label: 'Thời khóa biểu lớp', path: '/thoi-khoa-bieu-lop' },
-    { label: 'Thời khóa biểu của tôi', path: '/thoi-khoa-bieu-cua-toi' },
-    { label: 'Bài giảng của môn', path: '/bai-giang-cua-mon' },
-    { label: 'Lịch Học trong ngày', path: '/lich-hoc-trong-ngay' }
-  ];
-
   const systemItems = [
-    { label: 'Trang chủ', path: '/trang-chu' },
+    { label: 'Trang chủ', path: '/dashboard' },
     { label: 'Đổi mật khẩu học viên', path: '/doi-mat-khau-hoc-vien' },
     { label: 'Đổi mật khẩu TC', path: '/doi-mat-khau-tai-chinh' },
     { label: 'Thông tin tài khoản', path: '/thong-tin-tai-khoan' },
     { label: 'Logout', path: '/logout' },
+  ];
+
+  const scheduleItems = [
+    { label: 'Lịch dạy tháng', path: '/scheduleMonth' },
+    { label: 'Tra cứu lịch học - môn học', path: '/lookup' },
+    { label: 'Lịch thi tháng', path: '/schedule-exam-month' },
+    { label: 'Thời khóa biểu lớp', path: '/timetable-class' },
+    { label: 'Thời khóa biểu của tôi', path: '/timetable' },
+    { label: 'Bài giảng của môn', path: '/lesson' },
+    { label: 'Lịch Học trong ngày', path: '/schedule-day' }
   ];
 
   const gradesItems = [

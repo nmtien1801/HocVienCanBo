@@ -7,6 +7,13 @@ import {
 } from "react-router-dom";
 import AuthenticatedLayout from "../components/AuthenticatedLayout";
 import Dashboard from "../pages/system/Dashboard";
+import ScheduleMonth from "../pages/schedule/Schedule_teach_month.jsx";
+import Lookup from "../pages/schedule/Lookup.jsx";
+import ScheduleExamMonth from "../pages/schedule/Schedule_exam_month.jsx";
+import TimetableClass from "../pages/schedule/Timetable_class.jsx";
+import Timetable from "../pages/schedule/Timetable.jsx";
+import Lesson from "../pages/schedule/Lesson.jsx";
+import ScheduleDay from "../pages/schedule/Schedule_day.jsx";
 
 const useSelector = (selector) => {
   const mockState = {
@@ -40,7 +47,10 @@ function RouterRoot() {
   return (
     <Router>
       <Routes>
+        {/* public route */}
         <Route path="/login" element={<Login />} />
+
+        {/* private route */}
         <Route
           path="/"
           element={
@@ -49,12 +59,20 @@ function RouterRoot() {
             </ProtectedRoute>
           }
         >
-
+          {/* route system */}
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
+
+          {/* route schedule */}
+          <Route path="scheduleMonth" element={<ScheduleMonth />} />
+          <Route path="lookup" element={<Lookup />} />
+          <Route path="schedule-exam-month" element={<ScheduleExamMonth />} />
+          <Route path="timetable-class" element={<TimetableClass />} />
+          <Route path="timetable" element={<Timetable />} />
+          <Route path="lesson" element={<Lesson />} />
+          <Route path="schedule-day" element={<ScheduleDay />} />
         </Route>
         <Route path="*" element={<Navigate to="/login" replace />} />
-
       </Routes>
     </Router>
   );
