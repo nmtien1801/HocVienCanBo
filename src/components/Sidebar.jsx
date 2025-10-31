@@ -28,15 +28,15 @@ export default function SlideBar({ isSidebarOpen }) {
   ];
 
   const gradesItems = [
-    { label: 'Danh sách dự thi cuối môn', path: '/tra-cuu-diem-mon-hoc' },
-    { label: 'Danh sách dự thi tốt nghiệp', path: '/tra-cuu-diem-ren-luyen' },
-    { label: 'Tra cứu điểm thi cuối môn', path: '/tra-cuu-diem-tong-ket' },
-    { label: 'Tra cứu điểm thi tốt nghiệp', path: '/tra-cuu-diem-tong-ket' },
-    { label: 'In bảng điểm tổng', path: '/tra-cuu-diem-tong-ket' },
+    { label: 'Danh sách dự thi cuối môn', path: '/final-exam' },
+    { label: 'Danh sách dự thi tốt nghiệp', path: '/graduation-exam' },
+    { label: 'Tra cứu điểm thi cuối môn', path: '/look-up-final-exam' },
+    { label: 'Tra cứu điểm thi tốt nghiệp', path: '/look-up-graduation-exam' },
+    { label: 'In bảng điểm tổng', path: '/print-transcript' },
   ];
 
   const notificationItems = [
-    { label: 'Danh sách thông báo', path: '/thong-bao-hoc-vu' },
+    { label: 'Danh sách thông báo', path: '/notification' },
   ];
 
   return (
@@ -168,7 +168,7 @@ export default function SlideBar({ isSidebarOpen }) {
               {/* Kết quả học tập */}
               <div className="mb-2">
                 <NavLink
-                  to="/ket-qua-hoc-tap"
+                  to="/learning-results"
                   className={({ isActive }) =>
                     `w-full px-4 py-3 flex items-center gap-3 hover:bg-[#026aa8] transition-colors no-underline text-white ${isActive ? 'bg-[#026aa8]' : ''
                     }`

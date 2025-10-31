@@ -14,6 +14,13 @@ import TimetableClass from "../pages/schedule/Timetable_class.jsx";
 import Timetable from "../pages/schedule/Timetable.jsx";
 import Lesson from "../pages/schedule/Lesson.jsx";
 import ScheduleDay from "../pages/schedule/Schedule_day.jsx";
+import FinalExam from "../pages/grades/FinalExam.jsx";
+import GraduationExam from "../pages/grades/GraduationExam.jsx";
+import LookUpFinalExam from "../pages/grades/LookupFinalExam.jsx";
+import LookUpGraduationExam from "../pages/grades/LookupGraduationExam.jsx";
+import PrintTranscript from "../pages/grades/PrintTranscript.jsx";
+import LearningResults from "../pages/result/LearningResults.jsx";
+import Notification from "../pages/notification/Notification.jsx";
 
 const useSelector = (selector) => {
   const mockState = {
@@ -71,6 +78,19 @@ function RouterRoot() {
           <Route path="timetable" element={<Timetable />} />
           <Route path="lesson" element={<Lesson />} />
           <Route path="schedule-day" element={<ScheduleDay />} />
+
+          {/* route grades */}
+          <Route path="final-exam" element={<FinalExam />} />
+          <Route path="graduation-exam" element={<GraduationExam />} />
+          <Route path="look-up-final-exam" element={<LookUpFinalExam />} />
+          <Route path="look-up-graduation-exam" element={<LookUpGraduationExam />} />
+          <Route path="print-transcript" element={<PrintTranscript />} />
+
+          {/* route result */}
+          <Route path="learning-results" element={<LearningResults />} />
+
+          {/* Notification */}
+          <Route path="notification" element={<Notification />} />
         </Route>
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
