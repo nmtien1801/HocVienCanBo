@@ -11,9 +11,9 @@ export default function SlideBar({ isSidebarOpen }) {
 
   const systemItems = [
     { label: 'Trang chủ', path: '/dashboard' },
-    { label: 'Đổi mật khẩu học viên', path: '/doi-mat-khau-hoc-vien' },
-    { label: 'Đổi mật khẩu TC', path: '/doi-mat-khau-tai-chinh' },
-    { label: 'Thông tin tài khoản', path: '/thong-tin-tai-khoan' },
+    { label: 'Đổi mật khẩu học viên', path: '/change-pass-student' },
+    { label: 'Đổi mật khẩu TC', path: '/change-pass-tc' },
+    { label: 'Thông tin tài khoản', path: '/account' },
     { label: 'Logout', path: '/logout' },
   ];
 

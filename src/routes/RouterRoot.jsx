@@ -21,6 +21,9 @@ import LookUpGraduationExam from "../pages/grades/LookupGraduationExam.jsx";
 import PrintTranscript from "../pages/grades/PrintTranscript.jsx";
 import LearningResults from "../pages/result/LearningResults.jsx";
 import Notification from "../pages/notification/Notification.jsx";
+import ChangePassStudent from "../pages/system/ChangePassStudent.jsx";
+import ChangePassTC from "../pages/system/ChangePassTC.jsx";
+import Account from "../pages/system/Account.jsx";
 
 const useSelector = (selector) => {
   const mockState = {
@@ -69,6 +72,10 @@ function RouterRoot() {
           {/* route system */}
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
+          <Route path="change-pass-student" element={<ChangePassStudent />} />
+          <Route path="change-pass-tc" element={<ChangePassTC />} />
+          <Route path="account" element={<Account />} />
+
 
           {/* route schedule */}
           <Route path="scheduleMonth" element={<ScheduleMonth />} />
