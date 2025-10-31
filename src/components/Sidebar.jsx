@@ -3,18 +3,10 @@ import { NavLink } from 'react-router-dom';
 import { Home, FileEdit, BarChart3, TrendingUp, Calendar, ChevronDown, Menu, X, Mail, User, LogOut } from 'lucide-react';
 
 export default function SlideBar({ isSidebarOpen }) {
-  const [expandedMenus, setExpandedMenus] = useState({
-    system: false,
-    schedule: true,
-    grades: false,
-    notifications: false
-  });
+  const [expandedMenu, setExpandedMenu] = useState('system');
 
   const toggleMenu = (menu) => {
-    setExpandedMenus(prev => ({
-      ...prev,
-      [menu]: !prev[menu]
-    }));
+    setExpandedMenu(prev => prev === menu ? null : menu);
   };
 
   const scheduleItems = [
@@ -87,14 +79,14 @@ export default function SlideBar({ isSidebarOpen }) {
               <div className="mb-2">
                 <button
                   onClick={() => toggleMenu('system')}
-                  className="w-full px-4 py-3 flex items-center gap-3 hover:bg-[#026aa8] transition-colors"
+                  className={`w-full px-4 py-3 flex items-center gap-3 hover:bg-[#026aa8] transition-colors ${expandedMenu === 'system' ? 'bg-[#026aa8]' : ''}`}
                 >
                   <Home className="w-5 h-5 flex-shrink-0" />
                   <span className="flex-1 text-left">Hệ thống</span>
-                  <ChevronDown className={`w-4 h-4 transition-transform ${expandedMenus.system ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-4 h-4 transition-transform ${expandedMenu === 'system' ? 'rotate-180' : ''}`} />
                 </button>
 
-                {expandedMenus.system && (
+                {expandedMenu === 'system' && (
                   <div className="bg-[#026aa8]">
                     {systemItems.map((item, index) => (
                       <NavLink
@@ -117,14 +109,14 @@ export default function SlideBar({ isSidebarOpen }) {
               <div className="mb-2">
                 <button
                   onClick={() => toggleMenu('schedule')}
-                  className="w-full px-4 py-3 flex items-center gap-3 bg-[#026aa8] hover:bg-[#025a8a] transition-colors"
+                  className={`w-full px-4 py-3 flex items-center gap-3 hover:bg-[#026aa8] transition-colors ${expandedMenu === 'schedule' ? 'bg-[#026aa8]' : ''}`}
                 >
                   <FileEdit className="w-5 h-5 flex-shrink-0" />
                   <span className="flex-1 text-left">Lịch học</span>
-                  <ChevronDown className={`w-4 h-4 transition-transform ${expandedMenus.schedule ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-4 h-4 transition-transform ${expandedMenu === 'schedule' ? 'rotate-180' : ''}`} />
                 </button>
 
-                {expandedMenus.schedule && (
+                {expandedMenu === 'schedule' && (
                   <div className="bg-[#026aa8]">
                     {scheduleItems.map((item, index) => (
                       <NavLink
@@ -147,14 +139,14 @@ export default function SlideBar({ isSidebarOpen }) {
               <div className="mb-2">
                 <button
                   onClick={() => toggleMenu('grades')}
-                  className="w-full px-4 py-3 flex items-center gap-3 hover:bg-[#026aa8] transition-colors"
+                  className={`w-full px-4 py-3 flex items-center gap-3 hover:bg-[#026aa8] transition-colors ${expandedMenu === 'grades' ? 'bg-[#026aa8]' : ''}`}
                 >
                   <BarChart3 className="w-5 h-5 flex-shrink-0" />
                   <span className="flex-1 text-left">Tra cứu điểm</span>
-                  <ChevronDown className={`w-4 h-4 transition-transform ${expandedMenus.grades ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-4 h-4 transition-transform ${expandedMenu === 'grades' ? 'rotate-180' : ''}`} />
                 </button>
 
-                {expandedMenus.grades && (
+                {expandedMenu === 'grades' && (
                   <div className="bg-[#026aa8]">
                     {gradesItems.map((item, index) => (
                       <NavLink
@@ -191,14 +183,14 @@ export default function SlideBar({ isSidebarOpen }) {
               <div className="mb-2">
                 <button
                   onClick={() => toggleMenu('notifications')}
-                  className="w-full px-4 py-3 flex items-center gap-3 hover:bg-[#026aa8] transition-colors"
+                  className={`w-full px-4 py-3 flex items-center gap-3 hover:bg-[#026aa8] transition-colors ${expandedMenu === 'notifications' ? 'bg-[#026aa8]' : ''}`}
                 >
                   <Calendar className="w-5 h-5 flex-shrink-0" />
                   <span className="flex-1 text-left">Thông báo</span>
-                  <ChevronDown className={`w-4 h-4 transition-transform ${expandedMenus.notifications ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-4 h-4 transition-transform ${expandedMenu === 'notifications' ? 'rotate-180' : ''}`} />
                 </button>
 
-                {expandedMenus.notifications && (
+                {expandedMenu === 'notifications' && (
                   <div className="bg-[#026aa8]">
                     {notificationItems.map((item, index) => (
                       <NavLink
