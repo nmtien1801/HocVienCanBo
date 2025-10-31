@@ -18,14 +18,6 @@ const useSelector = (selector) => {
 };
 const useDispatch = () => () => console.log('Dispatch MOCK called');
 
-// const Header = ({ toggleSidebar }) => (
-//     <div className="flex items-center justify-between p-4 shadow-sm">
-//         <button onClick={toggleSidebar} className="p-2 bg-gray-100 rounded-lg">
-//             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-//         </button>
-//         <span className="text-lg font-bold">Header MOCK</span>
-//     </div>
-// );
 const Login = () => (
   <div className="flex justify-center items-center h-screen bg-gray-100">
     <div className="p-10 bg-white rounded-lg shadow-xl">
