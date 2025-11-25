@@ -14,14 +14,17 @@ const formatDate = (isoDate) => {
 };
 
 const formatToISODate = (displayDate) => {
-  if (displayDate) {
-    return moment(displayDate, "DD/MM/YYYY").toISOString();
-  }
-  return "0001-01-01T00:00:00";
+  if (!displayDate) return "01/01/0001";
+
+  const m = moment(displayDate, ["YYYY-MM-DDTHH:mm:ss.SSS", "DD/MM/YYYY"], true);
+
+  if (!m.isValid()) return "01/01/0001";
+
+  return m.format("DD/MM/YYYY");
 };
 
 const getGenderDisplay = (id) => {
-  return id === 0 ? 'Nữ' : (id === 1 ? 'Nam' : '');
+  return id === 0 ? "Nữ" : id === 1 ? "Nam" : "";
 };
 
 export { TypeUserIDCons, formatDate, formatToISODate, getGenderDisplay };

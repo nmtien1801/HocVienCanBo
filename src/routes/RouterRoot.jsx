@@ -22,6 +22,7 @@ import LookUpGraduationExam from "../pages/grades/LookupGraduationExam.jsx";
 import PrintTranscript from "../pages/grades/PrintTranscript.jsx";
 import LearningResults from "../pages/result/LearningResults.jsx";
 import Notification from "../pages/notification/Notification.jsx";
+import NotificationDetail from "../pages/notification/NotificationDetail.jsx";
 import ChangePassStudent from "../pages/system/ChangePassStudent.jsx";
 import ChangePassTC from "../pages/system/ChangePassTC.jsx";
 import Account from "../pages/system/Account.jsx";
@@ -101,6 +102,7 @@ function RouterRoot() {
 
           {/* Notification */}
           <Route path="notification" element={<Notification />} />
+          <Route path="notification-detail" element={<NotificationDetail />} />
         </Route>
         <Route path="*" element={<Navigate to="/home" replace />} />
       </Routes>

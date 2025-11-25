@@ -19,7 +19,7 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
   ];
 
   const scheduleItems = [
-    { label: 'Lịch dạy tháng', path: '/scheduleMonth' },
+    { label: 'Lịch học tháng', path: '/scheduleMonth' },
     { label: 'Tra cứu lịch học - môn học', path: '/lookup' },
     { label: 'Lịch thi tháng', path: '/schedule-exam-month' },
     { label: 'Thời khóa biểu lớp', path: '/timetable-class' },

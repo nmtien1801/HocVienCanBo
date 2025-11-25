@@ -4,6 +4,8 @@ import ApiDashboard from "../apis/ApiDashboard.js";
 const initialState = {
   dashboardTotal: [],
   scheduleByMonth: [],
+  scheduleByExamination: [],
+  listInformation: [],
 };
 
 export const DashboardTotal = createAsyncThunk(
@@ -18,6 +20,22 @@ export const ScheduleByMonth = createAsyncThunk(
   "dashboard/ScheduleByMonth",
   async (thunkAPI) => {
     const response = await ApiDashboard.ScheduleByMonthApi();
+    return response;
+  }
+);
+
+export const ScheduleByExamination = createAsyncThunk(
+  "dashboard/ScheduleByExamination",
+  async (thunkAPI) => {
+    const response = await ApiDashboard.ScheduleByExaminationApi();
+    return response;
+  }
+);
+
+export const ListInformation = createAsyncThunk(
+  "dashboard/ListInformation",
+  async (thunkAPI) => {
+    const response = await ApiDashboard.ListInformationApi();
     return response;
   }
 );
@@ -48,6 +66,26 @@ const dashboardSlice = createSlice({
         }
       })
       .addCase(ScheduleByMonth.rejected, (state, action) => {});
+
+    // ScheduleByExamination
+    builder
+      .addCase(ScheduleByExamination.pending, (state) => {})
+      .addCase(ScheduleByExamination.fulfilled, (state, action) => {
+        if (action.payload) {
+          state.scheduleByExamination = action.payload || [];
+        }
+      })
+      .addCase(ScheduleByExamination.rejected, (state, action) => {});
+
+    // ListInformation
+    builder
+      .addCase(ListInformation.pending, (state) => {})
+      .addCase(ListInformation.fulfilled, (state, action) => {
+        if (action.payload) {
+          state.listInformation = action.payload || [];
+        }
+      })
+      .addCase(ListInformation.rejected, (state, action) => {});
   },
 });
 

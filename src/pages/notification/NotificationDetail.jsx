@@ -3,9 +3,8 @@ import { useSelector, useDispatch } from "react-redux";
 import { ListInformation } from "../../redux/dashboardSlice.js";
 import { useNavigate } from 'react-router-dom';
 import { toast } from "react-toastify";
-import {formatToISODate} from "../../utils/constants.js";
 
-export default function Notification() {
+export default function NotificationDetail() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { listInformation } = useSelector((state) => state.dashboard);
@@ -26,8 +25,10 @@ export default function Notification() {
         image: item.ImagesPath,
         title: item.Title,
         content: item.ShortDescription,
-        date: formatToISODate(item.DateCreated),
+        date: item.DateCreated,
+        Description: item.Description
     })) || [];
+    console.log('ssss ', listInformation);
 
     return (
         <div className="min-h-screen bg-gray-50 py-4 px-4 lg:py-8 lg:px-6">
@@ -36,8 +37,28 @@ export default function Notification() {
                 <div className="grid grid-cols-1 gap-6">
                     {/* Thông báo */}
                     <div className="bg-white rounded-lg shadow-sm">
+                        <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-center font-bold">
+                            <h2 className="text-lg font-normal text-gray-600 text-red-500 ">Thông báo sử dụng website tra cứu thông tin mới</h2>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            {notifications.map((item, index) => (
+                                <div key={index} className="flex gap-4">
+                                    <div className="flex-1">
+                                        <h3 className="font-semibold text-gray-500 text-sm mb-3" >{item.content}</h3>
+                                        <div
+                                            className="text-xs text-gray-500 italic leading-relaxed"
+                                            dangerouslySetInnerHTML={{ __html: item.Description }}
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Thông báo khác */}
+                    <div className="bg-white rounded-lg shadow-sm">
                         <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-                            <h2 className="text-lg font-normal text-gray-600">Thông báo</h2>
+                            <h2 className="text-lg font-normal text-gray-600">Thông báo khác</h2>
                         </div>
                         <div className="p-6 space-y-4">
                             {notifications.map((item, index) => (
@@ -52,7 +73,6 @@ export default function Notification() {
                                     </div>
                                     <div className="flex-1">
                                         <h3 className="font-semibold text-gray-800 text-sm mb-1 cursor-pointer" onClick={() => navigate(`/notification-detail?id=${item.NewsID}`)}>{item.title}</h3>
-                                        <p className="text-xs text-gray-500 italic leading-relaxed">Ngày: {item.date}</p>
                                         <p className="text-xs text-gray-500 italic leading-relaxed">{item.content}</p>
                                     </div>
                                 </div>
