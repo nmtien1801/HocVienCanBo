@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, FileEdit, BarChart3, TrendingUp, Calendar, ChevronDown, User, } from 'lucide-react';
-import { useSelector, useDispatch } from "react-redux";
+import { Home, FileEdit, BarChart3, TrendingUp, Calendar, ChevronDown, User, X } from 'lucide-react';
+import { useSelector } from "react-redux";
 
-export default function SlideBar({ isSidebarOpen }) {
-  const dispatch = useDispatch();
+export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
   const { userInfo } = useSelector((state) => state.auth);
   const [expandedMenu, setExpandedMenu] = useState('system');
 
@@ -42,61 +41,93 @@ export default function SlideBar({ isSidebarOpen }) {
   ];
 
   return (
-    <div className={`fixed top-0 left-0 h-screen flex flex-col text-white transition-all duration-300 overflow-y-auto flex-shrink-0 
-      ${isSidebarOpen ? 'w-[268px]' : 'w-[80px]'} bg-[#0081cd]`}
+    <aside 
+      className={`fixed top-0 left-0 h-screen flex flex-col text-white transition-all duration-300 z-50 shadow-xl
+        ${isSidebarOpen ? 'w-[280px]' : 'w-0 lg:w-[80px]'} 
+        bg-gradient-to-b from-[#0081cd] to-[#026aa8]`}
     >
-      <div className="font-semibold whitespace-nowrap overflow-hidden">
-        {isSidebarOpen ? (
-          <div>
-            {/* Header */}
-            <div className="bg-[#026aa8] p-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <img src="/logo.png" alt="logo" className="w-8 h-8 object-contain" />
-                <span className="font-semibold text-lg whitespace-nowrap">
-                  HOC VIEN CAN BO
-                </span>
+      {/* Sidebar Content */}
+      <div className={`h-full flex flex-col overflow-hidden ${!isSidebarOpen && 'lg:flex hidden'}`}>
+        
+        {/* Header - Always visible when open */}
+        <div className="flex-shrink-0">
+          {isSidebarOpen ? (
+            <>
+              {/* Desktop/Mobile Header with Logo */}
+              <div className="bg-[#026aa8] p-4 flex items-center justify-between shadow-md">
+                <div className="flex items-center gap-3">
+                  <img src="/logo.png" alt="logo" className="w-10 h-10 object-contain rounded-lg" />
+                  <span className="font-bold text-base lg:text-lg whitespace-nowrap">
+                    HỌC VIỆN CÁN BỘ
+                  </span>
+                </div>
+                {/* Close button - only on mobile */}
+                <button 
+                  onClick={onToggleSidebar}
+                  className="lg:hidden p-1 hover:bg-white/10 rounded-lg transition-colors"
+                  aria-label="Close sidebar"
+                >
+                  <X className="w-6 h-6" />
+                </button>
               </div>
-            </div>
 
-            {/* User Profile */}
-            <div className="p-4 flex items-center gap-3 border-b border-blue-500">
-              <div className="bg-white rounded-full w-16 h-16 flex items-center justify-center">
-                <div className="bg-gray-300 rounded-full w-14 h-14 flex items-center justify-center">
-                  <User className="w-8 h-8 text-gray-500" />
+              {/* User Profile */}
+              <div className="p-4 flex items-center gap-3 border-b border-white/20 bg-[#026aa8]/50">
+                <div className="bg-white rounded-full p-1 flex-shrink-0 shadow-md">
+                  <div className="bg-gradient-to-br from-gray-200 to-gray-300 rounded-full w-12 h-12 flex items-center justify-center">
+                    <User className="w-7 h-7 text-gray-600" />
+                  </div>
+                </div>
+                <div className="overflow-hidden">
+                  <div className="text-xs text-white/80">Xin chào,</div>
+                  <div className="font-semibold text-sm truncate">
+                    {userInfo?.Code || userInfo?.StudentName || 'User'}
+                  </div>
                 </div>
               </div>
-              <div>
-                <div className="text-sm">Welcome,</div>
-                <div className="font-semibold italic">{userInfo?.Code || userInfo?.StudentName}</div>
-              </div>
+            </>
+          ) : (
+            // Collapsed logo only (desktop)
+            <div className="hidden lg:flex p-4 items-center justify-center h-20 border-b border-white/20">
+              <img src="/logo.png" alt="logo" className="w-10 h-10 object-contain rounded-lg shadow-md" />
             </div>
+          )}
+        </div>
 
-            {/* Navigation Menu */}
-            <nav className="flex-1 py-4 font-normal text-[13px]">
+        {/* Navigation Menu - Scrollable */}
+        <nav className="flex-1 overflow-y-auto py-2 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+          {isSidebarOpen ? (
+            <div className="px-2 space-y-1">
               {/* Hệ thống */}
-              <div className="mb-2">
+              <div>
                 <button
                   onClick={() => toggleMenu('system')}
-                  className={`w-full px-4 py-3 flex items-center gap-3 hover:bg-[#026aa8] transition-colors ${expandedMenu === 'system' ? 'bg-[#026aa8]' : ''}`}
+                  className={`w-full px-3 py-2.5 flex items-center gap-3 rounded-lg hover:bg-white/10 transition-all ${
+                    expandedMenu === 'system' ? 'bg-white/15 shadow-sm' : ''
+                  }`}
                 >
                   <Home className="w-5 h-5 flex-shrink-0" />
-                  <span className="flex-1 text-left">Hệ thống</span>
+                  <span className="flex-1 text-left text-sm font-medium">Hệ thống</span>
                   <ChevronDown className={`w-4 h-4 transition-transform ${expandedMenu === 'system' ? 'rotate-180' : ''}`} />
                 </button>
 
                 {expandedMenu === 'system' && (
-                  <div className="bg-[#026aa8]">
+                  <div className="mt-1 ml-2 space-y-0.5">
                     {systemItems.map((item, index) => (
                       <NavLink
                         key={index}
                         to={item.path}
+                        onClick={() => window.innerWidth < 1024 && onToggleSidebar?.()}
                         className={({ isActive }) =>
-                          `w-full px-4 py-2.5 pl-12 flex items-center gap-3 hover:bg-[#025a8a] transition-colors text-left text-sm no-underline text-white ${isActive ? 'bg-[#025a8a] font-semibold' : ''
+                          `flex items-center gap-2 px-3 py-2 pl-10 rounded-lg transition-all text-sm no-underline text-white ${
+                            isActive 
+                              ? 'bg-white/20 font-semibold shadow-sm' 
+                              : 'hover:bg-white/10'
                           }`
                         }
                       >
-                        <div className="w-2 h-2 bg-white rounded-full flex-shrink-0"></div>
-                        <span>{item.label}</span>
+                        <div className="w-1.5 h-1.5 bg-white rounded-full flex-shrink-0"></div>
+                        <span className="truncate">{item.label}</span>
                       </NavLink>
                     ))}
                   </div>
@@ -104,29 +135,35 @@ export default function SlideBar({ isSidebarOpen }) {
               </div>
 
               {/* Lịch học */}
-              <div className="mb-2">
+              <div>
                 <button
                   onClick={() => toggleMenu('schedule')}
-                  className={`w-full px-4 py-3 flex items-center gap-3 hover:bg-[#026aa8] transition-colors ${expandedMenu === 'schedule' ? 'bg-[#026aa8]' : ''}`}
+                  className={`w-full px-3 py-2.5 flex items-center gap-3 rounded-lg hover:bg-white/10 transition-all ${
+                    expandedMenu === 'schedule' ? 'bg-white/15 shadow-sm' : ''
+                  }`}
                 >
                   <FileEdit className="w-5 h-5 flex-shrink-0" />
-                  <span className="flex-1 text-left">Lịch học</span>
+                  <span className="flex-1 text-left text-sm font-medium">Lịch học</span>
                   <ChevronDown className={`w-4 h-4 transition-transform ${expandedMenu === 'schedule' ? 'rotate-180' : ''}`} />
                 </button>
 
                 {expandedMenu === 'schedule' && (
-                  <div className="bg-[#026aa8]">
+                  <div className="mt-1 ml-2 space-y-0.5">
                     {scheduleItems.map((item, index) => (
                       <NavLink
                         key={index}
                         to={item.path}
+                        onClick={() => window.innerWidth < 1024 && onToggleSidebar?.()}
                         className={({ isActive }) =>
-                          `w-full px-4 py-2.5 pl-12 flex items-center gap-3 hover:bg-[#025a8a] transition-colors text-left text-sm no-underline text-white ${isActive ? 'bg-[#025a8a] font-semibold' : ''
+                          `flex items-center gap-2 px-3 py-2 pl-10 rounded-lg transition-all text-sm no-underline text-white ${
+                            isActive 
+                              ? 'bg-white/20 font-semibold shadow-sm' 
+                              : 'hover:bg-white/10'
                           }`
                         }
                       >
-                        <div className="w-2 h-2 bg-white rounded-full flex-shrink-0"></div>
-                        <span>{item.label}</span>
+                        <div className="w-1.5 h-1.5 bg-white rounded-full flex-shrink-0"></div>
+                        <span className="truncate">{item.label}</span>
                       </NavLink>
                     ))}
                   </div>
@@ -134,29 +171,35 @@ export default function SlideBar({ isSidebarOpen }) {
               </div>
 
               {/* Tra cứu điểm */}
-              <div className="mb-2">
+              <div>
                 <button
                   onClick={() => toggleMenu('grades')}
-                  className={`w-full px-4 py-3 flex items-center gap-3 hover:bg-[#026aa8] transition-colors ${expandedMenu === 'grades' ? 'bg-[#026aa8]' : ''}`}
+                  className={`w-full px-3 py-2.5 flex items-center gap-3 rounded-lg hover:bg-white/10 transition-all ${
+                    expandedMenu === 'grades' ? 'bg-white/15 shadow-sm' : ''
+                  }`}
                 >
                   <BarChart3 className="w-5 h-5 flex-shrink-0" />
-                  <span className="flex-1 text-left">Tra cứu điểm</span>
+                  <span className="flex-1 text-left text-sm font-medium">Tra cứu điểm</span>
                   <ChevronDown className={`w-4 h-4 transition-transform ${expandedMenu === 'grades' ? 'rotate-180' : ''}`} />
                 </button>
 
                 {expandedMenu === 'grades' && (
-                  <div className="bg-[#026aa8]">
+                  <div className="mt-1 ml-2 space-y-0.5">
                     {gradesItems.map((item, index) => (
                       <NavLink
                         key={index}
                         to={item.path}
+                        onClick={() => window.innerWidth < 1024 && onToggleSidebar?.()}
                         className={({ isActive }) =>
-                          `w-full px-4 py-2.5 pl-12 flex items-center gap-3 hover:bg-[#025a8a] transition-colors text-left text-sm no-underline text-white ${isActive ? 'bg-[#025a8a] font-semibold' : ''
+                          `flex items-center gap-2 px-3 py-2 pl-10 rounded-lg transition-all text-sm no-underline text-white ${
+                            isActive 
+                              ? 'bg-white/20 font-semibold shadow-sm' 
+                              : 'hover:bg-white/10'
                           }`
                         }
                       >
-                        <div className="w-2 h-2 bg-white rounded-full flex-shrink-0"></div>
-                        <span>{item.label}</span>
+                        <div className="w-1.5 h-1.5 bg-white rounded-full flex-shrink-0"></div>
+                        <span className="truncate">{item.label}</span>
                       </NavLink>
                     ))}
                   </div>
@@ -164,56 +207,101 @@ export default function SlideBar({ isSidebarOpen }) {
               </div>
 
               {/* Kết quả học tập */}
-              <div className="mb-2">
+              <div>
                 <NavLink
                   to="/learning-results"
+                  onClick={() => window.innerWidth < 1024 && onToggleSidebar?.()}
                   className={({ isActive }) =>
-                    `w-full px-4 py-3 flex items-center gap-3 hover:bg-[#026aa8] transition-colors no-underline text-white ${isActive ? 'bg-[#026aa8]' : ''
+                    `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-sm no-underline text-white ${
+                      isActive 
+                        ? 'bg-white/20 font-semibold shadow-sm' 
+                        : 'hover:bg-white/10'
                     }`
                   }
                 >
                   <TrendingUp className="w-5 h-5 flex-shrink-0" />
-                  <span className="flex-1 text-left">Kết quả học tập</span>
+                  <span className="flex-1 text-left font-medium">Kết quả học tập</span>
                 </NavLink>
               </div>
 
               {/* Thông báo */}
-              <div className="mb-2">
+              <div>
                 <button
                   onClick={() => toggleMenu('notifications')}
-                  className={`w-full px-4 py-3 flex items-center gap-3 hover:bg-[#026aa8] transition-colors ${expandedMenu === 'notifications' ? 'bg-[#026aa8]' : ''}`}
+                  className={`w-full px-3 py-2.5 flex items-center gap-3 rounded-lg hover:bg-white/10 transition-all ${
+                    expandedMenu === 'notifications' ? 'bg-white/15 shadow-sm' : ''
+                  }`}
                 >
                   <Calendar className="w-5 h-5 flex-shrink-0" />
-                  <span className="flex-1 text-left">Thông báo</span>
+                  <span className="flex-1 text-left text-sm font-medium">Thông báo</span>
                   <ChevronDown className={`w-4 h-4 transition-transform ${expandedMenu === 'notifications' ? 'rotate-180' : ''}`} />
                 </button>
 
                 {expandedMenu === 'notifications' && (
-                  <div className="bg-[#026aa8]">
+                  <div className="mt-1 ml-2 space-y-0.5">
                     {notificationItems.map((item, index) => (
                       <NavLink
                         key={index}
                         to={item.path}
+                        onClick={() => window.innerWidth < 1024 && onToggleSidebar?.()}
                         className={({ isActive }) =>
-                          `w-full px-4 py-2.5 pl-12 flex items-center gap-3 hover:bg-[#025a8a] transition-colors text-left text-sm no-underline text-white ${isActive ? 'bg-[#025a8a] font-semibold' : ''
+                          `flex items-center gap-2 px-3 py-2 pl-10 rounded-lg transition-all text-sm no-underline text-white ${
+                            isActive 
+                              ? 'bg-white/20 font-semibold shadow-sm' 
+                              : 'hover:bg-white/10'
                           }`
                         }
                       >
-                        <div className="w-2 h-2 bg-white rounded-full flex-shrink-0"></div>
-                        <span>{item.label}</span>
+                        <div className="w-1.5 h-1.5 bg-white rounded-full flex-shrink-0"></div>
+                        <span className="truncate">{item.label}</span>
                       </NavLink>
                     ))}
                   </div>
                 )}
               </div>
-            </nav>
-          </div>
-        ) : (
-          <div className="p-4 flex items-center justify-center h-16">
-            <img src="/logo.png" alt="logo" className="w-8 h-8 object-contain" />
-          </div>
-        )}
+            </div>
+          ) : (
+            // Collapsed view - Icon only (desktop)
+            <div className="hidden lg:flex flex-col items-center gap-2 px-2">
+              <button
+                onClick={() => toggleMenu('system')}
+                className="p-3 hover:bg-white/10 rounded-lg transition-colors w-full flex justify-center"
+                title="Hệ thống"
+              >
+                <Home className="w-6 h-6" />
+              </button>
+              <button
+                onClick={() => toggleMenu('schedule')}
+                className="p-3 hover:bg-white/10 rounded-lg transition-colors w-full flex justify-center"
+                title="Lịch học"
+              >
+                <FileEdit className="w-6 h-6" />
+              </button>
+              <button
+                onClick={() => toggleMenu('grades')}
+                className="p-3 hover:bg-white/10 rounded-lg transition-colors w-full flex justify-center"
+                title="Tra cứu điểm"
+              >
+                <BarChart3 className="w-6 h-6" />
+              </button>
+              <NavLink
+                to="/learning-results"
+                className="p-3 hover:bg-white/10 rounded-lg transition-colors w-full flex justify-center no-underline text-white"
+                title="Kết quả học tập"
+              >
+                <TrendingUp className="w-6 h-6" />
+              </NavLink>
+              <button
+                onClick={() => toggleMenu('notifications')}
+                className="p-3 hover:bg-white/10 rounded-lg transition-colors w-full flex justify-center"
+                title="Thông báo"
+              >
+                <Calendar className="w-6 h-6" />
+              </button>
+            </div>
+          )}
+        </nav>
       </div>
-    </div>
+    </aside>
   );
 }
