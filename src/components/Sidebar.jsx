@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, FileEdit, BarChart3, TrendingUp, Calendar, ChevronDown, User,  } from 'lucide-react';
+import { Home, FileEdit, BarChart3, TrendingUp, Calendar, ChevronDown, User, } from 'lucide-react';
+import { useSelector, useDispatch } from "react-redux";
 
 export default function SlideBar({ isSidebarOpen }) {
+  const dispatch = useDispatch();
+  const { userInfo } = useSelector((state) => state.auth);
   const [expandedMenu, setExpandedMenu] = useState('system');
 
   const toggleMenu = (menu) => {
@@ -64,7 +67,7 @@ export default function SlideBar({ isSidebarOpen }) {
               </div>
               <div>
                 <div className="text-sm">Welcome,</div>
-                <div className="font-semibold italic">d.ttha</div>
+                <div className="font-semibold italic">{userInfo?.Code}</div>
               </div>
             </div>
 

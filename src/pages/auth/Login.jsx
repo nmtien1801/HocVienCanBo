@@ -19,19 +19,10 @@ const LoginForm = () => {
         };
         if (username && password) {
             let res = await dispatch(Login(body));
-            console.log('ssssss', res);
-
-            if (res && res.payload) {
-
-                // sessionStorage.setItem("UserID", res.payload.StudentID);
-                // sessionStorage.setItem("Username", res.payload.username);
-                // sessionStorage.setItem("FullName", res.payload.StudentName);
-                // sessionStorage.setItem("TypeUserID", res.payload.TypeUserID);
-                // sessionStorage.setItem("IsOutside", res.payload.IsOutside);
-
+            if (res && res.payload.data) {
                 navigate('/dashboard');
-            }else{
-                toast.error('Đăng nhập không thành công. Vui lòng kiểm tra lại thông tin.');
+            } else {
+                toast.error(res.payload.message);
             }
         } else {
             toast.error('Vui lòng điền đầy đủ thông tin đăng nhập.');

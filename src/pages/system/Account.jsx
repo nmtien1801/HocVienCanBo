@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
+import { useSelector, useDispatch } from "react-redux";
 
 export default function UserInfoForm() {
+  const { userInfo } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+
   const [formData, setFormData] = useState({
-    maNguoiDung: 'd.ttha',
-    hoVaTen: 'Đinh Thị Thu Hà',
+    maNguoiDung: userInfo?.Code || '',
+    hoVaTen: userInfo?.Name || '',
     nhom: '',
-    dangHoatDong: true
+    dangHoatDong: userInfo?.Status === 1 || false,
   });
 
   const handleInputChange = (e) => {

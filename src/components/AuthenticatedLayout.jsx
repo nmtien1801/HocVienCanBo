@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from "react";
 import {
     Outlet,
 } from "react-router-dom";
-import { ToastContainer } from "react-toastify";
 import SlideBar from "./Sidebar";
 import Header from "./Header";
 
@@ -10,7 +9,7 @@ function AuthenticatedLayout() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
     return (
-        <div className="h-screen w-full bg-gray-50 text-gray-800 font-sans overflow-hidden">
+        <div className="h-screen w-full bg-gray-50 text-gray-800 font-sans">
             {/* Sidebar (cố định bên trái) */}
             <SlideBar isSidebarOpen={isSidebarOpen} />
 
@@ -28,6 +27,7 @@ function AuthenticatedLayout() {
                 <main className="flex-grow overflow-auto">
                     <Outlet />
                 </main>
+
             </div>
         </div>
     );

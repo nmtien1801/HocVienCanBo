@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Menu, Mail, User, ChevronDown, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from "react-redux";
 
 export default function Header({ toggleSidebar }) {
     const [showUserMenu, setShowUserMenu] = useState(false);
     const userMenuRef = useRef(null);
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const { userInfo } = useSelector((state) => state.auth);
 
     const toggleUserMenu = () => setShowUserMenu((prev) => !prev);
 
@@ -22,6 +25,7 @@ export default function Header({ toggleSidebar }) {
 
     const handleLogout = async () => {
         // Chuyển hướng về trang đăng nhập
+        localStorage.removeItem("fr");
         navigate('/home');
     }
 
@@ -55,7 +59,7 @@ export default function Header({ toggleSidebar }) {
                             <div className="bg-gray-300 rounded-full w-9 h-9 flex items-center justify-center">
                                 <User className="w-5 h-5 text-gray-600" />
                             </div>
-                            <span className="text-gray-700 font-medium">Đinh Thị Thu Hà</span>
+                            <span className="text-gray-700 font-medium">{userInfo?.Name}</span>
                             <ChevronDown
                                 className={`w-4 h-4 text-gray-600 transition-transform ${showUserMenu ? 'rotate-180' : ''
                                     }`}

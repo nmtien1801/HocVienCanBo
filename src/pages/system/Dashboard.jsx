@@ -1,7 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Users, Layers, BookCheck, BookX } from 'lucide-react';
+import { useSelector, useDispatch } from "react-redux";
 
 export default function Dashboard() {
+    const dispatch = useDispatch();
+
     const scheduleData = [
         {
             month: 10,

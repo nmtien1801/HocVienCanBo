@@ -27,11 +27,15 @@ import ChangePassTC from "../pages/system/ChangePassTC.jsx";
 import Account from "../pages/system/Account.jsx";
 import Home from "../pages/auth/Home.jsx";
 import Login from "../pages/auth/Login.jsx";
+import LoadingSpinner from "../components/LoadingSpinner.jsx";
+import { GetAccount } from "../redux/authSlice.js";
 
-const ProtectedRoute = ({ children }) => {
-  const isAuthenticated = useSelector((state) => state.auth?.isAuthenticated);
+const ProtectedRoute = ({ children, userInfo, isLoading }) => {
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
 
-  // if (!isAuthenticated) {
+  // if (!userInfo || !userInfo.UserID) {
   //   return <Navigate to="/home" replace />;
   // }
 
@@ -39,6 +43,19 @@ const ProtectedRoute = ({ children }) => {
 };
 
 function RouterRoot() {
+  const dispatch = useDispatch();
+  const { userInfo, isLoading, hasCheckedAuth } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    const token = localStorage.getItem("fr");
+
+    if (token && !hasCheckedAuth && !isLoading) {
+      dispatch(GetAccount());
+    }
+  }, [dispatch, hasCheckedAuth, isLoading]);
+
+  console.log('userInfo ', userInfo);
+
   return (
     <Router>
       <Routes>
@@ -50,7 +67,7 @@ function RouterRoot() {
         <Route
           path="/"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute userInfo={userInfo} isLoading={isLoading}>
               <AuthenticatedLayout />
             </ProtectedRoute>
           }
