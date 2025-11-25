@@ -16,7 +16,7 @@ function AuthenticatedLayout() {
             {/* Cột phải: Header + Main content */}
             <div
                 className="flex flex-col h-full transition-all duration-300"
-                style={{ marginLeft: isSidebarOpen ? '260px' : '80px' }}
+                style={{ marginLeft: isSidebarOpen ? '268px' : '80px' }}
             >
                 {/* Header */}
                 <Header

@@ -20,8 +20,8 @@ api.interceptors.request.use((config) => {
   config.headers["Authorization"] = `Bearer ${token}`;
   if (headerValue) {
       config.headers["UserID"] = headerValue.UserID;
-      config.headers["TypeUserID"] = headerValue.TypeUserID || 1;
-      config.headers["IsOutside"] = headerValue.Status === 1;
+      config.headers["TypeUserID"] = headerValue.TypeUserID;
+      config.headers["IsOutside"] = headerValue.IsOutside;
       config.headers["Username"] = headerValue.Code;
       config.headers["Fullname"] = btoa(unescape(encodeURIComponent(headerValue.Name)));
     }

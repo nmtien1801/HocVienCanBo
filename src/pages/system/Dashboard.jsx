@@ -97,7 +97,6 @@ export default function Dashboard() {
                         </div>
                         <div className="flex items-center justify-between border-l-4 border-[#0081cd]/60 pl-4">
                             <div>
-                                <p className="text-gray-500 text-sm mb-1">Tổng số môn</p>
                                 <p className="text-4xl font-semibold text-[#0081cd]">0</p>
                             </div>
                         </div>

@@ -43,7 +43,7 @@ export default function SlideBar({ isSidebarOpen }) {
 
   return (
     <div className={`fixed top-0 left-0 h-screen flex flex-col text-white transition-all duration-300 overflow-y-auto flex-shrink-0 
-      ${isSidebarOpen ? 'w-[260px]' : 'w-[80px]'} bg-[#0081cd]`}
+      ${isSidebarOpen ? 'w-[268px]' : 'w-[80px]'} bg-[#0081cd]`}
     >
       <div className="font-semibold whitespace-nowrap overflow-hidden">
         {isSidebarOpen ? (
@@ -67,7 +67,7 @@ export default function SlideBar({ isSidebarOpen }) {
               </div>
               <div>
                 <div className="text-sm">Welcome,</div>
-                <div className="font-semibold italic">{userInfo?.Code}</div>
+                <div className="font-semibold italic">{userInfo?.Code || userInfo?.StudentName}</div>
               </div>
             </div>
 

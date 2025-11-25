@@ -59,7 +59,7 @@ export default function Header({ toggleSidebar }) {
                             <div className="bg-gray-300 rounded-full w-9 h-9 flex items-center justify-center">
                                 <User className="w-5 h-5 text-gray-600" />
                             </div>
-                            <span className="text-gray-700 font-medium">{userInfo?.Name}</span>
+                            <span className="text-gray-700 font-medium">{userInfo?.Name || userInfo?.StudentName}</span>
                             <ChevronDown
                                 className={`w-4 h-4 text-gray-600 transition-transform ${showUserMenu ? 'rotate-180' : ''
                                     }`}
