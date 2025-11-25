@@ -19,11 +19,11 @@ api.interceptors.request.use((config) => {
   
   config.headers["Authorization"] = `Bearer ${token}`;
   if (headerValue) {
-      config.headers["UserID"] = headerValue.UserID;
+      config.headers["UserID"] = headerValue.UserID || headerValue.StudentID;
       config.headers["TypeUserID"] = headerValue.TypeUserID;
       config.headers["IsOutside"] = headerValue.IsOutside;
-      config.headers["Username"] = headerValue.Code;
-      config.headers["Fullname"] = btoa(unescape(encodeURIComponent(headerValue.Name)));
+      config.headers["Username"] = headerValue.Code || headerValue.StudentCode;
+      config.headers["Fullname"] = btoa(unescape(encodeURIComponent(headerValue.Name || headerValue.StudentName)));
     }
   return config;
 });
