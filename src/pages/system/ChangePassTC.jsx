@@ -35,6 +35,26 @@ export default function ChangePassTC() {
   };
 
   const handleSubmit = async () => {
+    const { PassWordOld, PassWordNew, nhapLaiMatKhauMoi } = formData;
+
+    // 1. Kiểm tra các trường bắt buộc
+    if (!PassWordOld || !PassWordNew || !nhapLaiMatKhauMoi) {
+      toast.error('Vui lòng nhập đầy đủ Mật khẩu cũ, Mật khẩu mới và Nhập lại Mật khẩu mới.');
+      return;
+    }
+
+    // 2. Kiểm tra Mật khẩu mới và Nhập lại Mật khẩu mới có khớp nhau không
+    if (PassWordNew !== nhapLaiMatKhauMoi) {
+      toast.error('Mật khẩu mới và Nhập lại Mật khẩu mới không khớp nhau.');
+      return;
+    }
+
+    // 3. (Tùy chọn) Kiểm tra Mật khẩu mới không được giống Mật khẩu cũ
+    if (PassWordNew === PassWordOld) {
+      toast.error('Mật khẩu mới không được trùng với Mật khẩu cũ.');
+      return;
+    }
+
     let response = await ApiAuth.ChangePasswordApi(formData);
     if (response && response.data) {
       toast.success('Đổi mật khẩu thành công!');

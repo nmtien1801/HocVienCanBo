@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
+import ApiAuth from '../../apis/ApiAuth';
+import { toast } from "react-toastify";
 
 export default function ChangePassStudent() {
   const [formData, setFormData] = useState({
-    maHocVien: 'Mã học viên',
-    matKhauCu: '',
-    matKhauMoi: '',
+    maHocVien: '',
+    PassWordOld: '',
+    PassWordNew: '',
     nhapLaiMatKhauMoi: ''
   });
 
   const [showPassword, setShowPassword] = useState({
-    matKhauCu: false,
-    matKhauMoi: false,
+    PassWordOld: false,
+    PassWordNew: false,
     nhapLaiMatKhauMoi: false
   });
 
@@ -30,9 +32,33 @@ export default function ChangePassStudent() {
     }));
   };
 
-  const handleSubmit = () => {
-    console.log('Đổi mật khẩu:', formData);
-    // Xử lý đổi mật khẩu
+  const handleSubmit = async () => {
+    const { PassWordOld, PassWordNew, nhapLaiMatKhauMoi } = formData;
+
+    // 1. Kiểm tra các trường bắt buộc
+    if (!PassWordOld || !PassWordNew || !nhapLaiMatKhauMoi) {
+      toast.error('Vui lòng nhập đầy đủ Mật khẩu cũ, Mật khẩu mới và Nhập lại Mật khẩu mới.');
+      return;
+    }
+
+    // 2. Kiểm tra Mật khẩu mới và Nhập lại Mật khẩu mới có khớp nhau không
+    if (PassWordNew !== nhapLaiMatKhauMoi) {
+      toast.error('Mật khẩu mới và Nhập lại Mật khẩu mới không khớp nhau.');
+      return;
+    }
+
+    // 3. (Tùy chọn) Kiểm tra Mật khẩu mới không được giống Mật khẩu cũ
+    if (PassWordNew === PassWordOld) {
+      toast.error('Mật khẩu mới không được trùng với Mật khẩu cũ.');
+      return;
+    }
+
+    // let response = await ApiAuth.ChangePasswordApi(formData);
+    // if (response && response.data) {
+    //   toast.success('Đổi mật khẩu thành công!');
+    // } else {
+    //   toast.error(response.message);
+    // }
   };
 
   return (
@@ -53,9 +79,9 @@ export default function ChangePassStudent() {
                 type="text"
                 name="maHocVien"
                 value={formData.maHocVien}
+                placeholder='Mã học viên'
                 onChange={handleInputChange}
-                disabled
-                className="flex-1 max-w-md border border-gray-300 rounded px-4 py-2 text-sm bg-gray-50 text-gray-500"
+                className="flex-1 max-w-md border border-gray-300 rounded px-4 py-2 text-sm"
               />
             </div>
 
@@ -66,19 +92,19 @@ export default function ChangePassStudent() {
               </label>
               <div className="flex-1 max-w-md relative">
                 <input
-                  type={showPassword.matKhauCu ? "text" : "password"}
-                  name="matKhauCu"
-                  value={formData.matKhauCu}
+                  type={showPassword.PassWordOld ? "text" : "password"}
+                  name="PassWordOld"
+                  value={formData.PassWordOld}
                   onChange={handleInputChange}
                   placeholder="Mật khẩu"
                   className="w-full border border-gray-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
                 />
                 <button
                   type="button"
-                  onClick={() => toggleShowPassword('matKhauCu')}
+                  onClick={() => toggleShowPassword('PassWordOld')}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
-                  {showPassword.matKhauCu ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showPassword.PassWordOld ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
@@ -90,19 +116,19 @@ export default function ChangePassStudent() {
               </label>
               <div className="flex-1 max-w-md relative">
                 <input
-                  type={showPassword.matKhauMoi ? "text" : "password"}
-                  name="matKhauMoi"
-                  value={formData.matKhauMoi}
+                  type={showPassword.PassWordNew ? "text" : "password"}
+                  name="PassWordNew"
+                  value={formData.PassWordNew}
                   onChange={handleInputChange}
                   placeholder="Mật khẩu"
                   className="w-full border border-gray-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
                 />
                 <button
                   type="button"
-                  onClick={() => toggleShowPassword('matKhauMoi')}
+                  onClick={() => toggleShowPassword('PassWordNew')}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
-                  {showPassword.matKhauMoi ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showPassword.PassWordNew ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
