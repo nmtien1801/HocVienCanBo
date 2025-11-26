@@ -1,14 +1,14 @@
 import React, { useEffect } from "react";
 import { Users, Layers, BookCheck, BookX } from 'lucide-react';
 import { useSelector, useDispatch } from "react-redux";
-import { DashboardTotal, ScheduleByMonth, ScheduleByExamination, ListInformation } from "../../redux/dashboardSlice.js";
+import { DashboardTotal, ScheduleByMonth, ScheduleByExamination, ListInformation, ScheduleClassSubject } from "../../redux/dashboardSlice.js";
 import { toast } from "react-toastify";
 import { useNavigate } from 'react-router-dom';
 
 export default function Dashboard() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { dashboardTotal, scheduleByMonth, scheduleByExamination, listInformation } = useSelector((state) => state.dashboard);
+    const { dashboardTotal, scheduleByMonth, scheduleByExamination, listInformation, scheduleClassSubject } = useSelector((state) => state.dashboard);
 
     useEffect(() => {
         const fetchDashboardTotal = async () => {
@@ -39,6 +39,15 @@ export default function Dashboard() {
             }
         }
 
+
+        const fetchScheduleClassSubject = async () => {
+            let res = await dispatch(ScheduleClassSubject());
+            if (!res.payload) {
+                toast.error(res.payload?.message);
+            }
+        };
+
+        fetchScheduleClassSubject();
         fetchDashboardTotal();
         fetchScheduleByMonth();
         fetchListInformation();
@@ -71,44 +80,6 @@ export default function Dashboard() {
             month: date.getMonth() + 1
         };
     };
-
-    // Map scheduleByMonth data
-    const scheduleData = scheduleByMonth?.map(item => {
-        const dateInfo = getDateInfo(item.StartDate);
-        return {
-            month: dateInfo.month,
-            day: dateInfo.day,
-            class: `${item.ClassCode} - ${item.ClassName}`,
-            subject: item.SubjectName,
-            schedule: `Ngày học: ${item.DayOfWeek} - Kết thúc: ${formatDate(item.EndDate)}`,
-            exam: `Ngày thi: ${item.DateNumberDayGraduation}`,
-            numberOfStudents: item.NumberStudent,
-            facilityName: item.FaciltyName
-        };
-    }) || [];
-
-    // Map scheduleByExamination data
-    const examData = scheduleByExamination?.map(item => {
-        const dateInfo = getDateInfo(item.DateNumberDayGraduation);
-        return {
-            month: dateInfo.month,
-            day: dateInfo.day,
-            subject: item.SubjectName,
-            class: item.ClassName,
-            time: `${item.TimeExam} phút - Thứ: ${item.DayofWeek}`,
-            teacher: item.TeacherName,
-            examDate: item.DateNumberDayGraduation
-        };
-    }) || [];
-
-    // Map listInformation data
-    const notifications = listInformation?.map(item => ({
-        NewsID: item.NewsID,
-        image: item.ImagesPath,
-        title: item.Title,
-        content: item.ShortDescription,
-        date: item.DateCreated
-    })) || [];
 
     return (
         <div className="min-h-screen bg-gray-50 py-4 px-4 lg:py-8 lg:px-6">
@@ -177,22 +148,22 @@ export default function Dashboard() {
                             <button className="text-blue-600 text-xs lg:text-sm hover:underline cursor-pointer" onClick={() => { navigate('/scheduleMonth') }}>Xem thêm</button>
                         </div>
                         <div className="p-4 lg:p-6 space-y-3 lg:space-y-4 max-h-96 overflow-y-auto">
-                            {scheduleData.length > 0 ? (
-                                scheduleData.map((item, index) => (
+                            {scheduleByMonth.length > 0 ? (
+                                scheduleByMonth.map((item, index) => (
                                     <div key={index} className="flex gap-3 lg:gap-4 p-3 lg:p-0 bg-gray-50 lg:bg-transparent rounded-lg lg:rounded-none">
                                         <div className="flex-shrink-0 bg-gradient-to-br from-[#0081cd] to-[#026aa8] rounded-lg w-14 h-14 lg:w-16 lg:h-16 flex flex-col items-center justify-center text-white shadow-md">
-                                            <span className="text-[9px] lg:text-[10px]">Tháng {item.month}</span>
-                                            <span className="text-xl lg:text-2xl font-bold">{item.day}</span>
+                                            <span className="text-[9px] lg:text-[10px]">Tháng {getDateInfo(item.startDate).month}</span>
+                                            <span className="text-xl lg:text-2xl font-bold">{getDateInfo(item.startDate).day}</span>
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <h3 className="font-semibold text-gray-800 text-xs lg:text-sm mb-1 line-clamp-2">
-                                                Lớp: {item.class}
+                                                Lớp: {item.ClassCode} - {item.ClassName}
                                             </h3>
                                             <p className="text-xs lg:text-sm text-gray-700 mb-1 font-medium line-clamp-1">
-                                                Môn: {item.subject}
+                                                Môn: {item.SubjectName}
                                             </p>
-                                            <p className="text-[10px] lg:text-xs text-gray-600">{item.schedule}</p>
-                                            <p className="text-[10px] lg:text-xs text-gray-600">{item.exam}</p>
+                                            <p className="text-[10px] lg:text-xs text-gray-600">Ngày học: {item.DayOfWeek} - Kết thúc: {formatDate(item.EndDate)}</p>
+                                            <p className="text-[10px] lg:text-xs text-gray-600">Ngày thi: {item.DateNumberDayGraduation}</p>
                                         </div>
                                     </div>
                                 ))
@@ -209,8 +180,8 @@ export default function Dashboard() {
                             <button className="text-blue-600 text-xs lg:text-sm hover:underline cursor-pointer" onClick={() => { navigate('/schedule-exam-month') }}>Xem thêm</button>
                         </div>
                         <div className="p-4 lg:p-6 space-y-3 lg:space-y-4 max-h-96 overflow-y-auto">
-                            {examData.length > 0 ? (
-                                examData.map((item, index) => (
+                            {scheduleByExamination.length > 0 ? (
+                                scheduleByExamination.map((item, index) => (
                                     <div key={index} className="flex gap-3 lg:gap-4 p-3 lg:p-0 bg-gray-50 lg:bg-transparent rounded-lg lg:rounded-none">
                                         <div className="flex-shrink-0 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg w-14 h-14 lg:w-16 lg:h-16 flex flex-col items-center justify-center text-white shadow-md">
                                             <span className="text-[9px] lg:text-[10px]">Tháng {item.month}</span>
@@ -218,17 +189,17 @@ export default function Dashboard() {
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <h3 className="font-semibold text-gray-800 text-xs lg:text-sm mb-1 line-clamp-2">
-                                                {item.subject}
+                                                {item.SubjectName}
                                             </h3>
                                             <p className="text-[10px] lg:text-xs text-gray-600">
-                                                Lớp: {item.class}
+                                                Lớp: {item.ClassName}
                                             </p>
                                             <p className="text-[10px] lg:text-xs text-gray-600">
-                                                Thời gian: {item.time}
+                                                Thời gian: {item.TimeExam} phút - Thứ: {item.DayofWeek}
                                             </p>
-                                            {item.teacher && (
+                                            {item.TeacherName && (
                                                 <p className="text-[10px] lg:text-xs text-gray-500 italic">
-                                                    GV: {item.teacher}
+                                                    GV: {item.TeacherName}
                                                 </p>
                                             )}
                                         </div>
@@ -249,8 +220,46 @@ export default function Dashboard() {
                             <h2 className="text-base lg:text-lg font-medium text-gray-700">Lịch học của lớp bạn</h2>
                             <button className="text-blue-600 text-xs lg:text-sm hover:underline cursor-pointer">Xem thêm</button>
                         </div>
-                        <div className="p-4 lg:p-6">
-                            <p className="text-gray-400 text-center py-12 text-sm">Không có dữ liệu</p>
+                        <div className="p-4 lg:p-6 space-y-4 max-h-96 overflow-y-auto">
+                            {scheduleClassSubject && scheduleClassSubject.length > 0 ? (
+                                scheduleClassSubject.map((item, index) => {
+                                    const startDate = new Date(item.DateStart);
+                                    const formattedStartDate = startDate.toLocaleDateString('vi-VN');
+                                    const displayDate = `${startDate.getDate().toString().padStart(2, '0')}/${(startDate.getMonth() + 1).toString().padStart(2, '0')}/${startDate.getFullYear()}`;
+
+                                    return (
+                                        <div key={index} className="flex gap-3 items-start">
+                                            {/* Date Badge */}
+                                            <div className="flex-shrink-0 bg-teal-500 text-white px-3 py-1.5 rounded font-medium text-sm shadow-md min-w-[100px] text-center">
+                                                {displayDate}
+                                            </div>
+
+                                            {/* Timeline Dot and Line */}
+                                            <div className="flex flex-col items-center pt-1">
+                                                <div className="w-3 h-3 rounded-full border-2 border-gray-300 bg-white"></div>
+                                                {index < scheduleClassSubject.length - 1 && (
+                                                    <div className="w-0.5 h-full bg-gray-200 min-h-[60px]"></div>
+                                                )}
+                                            </div>
+
+                                            {/* Content */}
+                                            <div className="flex-1 pb-4">
+                                                <h3 className="font-semibold text-gray-800 text-sm mb-1.5">
+                                                    {item.SubjectCode} - {item.SubjectName}
+                                                </h3>
+                                                <p className="text-xs text-gray-600 mb-0.5">
+                                                    <span className="font-medium">Thời gian:</span> {formattedStartDate} đến {new Date(item.DateEnd).toLocaleDateString('vi-VN')} - <span className="font-medium">Ngày học:</span> {item.WeekDay}
+                                                </p>
+                                                <p className="text-xs text-gray-600">
+                                                    <span className="font-medium">Ngày thi:</span> {new Date(item.DateNumberDayGraduation).toLocaleDateString('vi-VN')}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            ) : (
+                                <p className="text-gray-400 text-center py-12 text-sm">Không có dữ liệu</p>
+                            )}
                         </div>
                     </div>
 
@@ -261,12 +270,12 @@ export default function Dashboard() {
                             <button className="text-blue-600 text-xs lg:text-sm hover:underline cursor-pointer" onClick={() => { navigate('/notification') }}>Xem thêm</button>
                         </div>
                         <div className="p-4 lg:p-6 space-y-3 lg:space-y-4">
-                            {notifications.length > 0 ? (
-                                notifications.map((item, index) => (
+                            {listInformation.length > 0 ? (
+                                listInformation.map((item, index) => (
                                     <div key={index} className="flex gap-3 lg:gap-4 p-3 lg:p-0 bg-gray-50 lg:bg-transparent rounded-lg lg:rounded-none">
                                         <div className={`flex-shrink-0 w-20 lg:w-24 h-12 lg:h-14 rounded shadow-md`}>
                                             <img
-                                                src={item.image}
+                                                src={item.ImagesPath}
                                                 alt="Thông báo"
                                                 className="w-full h-full object-cover rounded cursor-pointer"
                                                 onClick={() => navigate(`/notification-detail?id=${item.NewsID}`)}
@@ -274,10 +283,10 @@ export default function Dashboard() {
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <h3 className="font-semibold text-gray-800 text-xs lg:text-sm mb-1 line-clamp-2 cursor-pointer" onClick={() => navigate(`/notification-detail?id=${item.NewsID}`)}>
-                                                {item.title}
+                                                {item.Title}
                                             </h3>
                                             <p className="text-[10px] lg:text-xs text-gray-500 italic leading-relaxed line-clamp-3">
-                                                {item.content}
+                                                {item.ShortDescription}
                                             </p>
                                         </div>
                                     </div>

@@ -36,8 +36,8 @@ export default function ChangePassStudent() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gray-50 py-4 px-4 lg:py-8 lg:px-6">
+      <div className="max-w-5xl mx-auto">
         {/* Header */}
         <h1 className="text-2xl text-gray-600 mb-8">Đổi mật khẩu</h1>
 

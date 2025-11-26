@@ -3,13 +3,13 @@ import { useSelector, useDispatch } from "react-redux";
 import { ListInformation } from "../../redux/dashboardSlice.js";
 import { useNavigate } from 'react-router-dom';
 import { toast } from "react-toastify";
-import {formatToISODate} from "../../utils/constants.js";
+import { formatToISODate } from "../../utils/constants.js";
 
 export default function Notification() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { listInformation } = useSelector((state) => state.dashboard);
-
+    console.log('ssssssssss', listInformation);
     useEffect(() => {
         const fetchListInformation = async () => {
             let res = await dispatch(ListInformation());

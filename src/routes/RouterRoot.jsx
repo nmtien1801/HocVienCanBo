@@ -30,6 +30,7 @@ import Home from "../pages/auth/Home.jsx";
 import Login from "../pages/auth/Login.jsx";
 import LoadingSpinner from "../components/LoadingSpinner.jsx";
 import { GetAccount } from "../redux/authSlice.js";
+import ManagerNotify from "../pages/notification/ManagerNotify.jsx";
 
 const ProtectedRoute = ({ children, userInfo, isLoading }) => {
   if (isLoading) {
@@ -63,6 +64,7 @@ function RouterRoot() {
         {/* public route */}
         <Route path="/home" element={<Home />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/test" element={<ManagerNotify />} />
 
         {/* private route */}
         <Route

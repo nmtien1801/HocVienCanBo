@@ -1,17 +1,21 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
+import ApiAuth from '../../apis/ApiAuth';
+import { toast } from "react-toastify";
+import { useSelector, useDispatch } from "react-redux";
 
 export default function ChangePassTC() {
+  const { userInfo } = useSelector((state) => state.auth);
   const [formData, setFormData] = useState({
-    tenDangNhap: 'Tên truy cập',
-    matKhauCu: '',
-    matKhauMoi: '',
+    tenDangNhap: userInfo ? userInfo.StudentName || userInfo.Name : '',
+    PassWordOld: '',
+    PassWordNew: '',
     nhapLaiMatKhauMoi: ''
   });
 
   const [showPassword, setShowPassword] = useState({
-    matKhauCu: false,
-    matKhauMoi: false,
+    PassWordOld: false,
+    PassWordNew: false,
     nhapLaiMatKhauMoi: false
   });
 
@@ -30,14 +34,18 @@ export default function ChangePassTC() {
     }));
   };
 
-  const handleSubmit = () => {
-    console.log('Đổi mật khẩu:', formData);
-    // Xử lý đổi mật khẩu
+  const handleSubmit = async () => {
+    let response = await ApiAuth.ChangePasswordApi(formData);
+    if (response && response.data) {
+      toast.success('Đổi mật khẩu thành công!');
+    } else {
+      toast.error(response.message);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gray-50 py-4 px-4 lg:py-8 lg:px-6">
+      <div className="max-w-5xl mx-auto">
         {/* Header */}
         <h1 className="text-2xl text-gray-600 mb-8">Đổi mật khẩu</h1>
 
@@ -66,19 +74,19 @@ export default function ChangePassTC() {
               </label>
               <div className="flex-1 max-w-md relative">
                 <input
-                  type={showPassword.matKhauCu ? "text" : "password"}
-                  name="matKhauCu"
-                  value={formData.matKhauCu}
+                  type={showPassword.PassWordOld ? "text" : "password"}
+                  name="PassWordOld"
+                  value={formData.PassWordOld}
                   onChange={handleInputChange}
                   placeholder="Mật khẩu"
                   className="w-full border border-gray-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
                 />
                 <button
                   type="button"
-                  onClick={() => toggleShowPassword('matKhauCu')}
+                  onClick={() => toggleShowPassword('PassWordOld')}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
-                  {showPassword.matKhauCu ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showPassword.PassWordOld ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
@@ -90,19 +98,19 @@ export default function ChangePassTC() {
               </label>
               <div className="flex-1 max-w-md relative">
                 <input
-                  type={showPassword.matKhauMoi ? "text" : "password"}
-                  name="matKhauMoi"
-                  value={formData.matKhauMoi}
+                  type={showPassword.PassWordNew ? "text" : "password"}
+                  name="PassWordNew"
+                  value={formData.PassWordNew}
                   onChange={handleInputChange}
                   placeholder="Mật khẩu"
                   className="w-full border border-gray-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
                 />
                 <button
                   type="button"
-                  onClick={() => toggleShowPassword('matKhauMoi')}
+                  onClick={() => toggleShowPassword('PassWordNew')}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
-                  {showPassword.matKhauMoi ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showPassword.PassWordNew ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>

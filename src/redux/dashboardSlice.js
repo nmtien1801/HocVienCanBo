@@ -6,6 +6,7 @@ const initialState = {
   scheduleByMonth: [],
   scheduleByExamination: [],
   listInformation: [],
+  scheduleClassSubject: [],
 };
 
 export const DashboardTotal = createAsyncThunk(
@@ -36,6 +37,14 @@ export const ListInformation = createAsyncThunk(
   "dashboard/ListInformation",
   async (thunkAPI) => {
     const response = await ApiDashboard.ListInformationApi();
+    return response;
+  }
+);
+
+export const ScheduleClassSubject = createAsyncThunk(
+  "dashboard/ScheduleClassSubject",
+  async (thunkAPI) => {
+    const response = await ApiDashboard.ScheduleClassSubjectApi();
     return response;
   }
 );
@@ -86,6 +95,16 @@ const dashboardSlice = createSlice({
         }
       })
       .addCase(ListInformation.rejected, (state, action) => {});
+
+    // ScheduleClassSubject
+    builder
+      .addCase(ScheduleClassSubject.pending, (state) => {})
+      .addCase(ScheduleClassSubject.fulfilled, (state, action) => {
+        if (action.payload) {
+          state.scheduleClassSubject = action.payload || [];
+        }
+      })
+      .addCase(ScheduleClassSubject.rejected, (state, action) => {});
   },
 });
 

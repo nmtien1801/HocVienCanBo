@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { Home, FileEdit, BarChart3, TrendingUp, Calendar, ChevronDown, User, X } from 'lucide-react';
 import { useSelector } from "react-redux";
+import { TypeUserIDCons } from "../utils/constants";
 
 export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
   const { userInfo } = useSelector((state) => state.auth);
@@ -13,10 +14,12 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
 
   const systemItems = [
     { label: 'Trang chủ', path: '/dashboard' },
-    { label: 'Đổi mật khẩu học viên', path: '/change-pass-student' },
+    userInfo?.TypeUserID === TypeUserIDCons.Teacher
+      ? { label: 'Đổi mật khẩu học viên', path: '/change-pass-student' }
+      : null,
     { label: 'Đổi mật khẩu TC', path: '/change-pass-tc' },
     { label: 'Thông tin tài khoản', path: '/account' },
-  ];
+  ].filter(Boolean)
 
   const scheduleItems = [
     { label: 'Lịch học tháng', path: '/scheduleMonth' },
@@ -41,14 +44,14 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
   ];
 
   return (
-    <aside 
+    <aside
       className={`fixed top-0 left-0 h-screen flex flex-col text-white transition-all duration-300 z-50 shadow-xl
         ${isSidebarOpen ? 'w-[280px]' : 'w-0 lg:w-[80px]'} 
         bg-gradient-to-b from-[#0081cd] to-[#026aa8]`}
     >
       {/* Sidebar Content */}
       <div className={`h-full flex flex-col overflow-hidden ${!isSidebarOpen && 'lg:flex hidden'}`}>
-        
+
         {/* Header - Always visible when open */}
         <div className="flex-shrink-0">
           {isSidebarOpen ? (
@@ -62,7 +65,7 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
                   </span>
                 </div>
                 {/* Close button - only on mobile */}
-                <button 
+                <button
                   onClick={onToggleSidebar}
                   className="lg:hidden p-1 hover:bg-white/10 rounded-lg transition-colors"
                   aria-label="Close sidebar"
@@ -102,9 +105,8 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
               <div>
                 <button
                   onClick={() => toggleMenu('system')}
-                  className={`w-full px-3 py-2.5 flex items-center gap-3 rounded-lg hover:bg-white/10 transition-all ${
-                    expandedMenu === 'system' ? 'bg-white/15 shadow-sm' : ''
-                  }`}
+                  className={`w-full px-3 py-2.5 flex items-center gap-3 rounded-lg hover:bg-white/10 transition-all ${expandedMenu === 'system' ? 'bg-white/15 shadow-sm' : ''
+                    }`}
                 >
                   <Home className="w-5 h-5 flex-shrink-0" />
                   <span className="flex-1 text-left text-sm font-medium">Hệ thống</span>
@@ -119,10 +121,9 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
                         to={item.path}
                         onClick={() => window.innerWidth < 1024 && onToggleSidebar?.()}
                         className={({ isActive }) =>
-                          `flex items-center gap-2 px-3 py-2 pl-10 rounded-lg transition-all text-sm no-underline text-white ${
-                            isActive 
-                              ? 'bg-white/20 font-semibold shadow-sm' 
-                              : 'hover:bg-white/10'
+                          `flex items-center gap-2 px-3 py-2 pl-10 rounded-lg transition-all text-sm no-underline text-white ${isActive
+                            ? 'bg-white/20 font-semibold shadow-sm'
+                            : 'hover:bg-white/10'
                           }`
                         }
                       >
@@ -138,9 +139,8 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
               <div>
                 <button
                   onClick={() => toggleMenu('schedule')}
-                  className={`w-full px-3 py-2.5 flex items-center gap-3 rounded-lg hover:bg-white/10 transition-all ${
-                    expandedMenu === 'schedule' ? 'bg-white/15 shadow-sm' : ''
-                  }`}
+                  className={`w-full px-3 py-2.5 flex items-center gap-3 rounded-lg hover:bg-white/10 transition-all ${expandedMenu === 'schedule' ? 'bg-white/15 shadow-sm' : ''
+                    }`}
                 >
                   <FileEdit className="w-5 h-5 flex-shrink-0" />
                   <span className="flex-1 text-left text-sm font-medium">Lịch học</span>
@@ -155,10 +155,9 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
                         to={item.path}
                         onClick={() => window.innerWidth < 1024 && onToggleSidebar?.()}
                         className={({ isActive }) =>
-                          `flex items-center gap-2 px-3 py-2 pl-10 rounded-lg transition-all text-sm no-underline text-white ${
-                            isActive 
-                              ? 'bg-white/20 font-semibold shadow-sm' 
-                              : 'hover:bg-white/10'
+                          `flex items-center gap-2 px-3 py-2 pl-10 rounded-lg transition-all text-sm no-underline text-white ${isActive
+                            ? 'bg-white/20 font-semibold shadow-sm'
+                            : 'hover:bg-white/10'
                           }`
                         }
                       >
@@ -174,9 +173,8 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
               <div>
                 <button
                   onClick={() => toggleMenu('grades')}
-                  className={`w-full px-3 py-2.5 flex items-center gap-3 rounded-lg hover:bg-white/10 transition-all ${
-                    expandedMenu === 'grades' ? 'bg-white/15 shadow-sm' : ''
-                  }`}
+                  className={`w-full px-3 py-2.5 flex items-center gap-3 rounded-lg hover:bg-white/10 transition-all ${expandedMenu === 'grades' ? 'bg-white/15 shadow-sm' : ''
+                    }`}
                 >
                   <BarChart3 className="w-5 h-5 flex-shrink-0" />
                   <span className="flex-1 text-left text-sm font-medium">Tra cứu điểm</span>
@@ -191,10 +189,9 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
                         to={item.path}
                         onClick={() => window.innerWidth < 1024 && onToggleSidebar?.()}
                         className={({ isActive }) =>
-                          `flex items-center gap-2 px-3 py-2 pl-10 rounded-lg transition-all text-sm no-underline text-white ${
-                            isActive 
-                              ? 'bg-white/20 font-semibold shadow-sm' 
-                              : 'hover:bg-white/10'
+                          `flex items-center gap-2 px-3 py-2 pl-10 rounded-lg transition-all text-sm no-underline text-white ${isActive
+                            ? 'bg-white/20 font-semibold shadow-sm'
+                            : 'hover:bg-white/10'
                           }`
                         }
                       >
@@ -212,10 +209,9 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
                   to="/learning-results"
                   onClick={() => window.innerWidth < 1024 && onToggleSidebar?.()}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-sm no-underline text-white ${
-                      isActive 
-                        ? 'bg-white/20 font-semibold shadow-sm' 
-                        : 'hover:bg-white/10'
+                    `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-sm no-underline text-white ${isActive
+                      ? 'bg-white/20 font-semibold shadow-sm'
+                      : 'hover:bg-white/10'
                     }`
                   }
                 >
@@ -228,9 +224,8 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
               <div>
                 <button
                   onClick={() => toggleMenu('notifications')}
-                  className={`w-full px-3 py-2.5 flex items-center gap-3 rounded-lg hover:bg-white/10 transition-all ${
-                    expandedMenu === 'notifications' ? 'bg-white/15 shadow-sm' : ''
-                  }`}
+                  className={`w-full px-3 py-2.5 flex items-center gap-3 rounded-lg hover:bg-white/10 transition-all ${expandedMenu === 'notifications' ? 'bg-white/15 shadow-sm' : ''
+                    }`}
                 >
                   <Calendar className="w-5 h-5 flex-shrink-0" />
                   <span className="flex-1 text-left text-sm font-medium">Thông báo</span>
@@ -245,10 +240,9 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
                         to={item.path}
                         onClick={() => window.innerWidth < 1024 && onToggleSidebar?.()}
                         className={({ isActive }) =>
-                          `flex items-center gap-2 px-3 py-2 pl-10 rounded-lg transition-all text-sm no-underline text-white ${
-                            isActive 
-                              ? 'bg-white/20 font-semibold shadow-sm' 
-                              : 'hover:bg-white/10'
+                          `flex items-center gap-2 px-3 py-2 pl-10 rounded-lg transition-all text-sm no-underline text-white ${isActive
+                            ? 'bg-white/20 font-semibold shadow-sm'
+                            : 'hover:bg-white/10'
                           }`
                         }
                       >
