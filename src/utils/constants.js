@@ -16,7 +16,11 @@ const formatDate = (isoDate) => {
 const formatToISODate = (displayDate) => {
   if (!displayDate) return "01/01/0001";
 
-  const m = moment(displayDate, ["YYYY-MM-DDTHH:mm:ss.SSS", "DD/MM/YYYY"], true);
+  const m = moment(
+    displayDate,
+    ["YYYY-MM-DDTHH:mm:ss.SSS", "DD/MM/YYYY"],
+    true
+  );
 
   if (!m.isValid()) return "01/01/0001";
 
@@ -27,4 +31,25 @@ const getGenderDisplay = (id) => {
   return id === 0 ? "Nữ" : id === 1 ? "Nam" : "";
 };
 
-export { TypeUserIDCons, formatDate, formatToISODate, getGenderDisplay };
+// lấy ngày đầu -> cuối tháng
+const getFirstDayOfMonth = () => {
+  const now = new Date();
+  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+  return firstDay.toISOString().split("T")[0];
+};
+
+const getLastDayOfMonth = () => {
+  const now = new Date();
+  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  return lastDay.toISOString().split("T")[0];
+};
+/////////////////////////////
+
+export {
+  TypeUserIDCons,
+  formatDate,
+  formatToISODate,
+  getGenderDisplay,
+  getFirstDayOfMonth,
+  getLastDayOfMonth,
+};

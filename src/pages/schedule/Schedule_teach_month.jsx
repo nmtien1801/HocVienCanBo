@@ -3,12 +3,13 @@ import { Search, FileDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRigh
 import { getScheduleMonth } from '../../redux/scheduleSlice.js';
 import { toast } from "react-toastify";
 import { useSelector, useDispatch } from "react-redux";
+import {getFirstDayOfMonth, getLastDayOfMonth} from '../../utils/constants.js'
 
 export default function ScheduleTeachMonth() {
   const dispatch = useDispatch();
   const { scheduleSlice, totalSchedule } = useSelector((state) => state.schedule);
-  const [startDate, setStartDate] = useState('2025/10/01');
-  const [endDate, setEndDate] = useState('2025/10/31');
+  const [startDate, setStartDate] = useState(getFirstDayOfMonth());
+  const [endDate, setEndDate] = useState(getLastDayOfMonth());
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
 
@@ -43,7 +44,7 @@ export default function ScheduleTeachMonth() {
             <div className="flex items-center gap-3">
               <label className="text-gray-600 text-sm whitespace-nowrap">Từ ngày</label>
               <input
-                type="text"
+                type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
                 className="border border-gray-300 rounded px-3 py-2 text-sm w-40"
@@ -53,7 +54,7 @@ export default function ScheduleTeachMonth() {
             <div className="flex items-center gap-3">
               <label className="text-gray-600 text-sm whitespace-nowrap">Đến ngày</label>
               <input
-                type="text"
+                type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
                 className="border border-gray-300 rounded px-3 py-2 text-sm w-40"
@@ -74,10 +75,6 @@ export default function ScheduleTeachMonth() {
 
         {/* Table Section */}
         <div className="bg-white rounded-lg shadow-sm">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg text-red-700 font-semibold text-center">Danh sách Lịch Học</h2>
-          </div>
-
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-gray-100 border-b-2 border-gray-300">
