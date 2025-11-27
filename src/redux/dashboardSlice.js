@@ -13,7 +13,7 @@ export const DashboardTotal = createAsyncThunk(
   "dashboard/DashboardTotal",
   async (thunkAPI) => {
     const response = await ApiDashboard.DashboardTotalApi();
-    return response;
+    return response.data;
   }
 );
 
@@ -21,7 +21,7 @@ export const ScheduleByMonth = createAsyncThunk(
   "dashboard/ScheduleByMonth",
   async (thunkAPI) => {
     const response = await ApiDashboard.ScheduleByMonthApi();
-    return response;
+    return response.data;
   }
 );
 
@@ -29,7 +29,7 @@ export const ScheduleByExamination = createAsyncThunk(
   "dashboard/ScheduleByExamination",
   async (thunkAPI) => {
     const response = await ApiDashboard.ScheduleByExaminationApi();
-    return response;
+    return response.data;
   }
 );
 
@@ -37,7 +37,7 @@ export const ListInformation = createAsyncThunk(
   "dashboard/ListInformation",
   async (thunkAPI) => {
     const response = await ApiDashboard.ListInformationApi();
-    return response;
+    return response.data;
   }
 );
 
@@ -45,7 +45,7 @@ export const ScheduleClassSubject = createAsyncThunk(
   "dashboard/ScheduleClassSubject",
   async (thunkAPI) => {
     const response = await ApiDashboard.ScheduleClassSubjectApi();
-    return response;
+    return response.data;
   }
 );
 

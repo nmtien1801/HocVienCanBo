@@ -1,170 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, FileDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { getScheduleMonth } from '../../redux/scheduleSlice.js';
+import { toast } from "react-toastify";
+import { useSelector, useDispatch } from "react-redux";
 
 export default function ScheduleTeachMonth() {
-  const [startDate, setStartDate] = useState('01/10/2025');
-  const [endDate, setEndDate] = useState('31/10/2025');
+  const dispatch = useDispatch();
+  const { scheduleSlice, totalSchedule } = useSelector((state) => state.schedule);
+  const [startDate, setStartDate] = useState('2025/10/01');
+  const [endDate, setEndDate] = useState('2025/10/31');
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = useState(20);
 
-  const scheduleData = [
-    {
-      stt: 1,
-      maLop: '210240',
-      tenLop: 'TC.240 (CS1)',
-      siSo: 67,
-      maMon: 237,
-      tenMon: 'Thực tiễn và kinh nghiệm xây dựng, phát triển địa phương',
-      khoa: 'Khoa Lý luận cơ sở',
-      thuHoc: 'T2, T4, T6',
-      soNgay: 10,
-      ngayThi: '21/11/2025',
-      ngayBatDau: '10/10/2025',
-      ngayKetThuc: '05/11/2025'
-    },
-    {
-      stt: 2,
-      maLop: '210240',
-      tenLop: 'TC.240 (CS1)',
-      siSo: 67,
-      maMon: 196,
-      tenMon: 'Kỹ năng lãnh đạo, quản lý',
-      khoa: 'Khoa Nhà nước và pháp luật',
-      thuHoc: 'T2, T4, T6',
-      soNgay: 23,
-      ngayThi: '24/10/2025',
-      ngayBatDau: '13/08/2025',
-      ngayKetThuc: '08/10/2025'
-    },
-    {
-      stt: 3,
-      maLop: '210946',
-      tenLop: 'H.946 (NB)',
-      siSo: 40,
-      maMon: 300,
-      tenMon: 'Nghiên cứu thực tế',
-      khoa: '',
-      thuHoc: '4',
-      soNgay: 2,
-      ngayThi: '01/10/2025',
-      ngayBatDau: '01/10/2025',
-      ngayKetThuc: '01/10/2025'
-    },
-    {
-      stt: 4,
-      maLop: '210949',
-      tenLop: 'H.949 (Q1)',
-      siSo: 52,
-      maMon: 244,
-      tenMon: 'Kiến thức bổ trợ',
-      khoa: 'Khoa Nhà nước và pháp luật',
-      thuHoc: '4, 6',
-      soNgay: 10,
-      ngayThi: '14/11/2025',
-      ngayBatDau: '10/10/2025',
-      ngayKetThuc: '29/10/2025'
-    },
-    {
-      stt: 5,
-      maLop: '210949',
-      tenLop: 'H.949 (Q1)',
-      siSo: 52,
-      maMon: 242,
-      tenMon: 'Mặt trận Tổ quốc Việt Nam và các tổ chức chính trị - xã hội',
-      khoa: 'Khoa Xây dựng Đảng',
-      thuHoc: '4, 6',
-      soNgay: 12,
-      ngayThi: '24/10/2025',
-      ngayBatDau: '12/09/2025',
-      ngayKetThuc: '08/10/2025'
-    },
-    {
-      stt: 6,
-      maLop: '210949',
-      tenLop: 'H.949 (Q1)',
-      siSo: 52,
-      maMon: 300,
-      tenMon: 'Nghiên cứu thực tế',
-      khoa: '',
-      thuHoc: '6',
-      soNgay: 2,
-      ngayThi: '31/10/2025',
-      ngayBatDau: '31/10/2025',
-      ngayKetThuc: '31/10/2025'
-    },
-    {
-      stt: 7,
-      maLop: '210242',
-      tenLop: 'TC.242 (CS1)',
-      siSo: 66,
-      maMon: 244,
-      tenMon: 'Kiến thức bổ trợ',
-      khoa: 'Khoa Nhà nước và pháp luật',
-      thuHoc: '3, 7',
-      soNgay: 10,
-      ngayThi: '04/11/2025',
-      ngayBatDau: '04/10/2025',
-      ngayKetThuc: '21/10/2025'
-    },
-    {
-      stt: 8,
-      maLop: '210242',
-      tenLop: 'TC.242 (CS1)',
-      siSo: 66,
-      maMon: 300,
-      tenMon: 'Nghiên cứu thực tế',
-      khoa: '',
-      thuHoc: '7',
-      soNgay: 2,
-      ngayThi: '25/10/2025',
-      ngayBatDau: '25/10/2025',
-      ngayKetThuc: '25/10/2025'
-    },
-    {
-      stt: 9,
-      maLop: '210243',
-      tenLop: 'TC.243 (CS1)',
-      siSo: 77,
-      maMon: 196,
-      tenMon: 'Kỹ năng lãnh đạo, quản lý',
-      khoa: 'Khoa Nhà nước và pháp luật',
-      thuHoc: 'T2, T4, T6',
-      soNgay: 23,
-      ngayThi: '24/12/2025',
-      ngayBatDau: '10/10/2025',
-      ngayKetThuc: '08/12/2025'
-    },
-    {
-      stt: 10,
-      maLop: '210243',
-      tenLop: 'TC.243 (CS1)',
-      siSo: 77,
-      maMon: 242,
-      tenMon: 'Mặt trận Tổ quốc Việt Nam và các tổ chức chính trị - xã hội',
-      khoa: 'Khoa Xây dựng Đảng',
-      thuHoc: 'T2, T4, T6',
-      soNgay: 12,
-      ngayThi: '24/10/2025',
-      ngayBatDau: '10/09/2025',
-      ngayKetThuc: '08/10/2025'
-    },
-    {
-      stt: 11,
-      maLop: '210953',
-      tenLop: 'H.953 (CS PHU)',
-      siSo: 58,
-      maMon: 240,
-      tenMon: 'Đường lối, chính sách của Đảng, Nhà nước Việt Nam',
-      khoa: 'Khoa Xây dựng Đảng',
-      thuHoc: '6, 7',
-      soNgay: 27,
-      ngayThi: '21/11/2025',
-      ngayBatDau: '12/09/2025',
-      ngayKetThuc: '01/11/2025'
+  useEffect(() => {
+    fetchScheduleClassSubject();
+  }, [dispatch, startDate, endDate, currentPage, pageSize]);
+
+  const fetchScheduleClassSubject = async () => {
+    let res = await dispatch(getScheduleMonth({ startDate, endDate, page: currentPage, limit: pageSize }));
+    if (!res.payload || !res.payload.data) {
+      toast.error(res.payload?.message);
     }
-  ];
+  };
 
-  const totalPages = Math.ceil(scheduleData.length / pageSize);
+  const handleSearch = async () => {
+    setCurrentPage(1);
+    setPageSize(20);
+    fetchScheduleClassSubject();
+  };
+
+  const totalPages = Math.ceil(totalSchedule / pageSize);
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -195,7 +60,7 @@ export default function ScheduleTeachMonth() {
               />
             </div>
 
-            <button className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-2 rounded flex items-center gap-2 text-sm">
+            <button className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-2 rounded flex items-center gap-2 text-sm" onClick={() => handleSearch()}>
               <Search size={16} />
               Tìm kiếm
             </button>
@@ -232,20 +97,20 @@ export default function ScheduleTeachMonth() {
                 </tr>
               </thead>
               <tbody>
-                {scheduleData.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((row, index) => (
+                {scheduleSlice.map((row, index) => (
                   <tr key={index} className="border-b border-gray-200 hover:bg-gray-50">
-                    <td className="px-4 py-3 border-r border-gray-200">{row.stt}</td>
-                    <td className="px-4 py-3 border-r border-gray-200">{row.maLop}</td>
-                    <td className="px-4 py-3 border-r border-gray-200">{row.tenLop}</td>
-                    <td className="px-4 py-3 border-r border-gray-200 text-center">{row.siSo}</td>
-                    <td className="px-4 py-3 border-r border-gray-200 text-center">{row.maMon}</td>
-                    <td className="px-4 py-3 border-r border-gray-200">{row.tenMon}</td>
-                    <td className="px-4 py-3 border-r border-gray-200">{row.khoa}</td>
-                    <td className="px-4 py-3 border-r border-gray-200 text-center">{row.thuHoc}</td>
-                    <td className="px-4 py-3 border-r border-gray-200 text-center">{row.soNgay}</td>
-                    <td className="px-4 py-3 border-r border-gray-200 text-center">{row.ngayThi}</td>
-                    <td className="px-4 py-3 border-r border-gray-200 text-center">{row.ngayBatDau}</td>
-                    <td className="px-4 py-3 text-center">{row.ngayKetThuc}</td>
+                    <td className="px-4 py-3 border-r border-gray-200">{row.STT}</td>
+                    <td className="px-4 py-3 border-r border-gray-200">{row.ClassCode}</td>
+                    <td className="px-4 py-3 border-r border-gray-200">{row.ClassName}</td>
+                    <td className="px-4 py-3 border-r border-gray-200 text-center">{row.NumberStudent}</td>
+                    <td className="px-4 py-3 border-r border-gray-200 text-center">{row.SubjectCode}</td>
+                    <td className="px-4 py-3 border-r border-gray-200">{row.SubjectName}</td>
+                    <td className="px-4 py-3 border-r border-gray-200">{row.FaciltyName}</td>
+                    <td className="px-4 py-3 border-r border-gray-200 text-center">{row.DayOfWeek}</td>
+                    <td className="px-4 py-3 border-r border-gray-200 text-center">{row.NumberDay}</td>
+                    <td className="px-4 py-3 border-r border-gray-200 text-center">{row.DateNumberDayGraduation}</td>
+                    <td className="px-4 py-3 border-r border-gray-200 text-center">{row.StartDate}</td>
+                    <td className="px-4 py-3 text-center">{row.EndDate}</td>
                   </tr>
                 ))}
               </tbody>
@@ -275,11 +140,10 @@ export default function ScheduleTeachMonth() {
                   <button
                     key={i}
                     onClick={() => setCurrentPage(i + 1)}
-                    className={`px-3 py-1 border rounded ${
-                      currentPage === i + 1
-                        ? 'bg-blue-500 text-white border-blue-500'
-                        : 'border-gray-300 hover:bg-gray-100'
-                    }`}
+                    className={`px-3 py-1 border rounded ${currentPage === i + 1
+                      ? 'bg-blue-500 text-white border-blue-500'
+                      : 'border-gray-300 hover:bg-gray-100'
+                      }`}
                   >
                     {i + 1}
                   </button>

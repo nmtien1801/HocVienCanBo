@@ -13,7 +13,7 @@ export default function Notification() {
     useEffect(() => {
         const fetchListInformation = async () => {
             let res = await dispatch(ListInformation());
-            if (!res.payload) {
+            if (!res.payload || !res.payload.data) {
                 toast.error(res.payload?.message);
             }
         };

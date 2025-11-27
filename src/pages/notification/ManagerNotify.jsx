@@ -1,23 +1,19 @@
+// import { yupResolver } from '@hookform/resolvers/yup'
 import React, { useEffect, useRef, useState } from "react";
-import { useForm, Controller } from 'react-hook-form'
+import { LoadingButton } from '@mui/lab'
 import { Backdrop, Box, CircularProgress, Paper, Stack, Typography } from '@mui/material'
-import CkEditorField from '../../components/CKEditor/CkEditorField'
+import CKEditorField from '../../components/FormFields/CKEditor/CkEditorField'
+import { InputField } from '../../components/FormFields/InputField'
+import { SelectField } from '../../components/FormFields/SelectField'
+import UploadField from '../../components/FormFields/UploadField'
+import { useForm } from 'react-hook-form'
+// import * as yup from 'yup'
 
-// import { UploadField } from '../../components/FormFields/UploadField'
-
-export const activeOptionList = [
-  {
-    label: 'Hoạt động',
-    value: 1,
-    default: true,
-  },
-  {
-    label: 'Ngừng hoạt động',
-    value: 0,
-  },
-]
-
-export const languageOptions = [
+// const schema = yup.object({
+//   titleByLanguageId: yup.string().required('Vui lòng nhập Tên bản tin!'),
+//   shortDescriptionByLanguageId: yup.string().required('Vui lòng nhập mô tả loại tin tức!'),
+// })
+const languageOptions = [
   {
     value: 'vi-VN',
     label: (
@@ -56,6 +52,18 @@ export const languageOptions = [
   },
 ]
 
+const activeOptionList = [
+  {
+    label: 'Hoạt động',
+    value: 1,
+    default: true,
+  },
+  {
+    label: 'Ngừng hoạt động',
+    value: 0,
+  },
+]
+
 export default function ManagerNotify({
   author,
   data,
@@ -67,54 +75,52 @@ export default function ManagerNotify({
   insertPermission,
   handleFetchData,
 }) {
-  const {
-    register,
-    control,
-    handleSubmit,
-    reset,
-    setValue,
-    formState: { errors },
-  } = useForm({
+  const { control, handleSubmit, reset, setValue } = useForm({
     defaultValues: {
       categoryId: null,
-      titleByLanguageId: '',
+      title: '',
       isActive: 1,
-      shortDescriptionByLanguageId: '',
-      descriptionByLanguageId: '',
+      shortDescription: '',
+      description: '',
       imagePath: '',
       author,
       departmentId: null,
       languageId: data?.languageId ?? languageOptions[0].value,
     },
+    // resolver: yupResolver(schema),
   })
+  const disabled = loading
 
   useEffect(() => {
-    const languageIdToMap = data?.languageId ?? languageOptions[0].value
+    let languageIdToMap = data?.languageId ?? languageOptions[0].value
 
     if (!data) {
       setValue('languageId', languageIdToMap)
       return
     }
 
-    const detail = data.newsDetails?.find((x) => x.languagesId === languageIdToMap)
-    const dataByLanguageId = {
+    let detail = data.newsDetails?.find((x) => x.languagesId === languageIdToMap)
+    let dataByLanguageId = {
       titleByLanguageId: detail?.title || '',
       shortDescriptionByLanguageId: detail?.shortDescription || '',
       descriptionByLanguageId: detail?.description || '',
       languageId: languageIdToMap,
     }
 
-    reset({
-      ...data,
-      ...data.newsDetails?.[0],
-      isActive: data.isActive ? 1 : 0,
-      ...dataByLanguageId,
-    })
+    if (data) {
+      reset({
+        ...data,
+        ...data.newsDetails?.[0],
+        isActive: data.isActive ? 1 : 0,
+        ...dataByLanguageId,
+      })
+    }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data])
 
   const handleFormSubmit = handleSubmit((formValues) => {
-    const detail = {
+    let detail = {
       title: formValues.titleByLanguageId,
       shortDescription: formValues.shortDescriptionByLanguageId,
       description: formValues.descriptionByLanguageId,
@@ -128,6 +134,7 @@ export default function ManagerNotify({
       restaurantId: 0,
       typeFoodId: 0,
       isActive: Boolean(formValues.isActive),
+
       order: 1,
       isHomepage: 1,
       isHot: 1,
@@ -137,6 +144,7 @@ export default function ManagerNotify({
       imageThumb: '.',
       imageBanner: '.',
       links: '.',
+
       newsDetail: {
         description1: '.',
         author: data?.author || author,
@@ -149,9 +157,182 @@ export default function ManagerNotify({
     onSubmit?.(newValue)
   })
 
-  const disabled = loading
-
   return (
-    <CkEditorField />
+    <>
+      <Stack spacing={3} component="form" noValidate onSubmit={handleFormSubmit}>
+        <Box>
+          <Typography variant="h6" gutterBottom fontWeight={600}>
+            Thông tin chung
+          </Typography>
+
+          <Paper sx={{ p: 2 }}>
+            <Stack direction="row" flexWrap="wrap" alignItems="flex-start">
+              <Box sx={{ width: { xs: '100%', lg: 1 / 3 } }}>
+                <Box sx={{ p: 1 }}>
+                  <SelectField
+                    name="languageId"
+                    label="Ngôn ngữ"
+                    control={control}
+                    optionList={languageOptions}
+                    onFieldChange={(value) => handleFetchData(value)}
+                  />
+                </Box>
+              </Box>
+
+              {/* <Box sx={{ width: { xs: '100%', lg: 1 / 3 } }}>
+                <Box sx={{ p: 1 }}>
+                  <SelectField
+                    control={control}
+                    name="departmentId"
+                    label="Bộ phận"
+                    optionList={[
+                      { label: '--- Chọn bộ phận (Tuyển dụng) ---', value: null },
+                      ...(departmentList?.map((item) => ({
+                        label: item.departmentName,
+                        value: item.departmentId,
+                      })) ?? []),
+                    ]}
+                  />
+                </Box>
+              </Box> */}
+
+              <Box sx={{ width: { xs: '100%', lg: 1 / 3 } }}>
+                <Box sx={{ p: 1 }}>
+                  <SelectField
+                    control={control}
+                    name="categoryId"
+                    label="Loại tin"
+                    optionList={[
+                      { label: '--- Chọn loại tin ---', value: null },
+                      ...(categoryList?.map((item) => ({
+                        label: item?.categoryDetails?.[0].nameCategory,
+                        value: item.categoryId,
+                      })) ?? []),
+                    ]}
+                  />
+                </Box>
+              </Box>
+
+              <Box sx={{ width: { xs: '100%', lg: 2 / 3 } }}>
+                <Box sx={{ p: 1 }}>
+                  <InputField
+                    disabled={disabled}
+                    control={control}
+                    name="titleByLanguageId"
+                    label="Tên chuyên mục"
+                  />
+                </Box>
+              </Box>
+
+              <Box sx={{ width: { xs: '100%', lg: 1 / 3 } }}>
+                <Box sx={{ p: 1 }}>
+                  <SelectField
+                    control={control}
+                    name="isActive"
+                    label="Trạng thái"
+                    optionList={activeOptionList}
+                  />
+                </Box>
+              </Box>
+            </Stack>
+
+            <Stack direction="row" alignItems="flex-start">
+              <Box sx={{ width: { xs: '100%', lg: 3 / 3 } }}>
+                <Box sx={{ p: 1 }}>
+                  <InputField
+                    multiline
+                    rows={4}
+                    disabled={disabled}
+                    control={control}
+                    name="shortDescriptionByLanguageId"
+                    label="Mô tả"
+                  />
+                </Box>
+              </Box>
+            </Stack>
+          </Paper>
+        </Box>
+
+        <Box>
+          <Typography variant="h6" fontWeight={600} gutterBottom>
+            Hình ảnh
+          </Typography>
+
+          <Paper sx={{ p: 2 }}>
+            <Typography fontWeight={600} gutterBottom variant="body2" color="text.secondary">
+              Hình thumbnail
+            </Typography>
+            <Box sx={{ width: 150 }}>
+              <UploadField
+                disabled={disabled}
+                name="imagePath"
+                control={control}
+                label="Hình ảnh thumbnail"
+              />
+            </Box>
+          </Paper>
+        </Box>
+
+        <Paper>
+          <CKEditorField
+            name="descriptionByLanguageId"
+            control={control}
+            label="Nội dung bản tin"
+          />
+        </Paper>
+
+        <Box>
+          <Stack direction="row" justifyContent="flex-end" spacing={2}>
+            <Box color="grey.500">
+              <LoadingButton
+                loading={loading}
+                variant="outlined"
+                color="inherit"
+                disabled={disabled}
+                onClick={() => onClose?.()}
+              >
+                Đóng
+              </LoadingButton>
+            </Box>
+
+            <Box>
+              {data && updatePermission ? (
+                <LoadingButton type="submit" variant="contained" color="primary">
+                  Cập nhật
+                </LoadingButton>
+              ) : !data && insertPermission ? (
+                <LoadingButton type="submit" variant="contained" color="primary">
+                  Tạo
+                </LoadingButton>
+              ) : (
+                <LoadingButton
+                  loading={loading}
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  disabled
+                >
+                  {data ? 'Cập nhật' : 'Tạo'}
+                </LoadingButton>
+              )}
+            </Box>
+          </Stack>
+        </Box>
+      </Stack>
+      <Backdrop
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          zIndex: 10,
+          color: '#fff',
+        }}
+        open={loading}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
+    </>
   )
 }

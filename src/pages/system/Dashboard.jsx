@@ -13,28 +13,28 @@ export default function Dashboard() {
     useEffect(() => {
         const fetchDashboardTotal = async () => {
             let res = await dispatch(DashboardTotal());
-            if (!res.payload) {
+            if (!res.payload || !res.payload.data) {
                 toast.error(res.payload?.message);
             }
         };
 
         const fetchScheduleByMonth = async () => {
             let res = await dispatch(ScheduleByMonth());
-            if (!res.payload) {
+            if (!res.payload || !res.payload.data) {
                 toast.error(res.payload?.message);
             }
         };
 
         const fetchListInformation = async () => {
             let res = await dispatch(ListInformation());
-            if (!res.payload) {
+            if (!res.payload || !res.payload.data) {
                 toast.error(res.payload?.message);
             }
         };
 
         const fetchScheduleByExamination = async () => {
             let res = await dispatch(ScheduleByExamination());
-            if (!res.payload) {
+            if (!res.payload || !res.payload.data) {
                 toast.error(res.payload?.message);
             }
         }
@@ -42,7 +42,7 @@ export default function Dashboard() {
 
         const fetchScheduleClassSubject = async () => {
             let res = await dispatch(ScheduleClassSubject());
-            if (!res.payload) {
+            if (!res.payload || !res.payload.data) {
                 toast.error(res.payload?.message);
             }
         };

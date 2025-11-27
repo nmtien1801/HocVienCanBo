@@ -6,6 +6,7 @@ const ApiDashboard = {
     ScheduleByExaminationApi: () => ApiManager.get(`/dashboard/schedule-by-examination`),
     ListInformationApi: () => ApiManager.get(`/dashboard/list-information`),
     ScheduleClassSubjectApi: () => ApiManager.get(`/dashboard/schedule-class-subject`),
+    uploadApi: () => ApiManager.get(`/dashboard/upload`),
 }
 
 export default ApiDashboard;

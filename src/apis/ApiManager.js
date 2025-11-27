@@ -77,7 +77,7 @@ api.interceptors.response.use(
 export const ApiManager = {
   get: async (url, { params } = {}) => {
     const res = await api.get(url, { params });
-    return res.data;
+    return res;
   },
   post: async (url, body, query) => {
     // console.log('body', body);
