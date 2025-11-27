@@ -184,8 +184,8 @@ export default function Dashboard() {
                                 scheduleByExamination.map((item, index) => (
                                     <div key={index} className="flex gap-3 lg:gap-4 p-3 lg:p-0 bg-gray-50 lg:bg-transparent rounded-lg lg:rounded-none">
                                         <div className="flex-shrink-0 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg w-14 h-14 lg:w-16 lg:h-16 flex flex-col items-center justify-center text-white shadow-md">
-                                            <span className="text-[9px] lg:text-[10px]">Tháng {item.month}</span>
-                                            <span className="text-xl lg:text-2xl font-bold">{item.day}</span>
+                                            <span className="text-[9px] lg:text-[10px]">Tháng {getDateInfo(item.startDate).month}</span>
+                                            <span className="text-xl lg:text-2xl font-bold">{getDateInfo(item.startDate).day}</span>
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <h3 className="font-semibold text-gray-800 text-xs lg:text-sm mb-1 line-clamp-2">
