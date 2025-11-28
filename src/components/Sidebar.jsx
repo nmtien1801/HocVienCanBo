@@ -49,7 +49,7 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
 
   return (
     <aside
-      className={`fixed top-0 left-0 h-screen flex flex-col text-white transition-all duration-300 z-50 shadow-xl
+      className={`fixed top-0 left-0 h-screen flex flex-col text-white transition-all duration-300 z-10 shadow-xl
         ${isSidebarOpen ? 'w-[280px]' : 'w-0 lg:w-[80px]'} 
         bg-gradient-to-b from-[#0081cd] to-[#026aa8]`}
     >

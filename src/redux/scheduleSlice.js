@@ -9,6 +9,9 @@ const initialState = {
   subjectLearnAll: [],
   scheduleClass: [],
   totalScheduleClass: 0,
+  scheduleLesson: [],
+  totalScheduleLesson: 0,
+  scheduleDaily: [],
 };
 
 export const getScheduleMonth = createAsyncThunk(
@@ -58,6 +61,27 @@ export const getScheduleClass = createAsyncThunk(
   }
 );
 
+export const getScheduleLesson = createAsyncThunk(
+  "schedule/getScheduleLesson",
+  async ({ classLearnID, subjectID, page, limit }, thunkAPI) => {
+    const response = await ApiSchedule.getScheduleLessonApi(
+      classLearnID,
+      subjectID,
+      page,
+      limit
+    );
+    return response;
+  }
+);
+
+export const getScheduleDaily = createAsyncThunk(
+  "schedule/getScheduleDaily",
+  async (thunkAPI) => {
+    const response = await ApiSchedule.getScheduleDailyApi();
+    return response;
+  }
+);
+
 const scheduleSlice = createSlice({
   name: "schedule",
   initialState,
@@ -102,11 +126,32 @@ const scheduleSlice = createSlice({
       .addCase(getScheduleClass.pending, (state) => {})
       .addCase(getScheduleClass.fulfilled, (state, action) => {
         if (action.payload) {
-          state.scheduleSlice = action.payload.data || [];
-          state.totalSchedule = action.payload.totals || 0;
+          state.scheduleClass = action.payload.data || [];
+          state.totalScheduleClass = action.payload.totals || 0;
         }
       })
       .addCase(getScheduleClass.rejected, (state, action) => {});
+
+    // getScheduleLesson
+    builder
+      .addCase(getScheduleLesson.pending, (state) => {})
+      .addCase(getScheduleLesson.fulfilled, (state, action) => {
+        if (action.payload) {
+          state.scheduleLesson = action.payload.data || [];
+          state.totalScheduleLesson = action.payload.totals || 0;
+        }
+      })
+      .addCase(getScheduleLesson.rejected, (state, action) => {});
+
+    // getScheduleDaily
+    builder
+      .addCase(getScheduleDaily.pending, (state) => {})
+      .addCase(getScheduleDaily.fulfilled, (state, action) => {
+        if (action.payload) {
+          state.scheduleDaily = action.payload.data || [];
+        }
+      })
+      .addCase(getScheduleDaily.rejected, (state, action) => {});
   },
 });
 

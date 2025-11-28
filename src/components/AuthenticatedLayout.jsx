@@ -53,7 +53,7 @@ function AuthenticatedLayout() {
             {/* Overlay cho mobile khi sidebar mở */}
             {isMobile && isSidebarOpen && (
                 <div 
-                    className="fixed inset-0 bg-black opacity-50 z-40 lg:hidden" 
+                    className="fixed inset-0 bg-black opacity-10 z-10 lg:hidden" 
                     onClick={toggleSidebar}
                 />
             )}
@@ -69,7 +69,7 @@ function AuthenticatedLayout() {
 
             {/* Cột phải: Header + Main content */}
             <div
-                className="flex flex-col h-full transition-all duration-300 relative z-10" // Thêm relative và z-10
+                className="flex flex-col h-full transition-all duration-300 relative"
                 style={{ marginLeft: contentMargin }}
             >
                 {/* Header */}

@@ -1,331 +1,188 @@
-import React, { useState } from 'react';
-import { Search, FileDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Loader2, AlertCircle } from 'lucide-react';
+import { getScheduleDaily } from '../../redux/scheduleSlice.js';
+import { toast } from "react-toastify";
+import { useSelector, useDispatch } from "react-redux";
+
+// Tốc độ cuộn
+const SCROLL_DURATION = "15s"; 
+// Chiều cao cố định của vùng cuộn (Ví dụ: 480px)
+const H_TABLE = "h-[480px]"; 
+// Chiều cao khoảng trắng giữa các lần lặp
+const BLANK_SPACE_HEIGHT = '300px'; 
 
 export default function ScheduleDay() {
-  const [startDate, setStartDate] = useState('01/10/2025');
-  const [endDate, setEndDate] = useState('31/10/2025');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
+    const dispatch = useDispatch();
+    const { scheduleDaily } = useSelector((state) => state.schedule);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
 
-  const scheduleData = [
-    {
-      stt: 1,
-      maLop: '210240',
-      tenLop: 'TC.240 (CS1)',
-      siSo: 67,
-      maMon: 237,
-      tenMon: 'Thực tiễn và kinh nghiệm xây dựng, phát triển địa phương',
-      khoa: 'Khoa Lý luận cơ sở',
-      thuHoc: 'T2, T4, T6',
-      soNgay: 10,
-      ngayThi: '21/11/2025',
-      ngayBatDau: '10/10/2025',
-      ngayKetThuc: '05/11/2025'
-    },
-    {
-      stt: 2,
-      maLop: '210240',
-      tenLop: 'TC.240 (CS1)',
-      siSo: 67,
-      maMon: 196,
-      tenMon: 'Kỹ năng lãnh đạo, quản lý',
-      khoa: 'Khoa Nhà nước và pháp luật',
-      thuHoc: 'T2, T4, T6',
-      soNgay: 23,
-      ngayThi: '24/10/2025',
-      ngayBatDau: '13/08/2025',
-      ngayKetThuc: '08/10/2025'
-    },
-    {
-      stt: 3,
-      maLop: '210946',
-      tenLop: 'H.946 (NB)',
-      siSo: 40,
-      maMon: 300,
-      tenMon: 'Nghiên cứu thực tế',
-      khoa: '',
-      thuHoc: '4',
-      soNgay: 2,
-      ngayThi: '01/10/2025',
-      ngayBatDau: '01/10/2025',
-      ngayKetThuc: '01/10/2025'
-    },
-    {
-      stt: 4,
-      maLop: '210949',
-      tenLop: 'H.949 (Q1)',
-      siSo: 52,
-      maMon: 244,
-      tenMon: 'Kiến thức bổ trợ',
-      khoa: 'Khoa Nhà nước và pháp luật',
-      thuHoc: '4, 6',
-      soNgay: 10,
-      ngayThi: '14/11/2025',
-      ngayBatDau: '10/10/2025',
-      ngayKetThuc: '29/10/2025'
-    },
-    {
-      stt: 5,
-      maLop: '210949',
-      tenLop: 'H.949 (Q1)',
-      siSo: 52,
-      maMon: 242,
-      tenMon: 'Mặt trận Tổ quốc Việt Nam và các tổ chức chính trị - xã hội',
-      khoa: 'Khoa Xây dựng Đảng',
-      thuHoc: '4, 6',
-      soNgay: 12,
-      ngayThi: '24/10/2025',
-      ngayBatDau: '12/09/2025',
-      ngayKetThuc: '08/10/2025'
-    },
-    {
-      stt: 6,
-      maLop: '210949',
-      tenLop: 'H.949 (Q1)',
-      siSo: 52,
-      maMon: 300,
-      tenMon: 'Nghiên cứu thực tế',
-      khoa: '',
-      thuHoc: '6',
-      soNgay: 2,
-      ngayThi: '31/10/2025',
-      ngayBatDau: '31/10/2025',
-      ngayKetThuc: '31/10/2025'
-    },
-    {
-      stt: 7,
-      maLop: '210242',
-      tenLop: 'TC.242 (CS1)',
-      siSo: 66,
-      maMon: 244,
-      tenMon: 'Kiến thức bổ trợ',
-      khoa: 'Khoa Nhà nước và pháp luật',
-      thuHoc: '3, 7',
-      soNgay: 10,
-      ngayThi: '04/11/2025',
-      ngayBatDau: '04/10/2025',
-      ngayKetThuc: '21/10/2025'
-    },
-    {
-      stt: 8,
-      maLop: '210242',
-      tenLop: 'TC.242 (CS1)',
-      siSo: 66,
-      maMon: 300,
-      tenMon: 'Nghiên cứu thực tế',
-      khoa: '',
-      thuHoc: '7',
-      soNgay: 2,
-      ngayThi: '25/10/2025',
-      ngayBatDau: '25/10/2025',
-      ngayKetThuc: '25/10/2025'
-    },
-    {
-      stt: 9,
-      maLop: '210243',
-      tenLop: 'TC.243 (CS1)',
-      siSo: 77,
-      maMon: 196,
-      tenMon: 'Kỹ năng lãnh đạo, quản lý',
-      khoa: 'Khoa Nhà nước và pháp luật',
-      thuHoc: 'T2, T4, T6',
-      soNgay: 23,
-      ngayThi: '24/12/2025',
-      ngayBatDau: '10/10/2025',
-      ngayKetThuc: '08/12/2025'
-    },
-    {
-      stt: 10,
-      maLop: '210243',
-      tenLop: 'TC.243 (CS1)',
-      siSo: 77,
-      maMon: 242,
-      tenMon: 'Mặt trận Tổ quốc Việt Nam và các tổ chức chính trị - xã hội',
-      khoa: 'Khoa Xây dựng Đảng',
-      thuHoc: 'T2, T4, T6',
-      soNgay: 12,
-      ngayThi: '24/10/2025',
-      ngayBatDau: '10/09/2025',
-      ngayKetThuc: '08/10/2025'
-    },
-    {
-      stt: 11,
-      maLop: '210953',
-      tenLop: 'H.953 (CS PHU)',
-      siSo: 58,
-      maMon: 240,
-      tenMon: 'Đường lối, chính sách của Đảng, Nhà nước Việt Nam',
-      khoa: 'Khoa Xây dựng Đảng',
-      thuHoc: '6, 7',
-      soNgay: 27,
-      ngayThi: '21/11/2025',
-      ngayBatDau: '12/09/2025',
-      ngayKetThuc: '01/11/2025'
-    }
-  ];
+    useEffect(() => {
+        const fetchScheduleDaily = async () => {
+            setIsLoading(true);
+            try {
+                const res = await dispatch(getScheduleDaily());
+                // ... (xử lý kết quả)
+            } catch (err) {
+                setError("Đã có lỗi xảy ra khi tải dữ liệu");
+            } finally {
+                setIsLoading(false);
+            }
+        };
 
-  const totalPages = Math.ceil(scheduleData.length / pageSize);
+        fetchScheduleDaily();
+    }, [dispatch]);
 
-  return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-[1600px] mx-auto">
-        {/* Header */}
-        <h1 className="text-2xl text-gray-600 mb-6">Lịch Học trong Tháng</h1>
+    // Hàm render một hàng dữ liệu lịch học
+    const renderRow = (row, index) => (
+        <tr 
+            // Lưu ý: Key không nên dùng index của map nếu dữ liệu bị nhân đôi
+            key={`data-${index}`} 
+            className="text-2xl" 
+            style={{ 
+                backgroundColor: index % 2 === 0 ? '#f2f2f2' : '#ffffff', 
+                height: '60px' // Chiều cao hàng dữ liệu
+            }} 
+        >
+            <td className="px-4 py-2 text-center whitespace-nowrap">{row.ClassName}</td>
+            <td className="px-4 py-2 text-center whitespace-nowrap">{row.RoomName}</td>
+            <td className="px-4 py-2 text-center whitespace-nowrap">{row.PeriodName}</td>
+            <td className="px-4 py-2 text-left whitespace-nowrap">{row.SubjectName}</td>
+        </tr>
+    );
 
-        {/* Filter Section */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-3">
-              <label className="text-gray-600 text-sm whitespace-nowrap">Từ ngày</label>
-              <input
-                type="text"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="border border-gray-300 rounded px-3 py-2 text-sm w-40"
-              />
-            </div>
+    // Hàm render khoảng trắng (Dùng để tạo khe hở giữa các lần lặp)
+    const renderBlankRow = () => (
+        <tr key="blank-space" style={{ height: BLANK_SPACE_HEIGHT, backgroundColor: 'transparent' }}>
+            {/* Đảm bảo colSpan = số lượng cột */}
+            <td colSpan="4" className="bg-white"></td> 
+        </tr>
+    );
 
-            <div className="flex items-center gap-3">
-              <label className="text-gray-600 text-sm whitespace-nowrap">Đến ngày</label>
-              <input
-                type="text"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="border border-gray-300 rounded px-3 py-2 text-sm w-40"
-              />
-            </div>
 
-            <button className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-2 rounded flex items-center gap-2 text-sm">
-              <Search size={16} />
-              Tìm kiếm
-            </button>
+    // Logic hiển thị trạng thái (Loading/Error/No Data) - (Giữ nguyên)
+    const renderStatusBody = () => {
+        const colSpan = 4; 
+        const rowHeightStyle = { height: H_TABLE, display: 'block' }; 
 
-            <button className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-2 rounded flex items-center gap-2 text-sm">
-              <FileDown size={16} />
-              Export Excel
-            </button>
-          </div>
-        </div>
-
-        {/* Table Section */}
-        <div className="bg-white rounded-lg shadow-sm">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg text-red-700 font-semibold text-center">Danh sách Lịch Học</h2>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-100 border-b-2 border-gray-300">
+        if (isLoading) {
+            return (
                 <tr>
-                  <th className="px-4 py-3 text-left text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">STT</th>
-                  <th className="px-4 py-3 text-left text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">Mã lớp</th>
-                  <th className="px-4 py-3 text-left text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">Tên lớp</th>
-                  <th className="px-4 py-3 text-left text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">Sĩ số</th>
-                  <th className="px-4 py-3 text-left text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">Mã môn học</th>
-                  <th className="px-4 py-3 text-left text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">Tên môn học</th>
-                  <th className="px-4 py-3 text-left text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">Khoa chủ quản</th>
-                  <th className="px-4 py-3 text-left text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">Thứ học</th>
-                  <th className="px-4 py-3 text-left text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">Số ngày học</th>
-                  <th className="px-4 py-3 text-left text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">Ngày thi</th>
-                  <th className="px-4 py-3 text-left text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">Ngày bắt đầu</th>
-                  <th className="px-4 py-3 text-left text-gray-700 font-semibold">Ngày kết thúc</th>
+                    <td colSpan={colSpan} className="px-4 py-24 text-center" style={rowHeightStyle}>
+                        <div className="flex flex-col items-center justify-center gap-3">
+                            <Loader2 size={40} className="animate-spin text-teal-500" />
+                            <p className="text-xl text-gray-500">Đang tải dữ liệu...</p>
+                        </div>
+                    </td>
                 </tr>
-              </thead>
-              <tbody>
-                {scheduleData.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((row, index) => (
-                  <tr key={index} className="border-b border-gray-200 hover:bg-gray-50">
-                    <td className="px-4 py-3 border-r border-gray-200">{row.stt}</td>
-                    <td className="px-4 py-3 border-r border-gray-200">{row.maLop}</td>
-                    <td className="px-4 py-3 border-r border-gray-200">{row.tenLop}</td>
-                    <td className="px-4 py-3 border-r border-gray-200 text-center">{row.siSo}</td>
-                    <td className="px-4 py-3 border-r border-gray-200 text-center">{row.maMon}</td>
-                    <td className="px-4 py-3 border-r border-gray-200">{row.tenMon}</td>
-                    <td className="px-4 py-3 border-r border-gray-200">{row.khoa}</td>
-                    <td className="px-4 py-3 border-r border-gray-200 text-center">{row.thuHoc}</td>
-                    <td className="px-4 py-3 border-r border-gray-200 text-center">{row.soNgay}</td>
-                    <td className="px-4 py-3 border-r border-gray-200 text-center">{row.ngayThi}</td>
-                    <td className="px-4 py-3 border-r border-gray-200 text-center">{row.ngayBatDau}</td>
-                    <td className="px-4 py-3 text-center">{row.ngayKetThuc}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+            );
+        }
 
-          {/* Pagination */}
-          <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setCurrentPage(1)}
-                disabled={currentPage === 1}
-                className="p-2 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <ChevronsLeft size={16} />
-              </button>
-              <button
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                disabled={currentPage === 1}
-                className="p-2 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <ChevronLeft size={16} />
-              </button>
+        if (error || !scheduleDaily || scheduleDaily.length === 0) {
+             const message = error 
+                ? `Không thể tải dữ liệu: ${error}`
+                : "Không tìm thấy dữ liệu";
+            
+            return (
+                <tr>
+                    <td colSpan={colSpan} className="px-4 py-24 text-center" style={rowHeightStyle}>
+                        <div className="flex flex-col items-center justify-center gap-3">
+                            <AlertCircle size={40} className="text-red-500" />
+                            <p className="text-xl text-gray-700 font-medium">{message}</p>
+                        </div>
+                    </td>
+                </tr>
+            );
+        }
+        return null;
+    };
 
-              <div className="flex items-center gap-2 mx-2">
-                {[...Array(totalPages)].map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setCurrentPage(i + 1)}
-                    className={`px-3 py-1 border rounded ${
-                      currentPage === i + 1
-                        ? 'bg-blue-500 text-white border-blue-500'
-                        : 'border-gray-300 hover:bg-gray-100'
-                    }`}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
-              </div>
 
-              <button
-                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                disabled={currentPage === totalPages}
-                className="p-2 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <ChevronRight size={16} />
-              </button>
-              <button
-                onClick={() => setCurrentPage(totalPages)}
-                disabled={currentPage === totalPages}
-                className="p-2 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <ChevronsRight size={16} />
-              </button>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">Page size:</span>
-              <select
-                value={pageSize}
-                onChange={(e) => {
-                  setPageSize(Number(e.target.value));
-                  setCurrentPage(1);
+    // Hàm render nội dung cuộn (ĐÃ CHỈNH SỬA)
+    const renderScrollingBody = () => {
+        if (!scheduleDaily || scheduleDaily.length === 0) return null;
+        
+        // 1. Dữ liệu gốc với key duy nhất
+        const originalContent = scheduleDaily.map((row, index) => renderRow(row, index));
+        
+        // 2. Nội dung lặp lại = Dữ liệu gốc + Khoảng trắng
+        const repeatedContent = [...originalContent, renderBlankRow()];
+        
+        // 3. Nhân đôi nội dung lặp lại để cuộn liền mạch qua khoảng trắng
+        const fullContent = [...repeatedContent, ...repeatedContent]; 
+        
+        // Ghi đè key của các hàng đã nhân đôi để đảm bảo duy nhất
+        // (Đây là bước tối ưu React, sử dụng index map là tạm thời)
+        const finalContent = fullContent.map((element, idx) => {
+            return React.cloneElement(element, { key: `item-${idx}` });
+        });
+        
+        return (
+            <div
+                className="w-full"
+                style={{
+                    animation: `scroll-up ${SCROLL_DURATION} linear infinite`,
+                    paddingTop: H_TABLE 
                 }}
-                className="border border-gray-300 rounded px-2 py-1 text-sm"
-              >
-                <option value={5}>5</option>
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={50}>50</option>
-              </select>
+            >
+                {finalContent}
             </div>
-          </div>
-        </div>
+        );
+    };
 
-        {/* Footer */}
-        <div className="mt-8 text-right text-xs text-gray-500">
-          Copyright © 2023 by G&BSoft
+    const showStatus = isLoading || error || !scheduleDaily || scheduleDaily.length === 0;
+
+    return (
+        <div className="fixed inset-0 bg-white p-4 overflow-hidden z-[9999]"> 
+            <div className="w-full h-full flex flex-col items-center"> 
+                
+                {/* Header Section */}
+                <div className="flex items-center mb-4 w-full justify-center flex-shrink-0">
+                    <img src="/logo.png" alt="Logo" className="h-24 mr-4" /> 
+                    <div className="flex flex-col items-center">
+                        <p className="text-3xl font-bold text-red-600 mb-0 leading-tight"> 
+                            HỌC VIỆN CÁN BỘ THÀNH PHỐ HỒ CHÍ MINH
+                        </p>
+                        <p className="text-2xl font-bold text-red-600 leading-tight"> 
+                            HO CHI MINH CITY CADRE ACADEMY
+                        </p>
+                    </div>
+                </div>
+                <hr className="w-10/12 border-t-2 border-red-600 mb-6 flex-shrink-0" />
+
+                {/* Tiêu đề lớn cho lịch học */}
+                <h1 className="text-3xl font-bold mb-6 text-red-600 flex-shrink-0"> 
+                    LỊCH HỌC TẬP CÁC LỚP TRUNG CẤP LÝ LUẬN CHÍNH TRỊ TẠI CƠ SỞ 1 - 28/11/2025
+                </h1>
+
+                {/* Khung Bảng chứa (Căn giữa) */}
+                <div className="w-10/12 mx-auto flex-grow relative overflow-hidden flex flex-col"> 
+                    <table className="w-full table-fixed flex-shrink-0"> 
+                        {/* Header Bảng */}
+                        <thead className="bg-[#a8e67a] text-black"> 
+                            <tr className="text-3xl font-bold"> 
+                                <th className="px-4 py-3 text-center whitespace-nowrap w-1/6">Lớp</th> 
+                                <th className="px-4 py-3 text-center whitespace-nowrap w-1/6">Hội trường</th>
+                                <th className="px-4 py-3 text-center whitespace-nowrap w-1/6">Buổi học</th>
+                                <th className="px-4 py-3 text-left whitespace-nowrap w-3/6">Nội dung</th>
+                            </tr>
+                        </thead>
+                    </table>
+
+                    {/* VÙNG CUỘN */}
+                    <div className={`overflow-hidden w-full ${H_TABLE} relative`}>
+                        <table className="w-full table-fixed absolute top-0 left-0">
+                            <tbody className="w-full">
+                                {showStatus ? (
+                                    renderStatusBody()
+                                ) : (
+                                    renderScrollingBody()
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-  );
+    );
 }

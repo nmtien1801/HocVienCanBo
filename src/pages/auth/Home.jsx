@@ -21,7 +21,7 @@ export default function Home() {
             </div>
 
             {/* Content */}
-            <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4">
+            <div className="relative flex flex-col items-center justify-center min-h-screen px-4">
                 {/* Logo and Title */}
                 <div className="text-center mb-12">
                     <div className="mb-6">
@@ -48,7 +48,7 @@ export default function Home() {
                         onClick={() => handleNavigateToLogin('chinh-tri')}
                         className="group relative px-12 py-4 bg-red-600 hover:bg-red-700 text-white font-bold text-lg rounded-2xl shadow-2xl transition-all duration-300 transform hover:scale-105 border-4 border-white"
                     >
-                        <span className="relative z-10">TRUNG CẤP LÝ LUẬN CHÍNH TRỊ</span>
+                        <span className="relative">TRUNG CẤP LÝ LUẬN CHÍNH TRỊ</span>
                         <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-red-700 to-red-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     </button>
 
@@ -56,7 +56,7 @@ export default function Home() {
                         onClick={() => handleNavigateToLogin('ngan-han')}
                         className="group relative px-12 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg rounded-2xl shadow-2xl transition-all duration-300 transform hover:scale-105 border-4 border-white"
                     >
-                        <span className="relative z-10">HỆ ĐÀO TẠNG NGẮN HẠN</span>
+                        <span className="relative">HỆ ĐÀO TẠNG NGẮN HẠN</span>
                         <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-700 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     </button>
                 </div>

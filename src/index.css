@@ -1,1 +1,11 @@
 @import "tailwindcss";
+
+@keyframes scroll-up {
+  0% {
+    transform: translateY(0%);
+  }
+  100% {
+    /* Quan trọng: Cuộn lên 50% để lặp lại liền mạch khi nhân đôi dữ liệu */
+    transform: translateY(-50%); 
+  }
+}
