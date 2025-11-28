@@ -8,13 +8,14 @@ import {
 import { useSelector, useDispatch } from "react-redux";
 import AuthenticatedLayout from "../components/AuthenticatedLayout";
 import Dashboard from "../pages/system/Dashboard";
-import ScheduleMonth from "../pages/schedule/Schedule_teach_month.jsx";
+import ScheduleTeachMonth from "../pages/schedule/Schedule_teach_month.jsx";
 import Lookup from "../pages/schedule/Lookup.jsx";
 import ScheduleExamMonth from "../pages/schedule/Schedule_exam_month.jsx";
 import TimetableClass from "../pages/schedule/Timetable_class.jsx";
 import Timetable from "../pages/schedule/Timetable.jsx";
 import Lesson from "../pages/schedule/Lesson.jsx";
 import ScheduleDay from "../pages/schedule/Schedule_day.jsx";
+import ScheduleMonth from "../pages/schedule/Schedule_month.jsx";
 import FinalExam from "../pages/grades/FinalExam.jsx";
 import GraduationExam from "../pages/grades/GraduationExam.jsx";
 import LookUpFinalExam from "../pages/grades/LookupFinalExam.jsx";
@@ -84,9 +85,10 @@ function RouterRoot() {
 
 
           {/* route schedule */}
-          <Route path="scheduleMonth" element={<ScheduleMonth />} />
+          <Route path="schedule-teach-month" element={<ScheduleTeachMonth />} />
           <Route path="lookup" element={<Lookup />} />
           <Route path="schedule-exam-month" element={<ScheduleExamMonth />} />
+          <Route path="schedule-month" element={<ScheduleMonth />} />
           <Route path="timetable-class" element={<TimetableClass />} />
           <Route path="timetable" element={<Timetable />} />
           <Route path="lesson" element={<Lesson />} />

@@ -1,10 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, FileDown } from 'lucide-react';
+import { getScheduleClass } from '../../redux/scheduleSlice.js';
+import { getClassLearnByUserID } from '../../redux/learningClassSlice.js';
+import { toast } from "react-toastify";
+import { useSelector, useDispatch } from "react-redux";
 
-export default function ClassScheduleUI() {
+export default function TimetableClass() {
+  const dispatch = useDispatch();
+  const { scheduleClass, totalScheduleClass } = useSelector((state) => state.schedule);
+  const { ClassLearn } = useSelector((state) => state.learningClass);
   const [selectedClass, setSelectedClass] = useState('');
 
-  const scheduleData = [];
+  const fetchScheduleClass = async () => {
+    let res = await dispatch(getScheduleClass({ classLearnID: selectedClass, page: 1, limit: 10 }));
+
+    if (!res.payload || !res.payload.data) {
+      toast.error(res.payload?.message);
+    }
+  };
+
+  useEffect(() => {
+    const fetchClassLearn = async () => {
+      let res = await dispatch(getClassLearnByUserID());
+
+      if (!res.payload || !res.payload.data) {
+        toast.error(res.payload?.message);
+      }
+    };
+
+    fetchClassLearn();
+  }, [dispatch]);
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -23,13 +48,15 @@ export default function ClassScheduleUI() {
                 className="border border-gray-300 rounded px-3 py-2 text-sm w-80 text-gray-500"
               >
                 <option value="">------ chọn lớp ------</option>
-                <option value="TC240">TC.240 (CS1)</option>
-                <option value="H946">H.946 (NB)</option>
-                <option value="H949">H.949 (Q1)</option>
+                {ClassLearn?.map((item) => (
+                  <option key={item.ClassID} value={item.ClassCode}>
+                    {item.ClassName}
+                  </option>
+                ))}
               </select>
             </div>
 
-            <button className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-2 rounded flex items-center gap-2 text-sm">
+            <button className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-2 rounded flex items-center gap-2 text-sm" onClick={() => fetchScheduleClass()}>
               <Search size={16} />
               Tìm kiếm
             </button>
@@ -62,14 +89,14 @@ export default function ClassScheduleUI() {
                 </tr>
               </thead>
               <tbody>
-                {scheduleData.length === 0 ? (
+                {scheduleClass.length === 0 ? (
                   <tr>
                     <td colSpan="8" className="px-4 py-8 text-center text-gray-500">
                       No records to display.
                     </td>
                   </tr>
                 ) : (
-                  scheduleData.map((row, index) => (
+                  scheduleClass.map((row, index) => (
                     <tr key={index} className={`border-b border-gray-200 hover:bg-gray-50 ${index % 2 === 1 ? 'bg-gray-50' : 'bg-white'}`}>
                       <td className="px-4 py-3 border-r border-gray-200 text-center">{row.stt}</td>
                       <td className="px-4 py-3 border-r border-gray-200 text-center">{row.maMon}</td>

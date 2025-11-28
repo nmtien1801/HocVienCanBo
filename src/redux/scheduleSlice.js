@@ -6,7 +6,9 @@ const initialState = {
   totalSchedule: 0,
   scheduleSubjectMonth: [],
   totalScheduleSubjectMonth: 0,
-  subjectLearnAll: []
+  subjectLearnAll: [],
+  scheduleClass: [],
+  totalScheduleClass: 0,
 };
 
 export const getScheduleMonth = createAsyncThunk(
@@ -40,6 +42,18 @@ export const getSubjectLearnAll = createAsyncThunk(
   "schedule/getSubjectLearnAll",
   async (thunkAPI) => {
     const response = await ApiSchedule.getSubjectLearnAllApi();
+    return response;
+  }
+);
+
+export const getScheduleClass = createAsyncThunk(
+  "schedule/getScheduleClass",
+  async ({ classLearnID, page, limit }, thunkAPI) => {
+    const response = await ApiSchedule.getScheduleClassApi(
+      classLearnID,
+      page,
+      limit
+    );
     return response;
   }
 );
@@ -82,6 +96,17 @@ const scheduleSlice = createSlice({
         }
       })
       .addCase(getSubjectLearnAll.rejected, (state, action) => {});
+
+    // getScheduleClass
+    builder
+      .addCase(getScheduleClass.pending, (state) => {})
+      .addCase(getScheduleClass.fulfilled, (state, action) => {
+        if (action.payload) {
+          state.scheduleSlice = action.payload.data || [];
+          state.totalSchedule = action.payload.totals || 0;
+        }
+      })
+      .addCase(getScheduleClass.rejected, (state, action) => {});
   },
 });
 
