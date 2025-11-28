@@ -12,6 +12,8 @@ const initialState = {
   scheduleLesson: [],
   totalScheduleLesson: 0,
   scheduleDaily: [],
+  pointSum: [],
+  totalPointSum: 0,
 };
 
 export const getScheduleMonth = createAsyncThunk(
@@ -78,6 +80,19 @@ export const getScheduleDaily = createAsyncThunk(
   "schedule/getScheduleDaily",
   async (thunkAPI) => {
     const response = await ApiSchedule.getScheduleDailyApi();
+    return response;
+  }
+);
+
+export const printPointSum = createAsyncThunk(
+  "schedule/printPointSum",
+  async ({ classID, studentID, page, limit }, thunkAPI) => {
+    const response = await ApiSchedule.printPointSumApi(
+      classID,
+      studentID,
+      page,
+      limit
+    );
     return response;
   }
 );
@@ -152,6 +167,17 @@ const scheduleSlice = createSlice({
         }
       })
       .addCase(getScheduleDaily.rejected, (state, action) => {});
+
+    // printPointSum
+    builder
+      .addCase(printPointSum.pending, (state) => {})
+      .addCase(printPointSum.fulfilled, (state, action) => {
+        if (action.payload) {
+          state.pointSum = action.payload.data || [];
+          state.totalPointSum = action.payload.totals || 0;
+        }
+      })
+      .addCase(printPointSum.rejected, (state, action) => {});
   },
 });
 
