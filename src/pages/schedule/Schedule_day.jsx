@@ -13,7 +13,7 @@ const ROW_HEIGHT = '60px';
 // Số lượng hàng trống được chèn giữa các lần lặp
 const NUM_BLANK_ROWS = 8;
 
-// 🚨 ĐỊNH NGHĨA CHIỀU RỘNG CÁC CỘT MỚI (CHIA ĐỀU 25%)
+// ĐỊNH NGHĨA CHIỀU RỘNG CÁC CỘT MỚI (CHIA ĐỀU 25%)
 const COLUMN_WIDTHS = {
   col1: '25%', // Lớp
   col2: '25%', // Hội trường
@@ -128,15 +128,9 @@ export default function ScheduleDay() {
     });
 
     return (
-      <div
-        className="w-full text-red-600"
-        style={{
-          animation: `scroll-up ${SCROLL_DURATION} linear infinite`,
-          paddingTop: H_TABLE
-        }}
-      >
+      <React.Fragment>
         {finalContent}
-      </div>
+      </React.Fragment>
     );
   };
 
@@ -150,46 +144,54 @@ export default function ScheduleDay() {
         <div className="flex items-center mb-4 w-full justify-center flex-shrink-0">
           <img src="/logo.png" alt="Logo" className="h-24 mr-4" />
           <div className="flex flex-col items-center">
-            <p className="text-3xl font-bold text-red-600 mb-0 leading-tight">
+            <p className="text-3xl font-medium text-red-600 mb-0 leading-tight">
               HỌC VIỆN CÁN BỘ THÀNH PHỐ HỒ CHÍ MINH
             </p>
-            <p className="text-2xl font-bold text-red-600 leading-tight">
+            <p className="text-2xl font-medium text-red-600 leading-tight">
               HO CHI MINH CITY CADRE ACADEMY
             </p>
           </div>
         </div>
-        <hr className="w-10/12 border-t-2 border-red-600 mb-6 flex-shrink-0" />
+        <hr className="w-11/12 border-t-2 border-red-600 mb-6 flex-shrink-0" />
 
         {/* Tiêu đề lớn cho lịch học */}
-        <h1 className="text-3xl font-bold mb-6 text-red-600 flex-shrink-0">
+        <h1 className="text-3xl font-medium mb-6 text-red-600 flex-shrink-0">
           LỊCH HỌC TẬP CÁC LỚP TRUNG CẤP LÝ LUẬN CHÍNH TRỊ TẠI CƠ SỞ 1 - 28/11/2025
         </h1>
 
         {/* Khung Bảng chứa (Căn giữa) */}
-        <div className="w-10/12 mx-auto flex-grow relative overflow-hidden flex flex-col">
+        <div className="w-11/12 mx-auto flex-grow relative overflow-hidden flex flex-col">
           <table className="w-full table-fixed flex-shrink-0">
             {/* Header Bảng */}
             <thead className="bg-[#a8e67a] text-black">
-              <tr className="text-3xl font-bold">
+              <tr className="text-2xl font-medium">
                 <th className="px-4 py-3 text-center whitespace-nowrap text-red-600" style={{ width: COLUMN_WIDTHS.col1 }}>Lớp</th>
                 <th className="px-4 py-3 text-center whitespace-nowrap text-red-600" style={{ width: COLUMN_WIDTHS.col2 }}>Hội trường</th>
                 <th className="px-4 py-3 text-center whitespace-nowrap text-red-600" style={{ width: COLUMN_WIDTHS.col3 }}>Buổi học</th>
-                <th className="px-4 py-3 text-left whitespace-nowrap text-red-600" style={{ width: COLUMN_WIDTHS.col4 }}>Nội dung</th>
+                <th className="px-4 py-3 text-center whitespace-nowrap text-red-600" style={{ width: COLUMN_WIDTHS.col4 }}>Nội dung</th>
               </tr>
             </thead>
           </table>
 
           {/* VÙNG CUỘN */}
           <div className={`overflow-hidden w-full ${H_TABLE} relative`}>
-            <table className="w-full table-fixed absolute top-0 left-0">
-              <tbody className="w-full">
-                {showStatus ? (
-                  renderStatusBody()
-                ) : (
-                  renderScrollingBody()
-                )}
-              </tbody>
-            </table>
+            <div
+              className="w-full text-red-600"
+              style={{
+                animation: `scroll-up ${SCROLL_DURATION} linear infinite`,
+                paddingTop: H_TABLE
+              }}
+            >
+              <table className="w-full table-fixed">
+                <tbody>
+                  {showStatus ? (
+                    renderStatusBody()
+                  ) : (
+                    renderScrollingBody()
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>

@@ -20,112 +20,104 @@ const TeacherLayout = ({ userInfo }) => {
 
   const handleSave = () => {
     console.log('Lưu dữ liệu:', formData);
-    // Xử lý lưu dữ liệu
   };
 
   const handleCancel = () => {
     console.log('Hủy bỏ');
-    // Xử lý hủy
   };
 
-  return <div className="min-h-screen bg-gray-50 p-8">
-    <div className="max-w-4xl mx-auto">
-      {/* Header */}
-      <h1 className="text-2xl text-red-600 mb-8 font-medium">Thông cá nhân người dùng</h1>
-
-      {/* Form Section */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="p-8">
-          {/* Mã người dùng */}
-          <div className="mb-6 flex items-center">
-            <label className="text-gray-600 text-sm w-48 text-right pr-6">
-              Mã người dùng
-            </label>
+  // Component tái sử dụng cho Input Field
+  const SimpleInput = ({ label, name, value, type = "text", isCheckbox = false, checked, disabled = false }) => (
+    <div className="mb-6 flex flex-col md:flex-row md:items-center">
+      <label className="text-gray-600 text-sm mb-1 md:mb-0 md:w-48 md:text-right md:pr-6">
+        {label}
+      </label>
+      <div className="flex-1 w-full relative">
+        {isCheckbox ? (
+          <div className="flex items-center md:justify-start">
             <input
-              type="text"
-              name="maNguoiDung"
-              value={formData.maNguoiDung}
+              type="checkbox"
+              name={name}
+              checked={checked}
               onChange={handleInputChange}
-              className="flex-1 border border-gray-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              id={name}
             />
-          </div>
-
-          {/* Họ và tên */}
-          <div className="mb-6 flex items-center">
-            <label className="text-gray-600 text-sm w-48 text-right pr-6">
-              Họ và tên
+            <label htmlFor={name} className="ml-2 text-sm text-gray-600">
+              Đang hoạt động
             </label>
-            <input
-              type="text"
-              name="hoVaTen"
-              value={formData.hoVaTen}
-              onChange={handleInputChange}
-              className="flex-1 border border-gray-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          </div>
+        ) : (
+          <input
+            type={type}
+            name={name}
+            value={value}
+            onChange={handleInputChange}
+            disabled={disabled}
+            className={`w-full border border-gray-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${disabled ? 'bg-gray-100' : ''}`}
+          />
+        )}
+      </div>
+    </div>
+  );
+
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <h1 className="text-xl md:text-2xl text-red-600 mb-6 md:mb-8 font-medium">Thông cá nhân người dùng</h1>
+
+        {/* Form Section */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          <div className="p-4 sm:p-6 md:p-8">
+
+            {/* Mã người dùng */}
+            <SimpleInput label="Mã người dùng" name="maNguoiDung" value={formData.maNguoiDung} disabled={true} />
+
+            {/* Họ và tên */}
+            <SimpleInput label="Họ và tên" name="hoVaTen" value={formData.hoVaTen} />
+
+            {/* Nhóm */}
+            <SimpleInput label="Nhóm" name="nhom" value={formData.nhom} />
+
+            {/* Trạng thái */}
+            <SimpleInput
+              label="Trạng thái"
+              name="dangHoatDong"
+              checked={formData.dangHoatDong}
+              isCheckbox={true}
             />
-          </div>
 
-          {/* Nhóm */}
-          <div className="mb-6 flex items-center">
-            <label className="text-gray-600 text-sm w-48 text-right pr-6">
-              Nhóm
-            </label>
-            <input
-              type="text"
-              name="nhom"
-              value={formData.nhom}
-              onChange={handleInputChange}
-              className="flex-1 border border-gray-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          {/* Trạng thái */}
-          <div className="mb-8 flex items-center">
-            <label className="text-gray-600 text-sm w-48 text-right pr-6">
-              Trạng thái
-            </label>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                name="dangHoatDong"
-                checked={formData.dangHoatDong}
-                onChange={handleInputChange}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                id="dangHoatDong"
-              />
-              <label htmlFor="dangHoatDong" className="ml-2 text-sm text-gray-600">
-                Đang hoạt động
-              </label>
-            </div>
-          </div>
-
-          {/* Buttons */}
-          <div className="flex items-center">
-            <div className="w-48"></div>
-            <div className="flex gap-3">
-              <button
-                onClick={handleCancel}
-                className="px-6 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded text-sm font-medium transition-colors"
-              >
-                Lưu lại
-              </button>
-              <button
-                onClick={handleSave}
-                className="px-6 py-2 bg-[#f0ad4e] hover:bg-[#e69c3b] text-white rounded text-sm font-medium transition-colors"
-              >
-                Bỏ qua
-              </button>
+            {/* Buttons */}
+            <div className="flex flex-col md:flex-row md:items-center border-t border-gray-200 pt-6 mt-6">
+              <div className="md:w-48 mb-4 md:mb-0"></div>
+              <div className="flex gap-3 w-full md:w-auto md:justify-start">
+                <button
+                  onClick={handleCancel}
+                  className="flex-1 md:flex-none px-6 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded text-sm font-medium transition-colors"
+                >
+                  Lưu lại
+                </button>
+                <button
+                  onClick={handleSave}
+                  className="flex-1 md:flex-none px-6 py-2 bg-[#f0ad4e] hover:bg-[#e69c3b] text-white rounded text-sm font-medium transition-colors"
+                >
+                  Bỏ qua
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Footer */}
-      <div className="mt-8 text-right text-xs text-gray-500">
-        Copyright © 2023 by G&BSoft
+        {/* Footer */}
+        <div className="mt-8 text-center md:text-right text-xs text-gray-500">
+          Copyright © 2023 by G&BSoft
+        </div>
       </div>
     </div>
-  </div>
-}
+  );
+};
 
 const StudentLayout = ({ userInfo }) => {
   const [formData, setFormData] = useState({
@@ -165,22 +157,21 @@ const StudentLayout = ({ userInfo }) => {
     const dataToSave = {
       ...formData,
       Birthday: formatToISODate(formData.ngaySinh),
-      // ... other date conversions
-      // Note: For a real app, you'd handle API call here
     };
     console.log('Lưu dữ liệu học viên:', dataToSave);
-    // Xử lý lưu dữ liệu
   };
 
   const handleSkip = () => {
     console.log('Bỏ qua');
   };
 
-  const inputStyle = "flex-1 border border-gray-300 rounded px-4 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent";
-  const labelStyle = "text-gray-800 text-sm font-semibold w-48 text-right pr-6";
-  const fieldContainer = "flex items-center mb-4";
+  const inputStyle = "w-full border border-gray-300 rounded px-4 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent";
+  const labelStyle = "text-gray-800 text-sm font-semibold mb-1 md:mb-0 md:w-48 md:text-right md:pr-6";
+  // Thay đổi fieldContainer để nó xếp chồng trên mobile
+  const fieldContainer = "flex flex-col md:flex-row mb-4 md:items-center";
 
   const leftColumnFields = [
+    // ... (data giữ nguyên)
     { label: "Mã Học viên", name: "maHocVien", value: formData.maHocVien, readOnly: true },
     { label: "CCCD", name: "cccd", value: formData.cccd, readOnly: true },
     { label: "Ngày sinh", name: "ngaySinh", value: formData.ngaySinh, type: 'date-text', readOnly: true },
@@ -217,7 +208,7 @@ const StudentLayout = ({ userInfo }) => {
           <label className={labelStyle}>
             {field.label}
           </label>
-          <div className="flex-1">
+          <div className="flex-1 flex items-center md:justify-start">
             <input
               type="checkbox"
               name={field.name}
@@ -249,7 +240,6 @@ const StudentLayout = ({ userInfo }) => {
         </div>
       );
     } else {
-      // Default to text input
       return (
         <div key={field.name} className={fieldContainer}>
           <label className={labelStyle}>
@@ -269,20 +259,17 @@ const StudentLayout = ({ userInfo }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <h1 className="text-2xl text-red-600 mb-6 font-medium">Thông tin cá nhân</h1>
+        <h1 className="text-xl md:text-2xl text-red-600 mb-6 font-medium">Thông tin cá nhân</h1>
 
         {/* Form Section */}
-        <div className="bg-white rounded-lg shadow-md border border-gray-200 p-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12">
-            {/* Left Column */}
+        <div className="bg-white rounded-lg shadow-md border border-gray-200 p-4 sm:p-6 md:p-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 lg:gap-x-12">
             <div>
               {leftColumnFields.map(renderField)}
             </div>
-
-            {/* Right Column */}
             <div>
               {rightColumnFields.map(renderField)}
             </div>
@@ -291,16 +278,16 @@ const StudentLayout = ({ userInfo }) => {
           {/* Buttons Section */}
           <div className="pt-6 border-t border-gray-200 mt-6 flex justify-start">
             <div className="w-full md:w-1/2 flex justify-start">
-              <div className="flex gap-3 ml-0 md:ml-48">
+              <div className="flex gap-3 w-full md:w-auto ml-0 md:ml-48">
                 <button
                   onClick={handleSave}
-                  className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm font-medium transition-colors"
+                  className="flex-1 md:flex-none px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm font-medium transition-colors"
                 >
                   Lưu lại
                 </button>
                 <button
                   onClick={handleSkip}
-                  className="px-6 py-2 bg-[#f0ad4e] hover:bg-[#e69c3b] text-white rounded text-sm font-medium transition-colors"
+                  className="flex-1 md:flex-none px-6 py-2 bg-[#f0ad4e] hover:bg-[#e69c3b] text-white rounded text-sm font-medium transition-colors"
                 >
                   Bỏ qua
                 </button>
@@ -310,13 +297,13 @@ const StudentLayout = ({ userInfo }) => {
         </div>
 
         {/* Footer */}
-        <div className="mt-8 text-right text-xs text-gray-500">
+        <div className="mt-8 text-center md:text-right text-xs text-gray-500">
           Copyright © 2023 by G&BSoft
         </div>
       </div>
     </div>
   );
-}
+};
 
 export default function UserInfoForm() {
   const { userInfo } = useSelector((state) => state.auth);
