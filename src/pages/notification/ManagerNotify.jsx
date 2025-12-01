@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Plus, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Loader2, AlertCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { getScheduleClass } from '../../redux/scheduleSlice.js'; // Giữ lại nếu cần cho logic khác
 import { getNewsAll } from '../../redux/newSlice.js';
 import { toast } from "react-toastify";
@@ -8,6 +9,7 @@ import { formatDate } from '../../utils/constants.js';
 
 export default function ManagerNotify() {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const { newsListAll, totalNewsAll } = useSelector((state) => state.news);
 
     const [title, setTitle] = useState('');
@@ -53,7 +55,7 @@ export default function ManagerNotify() {
     };
 
     const handleAddNew = () => {
-        toast.info('Chức năng xuất Excel đang được phát triển');
+        navigate('/manager-notification/add');
     };
 
     const totalPages = Math.ceil(totalNewsAll / pageSize);

@@ -24,6 +24,7 @@ import PrintTranscript from "../pages/grades/PrintTranscript.jsx";
 import LearningResults from "../pages/result/LearningResults.jsx";
 import Notification from "../pages/notification/Notification.jsx";
 import NotificationDetail from "../pages/notification/NotificationDetail.jsx";
+import AddNotification from "../pages/notification/AddNotification.jsx";
 import ChangePassStudent from "../pages/system/ChangePassStudent.jsx";
 import ChangePassTC from "../pages/system/ChangePassTC.jsx";
 import Account from "../pages/system/Account.jsx";
@@ -131,6 +132,7 @@ function RouterRoot() {
           <Route path="notification" element={<Notification />} />
           <Route path="notification-detail" element={<NotificationDetail />} />
           <Route path="/manager-notification" element={<ManagerNotify />} />
+          <Route path="/manager-notification/add" element={<AddNotification />} />
 
         </Route>
         <Route path="*" element={<Navigate to="/home" replace />} />
