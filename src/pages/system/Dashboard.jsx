@@ -83,7 +83,7 @@ export default function Dashboard() {
 
     return (
         <div className="min-h-screen bg-gray-50 py-4 px-4 lg:py-8 lg:px-6">
-            <div className="max-w-7xl mx-auto">
+            <div className="max-w-0xl mx-auto">
                 {/* Stats Cards - Responsive Grid */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6 mb-6 lg:mb-8">
                     {/* Lớp đang học */}

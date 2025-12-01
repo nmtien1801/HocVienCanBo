@@ -202,7 +202,6 @@ export default function ScheduleTeachMonth() {
                     <td colSpan="12" className="px-4 py-12 text-center">
                       <div className="flex flex-col items-center justify-center gap-3">
                         <AlertCircle size={32} className="text-red-500" />
-                        <p className="text-gray-700 font-medium">Không thể tải dữ liệu</p>
                         <p className="text-gray-500 text-sm">{error}</p>
                         <button
                           onClick={fetchScheduleClassSubject}

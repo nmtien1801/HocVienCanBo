@@ -1,38 +1,42 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { ListInformation } from "../../redux/dashboardSlice.js";
-import { useNavigate } from 'react-router-dom';
+import { getNewsByID, getNewsOther } from "../../redux/newSlice.js";
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from "react-toastify";
 
 export default function NotificationDetail() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { listInformation } = useSelector((state) => state.dashboard);
+    const [searchParams] = useSearchParams();
+    const [newDetail, setNewDetail] = useState(null);
+    const { newsListOther } = useSelector((state) => state.news);
 
     useEffect(() => {
-        const fetchListInformation = async () => {
-            let res = await dispatch(ListInformation());
+        const fetchNewsByID = async () => {
+            const idNewDetail = searchParams.get('id');
+            let res = await dispatch(getNewsByID({ newsID: idNewDetail }));
+
+            setNewDetail(res.payload.data);
             if (!res.payload || !res.payload.data) {
                 toast.error(res.payload?.message);
             }
         };
 
-        fetchListInformation();
-    }, [dispatch]);
+        const fetchNewsOther = async () => {
+            const idNewDetail = searchParams.get('id');
+            let res = await dispatch(getNewsOther({ newsID: idNewDetail }));
+            if (!res.payload || !res.payload.data) {
+                toast.error(res.payload?.message);
+            }
+        };
 
-    const notifications = listInformation?.map(item => ({
-        NewsID: item.NewsID,
-        image: item.ImagesPath,
-        title: item.Title,
-        content: item.ShortDescription,
-        date: item.DateCreated,
-        Description: item.Description
-    })) || [];
-    console.log('ssss ', listInformation);
+        fetchNewsByID();
+        fetchNewsOther();
+    }, [dispatch, searchParams]);
 
     return (
         <div className="min-h-screen bg-gray-50 py-4 px-4 lg:py-8 lg:px-6">
-            <div className="max-w-7xl mx-auto">
+            <div className="max-w-0xl mx-auto">
                 {/* Second Row - 2 columns */}
                 <div className="grid grid-cols-1 gap-6">
                     {/* Thông báo */}
@@ -41,17 +45,15 @@ export default function NotificationDetail() {
                             <h2 className="text-lg font-normal text-gray-600 text-red-500 ">Thông báo sử dụng website tra cứu thông tin mới</h2>
                         </div>
                         <div className="p-6 space-y-4">
-                            {notifications.map((item, index) => (
-                                <div key={index} className="flex gap-4">
-                                    <div className="flex-1">
-                                        <h3 className="font-semibold text-gray-500 text-sm mb-3" >{item.content}</h3>
-                                        <div
-                                            className="text-xs text-gray-500 italic leading-relaxed"
-                                            dangerouslySetInnerHTML={{ __html: item.Description }}
-                                        />
-                                    </div>
+                            <div className="flex gap-4">
+                                <div className="flex-1">
+                                    <h3 className="font-semibold text-gray-500 text-sm mb-3" >{newDetail?.ShortDescription}</h3>
+                                    <div
+                                        className="text-xs text-gray-500 italic leading-relaxed"
+                                        dangerouslySetInnerHTML={{ __html: newDetail?.Description }}
+                                    />
                                 </div>
-                            ))}
+                            </div>
                         </div>
                     </div>
 
@@ -61,19 +63,19 @@ export default function NotificationDetail() {
                             <h2 className="text-lg font-normal text-gray-600">Thông báo khác</h2>
                         </div>
                         <div className="p-6 space-y-4">
-                            {notifications.map((item, index) => (
+                            {newsListOther && newsListOther.map((item, index) => (
                                 <div key={index} className="flex gap-4">
                                     <div className={`flex-shrink-0 w-24 h-14 flex items-center justify-center text-white text-[11px] font-bold rounded`}>
                                         <img
-                                            src={item.image}
+                                            src={item.ImagesPath}
                                             alt="Thông báo"
                                             className="w-full h-full object-cover rounded cursor-pointer"
                                             onClick={() => navigate(`/notification-detail?id=${item.NewsID}`)}
                                         />
                                     </div>
                                     <div className="flex-1">
-                                        <h3 className="font-semibold text-gray-800 text-sm mb-1 cursor-pointer" onClick={() => navigate(`/notification-detail?id=${item.NewsID}`)}>{item.title}</h3>
-                                        <p className="text-xs text-gray-500 italic leading-relaxed">{item.content}</p>
+                                        <h3 className="font-semibold text-gray-800 text-sm mb-1 cursor-pointer" onClick={() => navigate(`/notification-detail?id=${item.NewsID}`)}>{item.Title}</h3>
+                                        <p className="text-xs text-gray-500 italic leading-relaxed">{item.ShortDescription}</p>
                                     </div>
                                 </div>
                             ))}

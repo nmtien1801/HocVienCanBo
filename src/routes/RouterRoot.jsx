@@ -89,7 +89,6 @@ function RouterRoot() {
             </PublicRoute>
           }
         />
-        <Route path="/test" element={<ManagerNotify />} />
 
         {/* private route */}
         <Route
@@ -131,6 +130,8 @@ function RouterRoot() {
           {/* Notification */}
           <Route path="notification" element={<Notification />} />
           <Route path="notification-detail" element={<NotificationDetail />} />
+          <Route path="/manager-notification" element={<ManagerNotify />} />
+
         </Route>
         <Route path="*" element={<Navigate to="/home" replace />} />
       </Routes>

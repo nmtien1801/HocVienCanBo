@@ -14,19 +14,22 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
 
   const systemItems = [
     { label: 'Trang chủ', path: '/dashboard' },
-    userInfo?.TypeUserID === TypeUserIDCons.Teacher
+    userInfo?.TypeUserID !== TypeUserIDCons.Student
       ? { label: 'Đổi mật khẩu học viên', path: '/change-pass-student' }
       : null,
-    { label: 'Đổi mật khẩu TC', path: '/change-pass-tc' },
+    { label: 'Đổi mật khẩu tài khoản', path: '/change-pass-tc' },
     { label: 'Thông tin tài khoản', path: '/account' },
+    userInfo?.TypeUserID === TypeUserIDCons.Administrator
+      ? { label: 'Nhập thông báo', path: '/manager-notification' }
+      : null,
   ].filter(Boolean)
 
   const scheduleItems = [
-    userInfo?.TypeUserID === TypeUserIDCons.Teacher
+    userInfo?.TypeUserID !== TypeUserIDCons.Student
       ? { label: 'Lịch dạy tháng', path: '/schedule-teach-month' }
       : { label: 'Lịch học tháng', path: '/schedule-month' },
     { label: 'Tra cứu lịch học - môn học', path: '/lookup' },
-    userInfo?.TypeUserID === TypeUserIDCons.Teacher
+    userInfo?.TypeUserID !== TypeUserIDCons.Student
       ? { label: 'Lịch thi tháng', path: '/schedule-exam-month' }
       : null,
     { label: 'Thời khóa biểu lớp', path: '/timetable-class' },
@@ -174,7 +177,7 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
               </div>
 
               {/* Tra cứu điểm */}
-              {userInfo?.TypeUserID === TypeUserIDCons.Teacher && <div>
+              {userInfo?.TypeUserID !== TypeUserIDCons.Student && <div>
                 <button
                   onClick={() => toggleMenu('grades')}
                   className={`w-full px-3 py-2.5 flex items-center gap-3 rounded-lg hover:bg-white/10 transition-all ${expandedMenu === 'grades' ? 'bg-white/15 shadow-sm' : ''

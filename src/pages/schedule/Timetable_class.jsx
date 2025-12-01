@@ -4,10 +4,13 @@ import { getScheduleClass } from '../../redux/scheduleSlice.js';
 import { getClassLearnByUserID } from '../../redux/learningClassSlice.js';
 import { toast } from "react-toastify";
 import { useSelector, useDispatch } from "react-redux";
-import {formatDate} from '../../utils/constants.js';
+import { formatDate } from '../../utils/constants.js';
+import { TypeUserIDCons } from "../../utils/constants";
 
 export default function TimetableClass() {
   const dispatch = useDispatch();
+  const { userInfo } = useSelector((state) => state.auth);
+  const IS_STUDENT = userInfo?.TypeUserID !== TypeUserIDCons.Teacher;
   const { scheduleClass, totalScheduleClass } = useSelector((state) => state.schedule);
   const { ClassLearn } = useSelector((state) => state.learningClass);
   const [selectedClass, setSelectedClass] = useState('');
@@ -25,6 +28,18 @@ export default function TimetableClass() {
         if (!res.payload || !res.payload.data) {
           toast.error(res.payload?.message);
         }
+
+        // Tự động chọn lớp nếu là Học viên và chỉ có 1 lớp
+        if (IS_STUDENT && Array.isArray(res.payload.data) && res.payload.data.length === 1) {
+          const singleClass = res.payload.data[0];
+          const classID = Number(singleClass.ClassID);
+
+          setSelectedClass(classID);
+
+        } else if (!IS_STUDENT) {
+          setSelectedClass(0);
+        }
+
       } catch (err) {
         toast.error('Đã có lỗi xảy ra khi tải danh sách môn học');
       } finally {
@@ -151,7 +166,6 @@ export default function TimetableClass() {
           <td colSpan="12" className="px-4 py-12 text-center">
             <div className="flex flex-col items-center justify-center gap-3">
               <AlertCircle size={32} className="text-red-500" />
-              <p className="text-gray-700 font-medium">Không thể tải dữ liệu</p>
               <p className="text-gray-500 text-sm">{error}</p>
               <button
                 onClick={fetchScheduleClass}

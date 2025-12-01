@@ -9,7 +9,7 @@ export default function Notification() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { listInformation } = useSelector((state) => state.dashboard);
-    console.log('ssssssssss', listInformation);
+    
     useEffect(() => {
         const fetchListInformation = async () => {
             let res = await dispatch(ListInformation());
@@ -31,7 +31,7 @@ export default function Notification() {
 
     return (
         <div className="min-h-screen bg-gray-50 py-4 px-4 lg:py-8 lg:px-6">
-            <div className="max-w-7xl mx-auto">
+            <div className="max-w-0xl mx-auto">
                 {/* Second Row - 2 columns */}
                 <div className="grid grid-cols-1 gap-6">
                     {/* Thông báo */}

@@ -89,7 +89,6 @@ export default function TimetableClass() {
     setError(null);
     try {
       let res = await dispatch(printPointSum({ classID: selectedClass, studentID: selectedStudent, page: currentPage, limit: pageSize }));
-      console.log('sssssssss ', res);
 
       if (!res.payload || !res.payload.data) {
         const errorMsg = res.payload?.message || 'Không thể tải dữ liệu';

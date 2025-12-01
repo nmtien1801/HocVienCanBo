@@ -1,338 +1,338 @@
-// import { yupResolver } from '@hookform/resolvers/yup'
-import React, { useEffect, useRef, useState } from "react";
-import { LoadingButton } from '@mui/lab'
-import { Backdrop, Box, CircularProgress, Paper, Stack, Typography } from '@mui/material'
-import CKEditorField from '../../components/FormFields/CKEditor/CkEditorField'
-import { InputField } from '../../components/FormFields/InputField'
-import { SelectField } from '../../components/FormFields/SelectField'
-import UploadField from '../../components/FormFields/UploadField'
-import { useForm } from 'react-hook-form'
-// import * as yup from 'yup'
+import React, { useState, useEffect } from 'react';
+import { Search, Plus, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Loader2, AlertCircle } from 'lucide-react';
+import { getScheduleClass } from '../../redux/scheduleSlice.js'; // Giữ lại nếu cần cho logic khác
+import { getNewsAll } from '../../redux/newSlice.js';
+import { toast } from "react-toastify";
+import { useSelector, useDispatch } from "react-redux";
+import { formatDate } from '../../utils/constants.js';
 
-// const schema = yup.object({
-//   titleByLanguageId: yup.string().required('Vui lòng nhập Tên bản tin!'),
-//   shortDescriptionByLanguageId: yup.string().required('Vui lòng nhập mô tả loại tin tức!'),
-// })
-const languageOptions = [
-  {
-    value: 'vi-VN',
-    label: (
-      <Stack direction="row" justifyContent="flex-start" alignItems="center" spacing={2}>
-        <Box
-          component="img"
-          sx={{
-            width: 32,
-            objectFit: 'cover',
-            aspectRatio: '26/20',
-          }}
-          src={`https://flagpedia.net/data/flags/w702/vn.webp`}
-          alt="vn"
-        />
-        <Typography>Vietnamese</Typography>
-      </Stack>
-    ),
-  },
-  {
-    value: 'en-US',
-    label: (
-      <Stack direction="row" justifyContent="flex-start" alignItems="center" spacing={2}>
-        <Box
-          component="img"
-          sx={{
-            width: 32,
-            objectFit: 'cover',
-            aspectRatio: '26/20',
-          }}
-          src={`https://flagpedia.net/data/flags/w702/gb.webp`}
-          alt="gb"
-        />
-        <Typography>English</Typography>
-      </Stack>
-    ),
-  },
-]
+export default function ManagerNotify() {
+    const dispatch = useDispatch();
+    const { newsListAll, totalNewsAll } = useSelector((state) => state.news);
 
-const activeOptionList = [
-  {
-    label: 'Hoạt động',
-    value: 1,
-    default: true,
-  },
-  {
-    label: 'Ngừng hoạt động',
-    value: 0,
-  },
-]
+    const [title, setTitle] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(20);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
 
-export default function ManagerNotify({
-  author,
-  data,
-  categoryList,
-  loading,
-  onSubmit,
-  onClose,
-  updatePermission,
-  insertPermission,
-  handleFetchData,
-}) {
-  const { control, handleSubmit, reset, setValue } = useForm({
-    defaultValues: {
-      categoryId: null,
-      title: '',
-      isActive: 1,
-      shortDescription: '',
-      description: '',
-      imagePath: '',
-      author,
-      departmentId: null,
-      languageId: data?.languageId ?? languageOptions[0].value,
-    },
-    // resolver: yupResolver(schema),
-  })
-  const disabled = loading
+    useEffect(() => {
+        fetchNewsAll();
+    }, [currentPage, pageSize, dispatch]);
 
-  useEffect(() => {
-    let languageIdToMap = data?.languageId ?? languageOptions[0].value
+    const fetchNewsAll = async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            let res = await dispatch(getNewsAll({
+                status: 1,
+                key: title || '',
+                page: currentPage,
+                limit: pageSize
+            }));
 
-    if (!data) {
-      setValue('languageId', languageIdToMap)
-      return
-    }
+            console.log('sssssssss ', res);
 
-    let detail = data.newsDetails?.find((x) => x.languagesId === languageIdToMap)
-    let dataByLanguageId = {
-      titleByLanguageId: detail?.title || '',
-      shortDescriptionByLanguageId: detail?.shortDescription || '',
-      descriptionByLanguageId: detail?.description || '',
-      languageId: languageIdToMap,
-    }
+            if (!res.payload || !res.payload.data) {
+                const errorMsg = res.payload?.message || 'Không thể tải dữ liệu tin tức';
+                setError(errorMsg);
+                toast.error(errorMsg);
+            }
+        } catch (err) {
+            const errorMsg = 'Đã có lỗi xảy ra khi tải dữ liệu tin tức';
+            setError(errorMsg);
+            toast.error(errorMsg);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
-    if (data) {
-      reset({
-        ...data,
-        ...data.newsDetails?.[0],
-        isActive: data.isActive ? 1 : 0,
-        ...dataByLanguageId,
-      })
-    }
+    const handleSearch = async () => {
+        setCurrentPage(1);
+        fetchNewsAll();
+    };
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data])
+    const handleAddNew = () => {
+        toast.info('Chức năng xuất Excel đang được phát triển');
+    };
 
-  const handleFormSubmit = handleSubmit((formValues) => {
-    let detail = {
-      title: formValues.titleByLanguageId,
-      shortDescription: formValues.shortDescriptionByLanguageId,
-      description: formValues.descriptionByLanguageId,
-      languagesId: formValues.languageId,
-    }
+    const totalPages = Math.ceil(totalNewsAll / pageSize);
 
-    const newValue = {
-      categoryId: formValues.categoryId,
-      imagePath: formValues.imagePath,
-      departmentId: formValues.departmentId || null,
-      restaurantId: 0,
-      typeFoodId: 0,
-      isActive: Boolean(formValues.isActive),
+    const getPageNumbers = () => {
+        const delta = 2;
+        const range = [];
+        const rangeWithDots = [];
 
-      order: 1,
-      isHomepage: 1,
-      isHot: 1,
-      isLike: 1,
-      isView: 1,
-      isShare: 1,
-      imageThumb: '.',
-      imageBanner: '.',
-      links: '.',
+        for (
+            let i = Math.max(2, currentPage - delta);
+            i <= Math.min(totalPages - 1, currentPage + delta);
+            i++
+        ) {
+            range.push(i);
+        }
 
-      newsDetail: {
-        description1: '.',
-        author: data?.author || author,
-        linksDetail: '.',
-        keyDescription: detail.title,
-        keyWork: detail.title,
-        ...detail,
-      },
-    }
-    onSubmit?.(newValue)
-  })
+        if (currentPage - delta > 2) {
+            rangeWithDots.push(1, '...');
+        } else if (totalPages > 0) {
+            rangeWithDots.push(1);
+        }
 
-  return (
-    <>
-      <Stack spacing={3} component="form" noValidate onSubmit={handleFormSubmit}>
-        <Box>
-          <Typography variant="h6" gutterBottom fontWeight={600}>
-            Thông tin chung
-          </Typography>
+        rangeWithDots.push(...range);
 
-          <Paper sx={{ p: 2 }}>
-            <Stack direction="row" flexWrap="wrap" alignItems="flex-start">
-              <Box sx={{ width: { xs: '100%', lg: 1 / 3 } }}>
-                <Box sx={{ p: 1 }}>
-                  <SelectField
-                    name="languageId"
-                    label="Ngôn ngữ"
-                    control={control}
-                    optionList={languageOptions}
-                    onFieldChange={(value) => handleFetchData(value)}
-                  />
-                </Box>
-              </Box>
+        if (currentPage + delta < totalPages - 1) {
+            rangeWithDots.push('...', totalPages);
+        } else if (totalPages > 1 && currentPage + delta >= totalPages - 1 && range.indexOf(totalPages) === -1) {
+            rangeWithDots.push(totalPages);
+        } else if (totalPages === 1 && rangeWithDots.indexOf(1) === -1) {
+            rangeWithDots.push(1);
+        }
 
-              {/* <Box sx={{ width: { xs: '100%', lg: 1 / 3 } }}>
-                <Box sx={{ p: 1 }}>
-                  <SelectField
-                    control={control}
-                    name="departmentId"
-                    label="Bộ phận"
-                    optionList={[
-                      { label: '--- Chọn bộ phận (Tuyển dụng) ---', value: null },
-                      ...(departmentList?.map((item) => ({
-                        label: item.departmentName,
-                        value: item.departmentId,
-                      })) ?? []),
-                    ]}
-                  />
-                </Box>
-              </Box> */}
+        if (totalPages <= 1) return [1];
 
-              <Box sx={{ width: { xs: '100%', lg: 1 / 3 } }}>
-                <Box sx={{ p: 1 }}>
-                  <SelectField
-                    control={control}
-                    name="categoryId"
-                    label="Loại tin"
-                    optionList={[
-                      { label: '--- Chọn loại tin ---', value: null },
-                      ...(categoryList?.map((item) => ({
-                        label: item?.categoryDetails?.[0].nameCategory,
-                        value: item.categoryId,
-                      })) ?? []),
-                    ]}
-                  />
-                </Box>
-              </Box>
+        const uniqueRange = [];
+        rangeWithDots.forEach((item) => {
+            if (uniqueRange.length === 0 || item !== uniqueRange[uniqueRange.length - 1] || item === '...') {
+                uniqueRange.push(item);
+            } else if (typeof item === 'number' && uniqueRange[uniqueRange.length - 1] === '...') {
+                uniqueRange.push(item);
+            }
+        });
 
-              <Box sx={{ width: { xs: '100%', lg: 2 / 3 } }}>
-                <Box sx={{ p: 1 }}>
-                  <InputField
-                    disabled={disabled}
-                    control={control}
-                    name="titleByLanguageId"
-                    label="Tên chuyên mục"
-                  />
-                </Box>
-              </Box>
+        return uniqueRange.filter((value, index, self) =>
+            self.indexOf(value) === index || value === '...'
+        );
+    };
 
-              <Box sx={{ width: { xs: '100%', lg: 1 / 3 } }}>
-                <Box sx={{ p: 1 }}>
-                  <SelectField
-                    control={control}
-                    name="isActive"
-                    label="Trạng thái"
-                    optionList={activeOptionList}
-                  />
-                </Box>
-              </Box>
-            </Stack>
+    const renderTableBody = () => {
+        const totalColumns = 8;
+        if (isLoading) {
+            return (
+                <tr>
+                    <td colSpan={totalColumns} className="px-4 py-12 text-center">
+                        <div className="flex flex-col items-center justify-center gap-3">
+                            <Loader2 size={32} className="animate-spin text-teal-500" />
+                            <p className="text-gray-500">Đang tải dữ liệu...</p>
+                        </div>
+                    </td>
+                </tr>
+            );
+        }
 
-            <Stack direction="row" alignItems="flex-start">
-              <Box sx={{ width: { xs: '100%', lg: 3 / 3 } }}>
-                <Box sx={{ p: 1 }}>
-                  <InputField
-                    multiline
-                    rows={4}
-                    disabled={disabled}
-                    control={control}
-                    name="shortDescriptionByLanguageId"
-                    label="Mô tả"
-                  />
-                </Box>
-              </Box>
-            </Stack>
-          </Paper>
-        </Box>
+        // Error State
+        if (!isLoading && error) {
+            return (
+                <tr>
+                    <td colSpan={totalColumns} className="px-4 py-12 text-center">
+                        <div className="flex flex-col items-center justify-center gap-3">
+                            <AlertCircle size={32} className="text-red-500" />
+                            <p className="text-gray-500 text-sm">{error}</p>
+                            <button
+                                onClick={fetchNewsAll} // Thay đổi thành fetchNewsAll
+                                className="mt-2 bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded text-sm"
+                            >
+                                Thử lại
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            );
+        }
 
-        <Box>
-          <Typography variant="h6" fontWeight={600} gutterBottom>
-            Hình ảnh
-          </Typography>
+        // Empty State - No Data Found
+        if (!newsListAll || newsListAll.length === 0) {
+            return (
+                <tr>
+                    <td colSpan={totalColumns} className="px-4 py-12 text-center">
+                        <div className="flex flex-col items-center justify-center gap-3">
+                            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+                                <Search size={32} className="text-gray-400" />
+                            </div>
+                            <p className="text-gray-700 font-medium">Không tìm thấy dữ liệu</p>
+                            <p className="text-gray-500 text-sm">Không có tin tức nào phù hợp với từ khóa</p>
+                        </div>
+                    </td>
+                </tr>
+            );
+        }
 
-          <Paper sx={{ p: 2 }}>
-            <Typography fontWeight={600} gutterBottom variant="body2" color="text.secondary">
-              Hình thumbnail
-            </Typography>
-            <Box sx={{ width: 150 }}>
-              <UploadField
-                disabled={disabled}
-                name="imagePath"
-                control={control}
-                label="Hình ảnh thumbnail"
-              />
-            </Box>
-          </Paper>
-        </Box>
+        // Data Rows
+        return newsListAll.map((row, index) => (
+            <tr key={row.NewsID || index} className="border-b border-gray-200 hover:bg-gray-50">
+                <td className="px-4 py-3 border-r border-gray-200 text-left">{(currentPage - 1) * pageSize + index + 1}</td>
+                <td className="px-4 py-3 border-r border-gray-200 text-left">{row.Title}</td>
+                <td className="px-4 py-3 border-r border-gray-200 text-left whitespace-nowrap">{row.NewsID}</td>
+                <td className="px-4 py-3 border-r border-gray-200 text-left truncate max-w-xs">{row.ShortDescription}</td>
+                <td className="px-4 py-3 border-r border-gray-200 text-center">
+                    <img
+                        src={row.ImagesPath || ""}
+                        alt={`Ảnh: ${row.Title}`}
+                        className="w-16 h-16 object-cover rounded mx-auto border border-gray-200"
+                    />
+                </td>
+                <td className="px-4 py-3 border-r border-gray-200 text-center whitespace-nowrap">{formatDate(row.DateUpdated)}</td>
+                <td className="px-4 py-3 border-r border-gray-200 text-left whitespace-nowrap">{row.UserCreated}</td>
+                <td className="px-4 py-3 text-left whitespace-nowrap">{row.UserUpdated}</td>
+                <td className="px-4 py-3 border-r border-gray-200 text-center whitespace-nowrap">{formatDate(row.DateCreated)}</td>
+            </tr>
+        ));
+    };
 
-        <Paper>
-          <CKEditorField
-            name="descriptionByLanguageId"
-            control={control}
-            label="Nội dung bản tin"
-          />
-        </Paper>
+    return (
+        <div className="min-h-screen bg-gray-50 p-4 md:p-8">
+            <div className="max-w-[1600px] mx-auto">
+                {/* Header */}
+                <h1 className="text-xl md:text-2xl text-gray-600 mb-6">Danh sách thông báo</h1>
 
-        <Box>
-          <Stack direction="row" justifyContent="flex-end" spacing={2}>
-            <Box color="grey.500">
-              <LoadingButton
-                loading={loading}
-                variant="outlined"
-                color="inherit"
-                disabled={disabled}
-                onClick={() => onClose?.()}
-              >
-                Đóng
-              </LoadingButton>
-            </Box>
+                {/* Filter Section */}
+                <div className="bg-white rounded-lg shadow-sm p-4 md:p-6 mb-6">
+                    <div className="flex flex-col md:flex-row flex-wrap items-stretch md:items-center gap-4 md:gap-6">
+                        {/* INPUT TÌM KIẾM THEO TIÊU ĐỀ (Thay cho chọn lớp) */}
+                        <div className="flex items-center gap-3 flex-1 min-w-[200px] md:min-w-0">
+                            <label className="text-gray-600 text-sm whitespace-nowrap">Tiêu đề</label>
+                            <input
+                                type="text"
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
+                                placeholder="Nhập tiêu đề tin tức cần tìm..."
+                                className="border border-gray-300 rounded px-3 py-2 text-sm w-full md:w-80 placeholder-gray-400"
+                            />
+                        </div>
 
-            <Box>
-              {data && updatePermission ? (
-                <LoadingButton type="submit" variant="contained" color="primary">
-                  Cập nhật
-                </LoadingButton>
-              ) : !data && insertPermission ? (
-                <LoadingButton type="submit" variant="contained" color="primary">
-                  Tạo
-                </LoadingButton>
-              ) : (
-                <LoadingButton
-                  loading={loading}
-                  type="submit"
-                  variant="contained"
-                  color="primary"
-                  disabled
-                >
-                  {data ? 'Cập nhật' : 'Tạo'}
-                </LoadingButton>
-              )}
-            </Box>
-          </Stack>
-        </Box>
-      </Stack>
-      <Backdrop
-        sx={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          zIndex: 10,
-          color: '#fff',
-        }}
-        open={loading}
-      >
-        <CircularProgress color="inherit" />
-      </Backdrop>
-    </>
-  )
+                        <div className='flex gap-4'>
+                            <button
+                                className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-2 rounded flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed flex-1"
+                                onClick={handleSearch}
+                                disabled={isLoading}
+                            >
+                                {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
+                                Tìm kiếm
+                            </button>
+
+                            <button
+                                className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed flex-1"
+                                onClick={handleAddNew}
+                            >
+                                <Plus size={16} />
+                                <span className='whitespace-nowrap'>Thêm mới</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Table Section */}
+                <div className="bg-white rounded-lg shadow-sm">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                            <thead className="bg-gray-100 border-b-2 border-gray-300">
+                                <tr>
+                                    <th className="px-4 py-3 text-left text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap w-16">STT</th>
+                                    <th className="px-4 py-3 text-left text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">Tiêu đề</th>
+                                    <th className="px-4 py-3 text-left text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">Trạng thái</th>
+                                    <th className="px-4 py-3 text-left text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">Mô tả ngắn</th>
+                                    <th className="px-4 py-3 text-left text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">Hình ảnh</th>
+                                    <th className="px-4 py-3 text-left text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">Ngày cập nhật</th>
+                                    <th className="px-4 py-3 text-left text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">Người tạo</th>
+                                    <th className="px-4 py-3 text-left text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">Người cập nhật</th>
+                                    <th className="px-4 py-3 text-left text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">Ngày tạo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {renderTableBody()}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Pagination */}
+                    {!isLoading && !error && newsListAll && newsListAll.length > 0 && (
+                        <div className="p-4 md:px-6 md:py-4 border-t border-gray-200 flex flex-col md:flex-row items-center justify-between gap-4">
+
+                            {/* Pagination Controls */}
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => setCurrentPage(1)}
+                                    disabled={currentPage === 1}
+                                    className="p-2 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    title="Trang đầu"
+                                >
+                                    <ChevronsLeft size={16} />
+                                </button>
+                                <button
+                                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                    disabled={currentPage === 1}
+                                    className="p-2 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    title="Trang trước"
+                                >
+                                    <ChevronLeft size={16} />
+                                </button>
+
+                                <div className="flex items-center gap-2 mx-2">
+                                    {getPageNumbers().map((pageNum, i) => (
+                                        pageNum === '...' ? (
+                                            <span key={`dots-${i}`} className="px-2 text-gray-400">...</span>
+                                        ) : (
+                                            <button
+                                                key={pageNum}
+                                                onClick={() => setCurrentPage(pageNum)}
+                                                className={`px-3 py-1 border rounded text-sm ${currentPage === pageNum
+                                                    ? 'bg-blue-500 text-white border-blue-500'
+                                                    : 'border-gray-300 hover:bg-gray-100'
+                                                    }`}
+                                            >
+                                                {pageNum}
+                                            </button>
+                                        )
+                                    ))}
+                                </div>
+
+                                <button
+                                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                    disabled={currentPage === totalPages}
+                                    className="p-2 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    title="Trang sau"
+                                >
+                                    <ChevronRight size={16} />
+                                </button>
+                                <button
+                                    onClick={() => setCurrentPage(totalPages)}
+                                    disabled={currentPage === totalPages}
+                                    className="p-2 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    title="Trang cuối"
+                                >
+                                    <ChevronsRight size={16} />
+                                </button>
+                            </div>
+
+                            <div className="flex flex-wrap items-center justify-center md:justify-end gap-4">
+                                <span className="text-sm text-gray-600 whitespace-nowrap">
+                                    Hiển thị {((currentPage - 1) * pageSize) + 1} - {Math.min(currentPage * pageSize, totalNewsAll)} / {totalNewsAll} kết quả
+                                </span>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm text-gray-600 whitespace-nowrap">Số dòng:</span>
+                                    <select
+                                        value={pageSize}
+                                        onChange={(e) => {
+                                            setPageSize(Number(e.target.value));
+                                            setCurrentPage(1);
+                                        }}
+                                        className="border border-gray-300 rounded px-2 py-1 text-sm"
+                                    >
+                                        <option value={5}>5</option>
+                                        <option value={10}>10</option>
+                                        <option value={20}>20</option>
+                                        <option value={50}>50</option>
+                                        <option value={100}>100</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Footer */}
+                <div className="mt-8 text-right text-xs text-gray-500">
+                    Copyright © 2023 by G&BSoft
+                </div>
+            </div>
+        </div>
+    );
 }

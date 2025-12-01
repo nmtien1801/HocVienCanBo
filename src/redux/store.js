@@ -3,6 +3,7 @@ import authReducer from "./authSlice";
 import dashboardReducer from "./dashboardSlice";
 import scheduleReducer from "./scheduleSlice";
 import learningClassReducer from "./learningClassSlice";
+import newReducer from "./newSlice";
 
 export const store = configureStore({
   reducer: {
@@ -10,5 +11,6 @@ export const store = configureStore({
     dashboard: dashboardReducer,
     schedule: scheduleReducer,
     learningClass: learningClassReducer,
+    news: newReducer,
   },
 });
