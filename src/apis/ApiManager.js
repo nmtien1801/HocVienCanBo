@@ -15,7 +15,7 @@ const api = axios.create({
 
 api.interceptors.request.use((config) => {
   const token = btoa(`${username}:${password}`);
-  let headerValue = JSON.parse(localStorage.getItem("fr"));
+  let headerValue = JSON.parse(sessionStorage.getItem("fr"));
   
   config.headers["Authorization"] = `Bearer ${token}`;
   if (headerValue) {

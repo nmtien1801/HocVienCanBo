@@ -15,8 +15,11 @@ export const Login = createAsyncThunk("auth/Login", async (data, thunkAPI) => {
 export const GetAccount = createAsyncThunk(
   "auth/GetAccount",
   async (thunkAPI) => {
-    let user = JSON.parse(localStorage.getItem("fr"));
-    return user;
+    const userString = sessionStorage.getItem("fr");
+    if (userString) {
+      return JSON.parse(userString);
+    }
+    return null;
   }
 );
 
@@ -24,7 +27,13 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
 
-  reducers: {},
+  reducers: {
+    logout: (state) => {
+      state.userInfo = null;
+      state.isLoading = false;
+      state.hasCheckedAuth = false;
+    },
+  },
 
   extraReducers: (builder) => {
     // Login
@@ -36,7 +45,7 @@ const authSlice = createSlice({
         state.isLoading = false;
         if (action.payload.data) {
           state.userInfo = action.payload.data || {};
-          localStorage.setItem("fr", JSON.stringify(action.payload.data));
+          sessionStorage.setItem("fr", JSON.stringify(action.payload.data));
         }
       })
       .addCase(Login.rejected, (state, action) => {
@@ -49,21 +58,21 @@ const authSlice = createSlice({
         state.isLoading = true;
       })
       .addCase(GetAccount.fulfilled, (state, action) => {
-        if (action.payload) {
-          state.userInfo = action.payload || null;
-        }
+        state.userInfo = action.payload;
         state.isLoading = false;
         state.hasCheckedAuth = true;
       })
       .addCase(GetAccount.rejected, (state, action) => {
+        state.userInfo = null;
         state.isLoading = false;
         state.hasCheckedAuth = true;
+        sessionStorage.removeItem("fr");
       });
   },
 });
 
 // Export actions
-export const {} = authSlice.actions;
+export const { logout } = authSlice.actions;
 
 // Export reducer
 export default authSlice.reducer;

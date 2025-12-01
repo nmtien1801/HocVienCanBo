@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Menu, Mail, User, ChevronDown, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from "react-redux";
+import { logout } from '../redux/authSlice.js';
 
 export default function Header({ toggleSidebar }) {
     const [showUserMenu, setShowUserMenu] = useState(false);
@@ -25,7 +26,8 @@ export default function Header({ toggleSidebar }) {
 
     const handleLogout = async () => {
         // Chuyển hướng về trang đăng nhập
-        localStorage.removeItem("fr");
+        sessionStorage.removeItem("fr");
+        dispatch(logout());
         navigate('/home');
     }
 

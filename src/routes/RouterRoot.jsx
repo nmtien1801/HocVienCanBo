@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
-  BrowserRouter as Router,
+  HashRouter as Router,
   Routes,
   Route,
   Navigate,
@@ -33,14 +33,26 @@ import LoadingSpinner from "../components/LoadingSpinner.jsx";
 import { GetAccount } from "../redux/authSlice.js";
 import ManagerNotify from "../pages/notification/ManagerNotify.jsx";
 
-const ProtectedRoute = ({ children, userInfo, isLoading }) => {
-  if (isLoading) {
+const ProtectedRoute = ({ children, userInfo, isLoading, hasCheckedAuth }) => {
+  if (isLoading || !hasCheckedAuth) {
     return <LoadingSpinner />;
   }
 
-  // if (!userInfo || !userInfo.UserID) {
-  //   return <Navigate to="/home" replace />;
-  // }
+  if (!userInfo || !userInfo.UserID) {
+    return <Navigate to="/home" replace />;
+  }
+
+  return children;
+};
+
+const PublicRoute = ({ children, userInfo, isLoading, hasCheckedAuth }) => {
+  if (isLoading || !hasCheckedAuth) {
+    return <LoadingSpinner />;
+  }
+
+  if (userInfo && userInfo.UserID) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   return children;
 };
@@ -50,9 +62,7 @@ function RouterRoot() {
   const { userInfo, isLoading, hasCheckedAuth } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    const token = localStorage.getItem("fr");
-
-    if (token && !hasCheckedAuth && !isLoading) {
+    if (!hasCheckedAuth && !isLoading) {
       dispatch(GetAccount());
     }
   }, [dispatch, hasCheckedAuth, isLoading]);
@@ -63,15 +73,29 @@ function RouterRoot() {
     <Router>
       <Routes>
         {/* public route */}
-        <Route path="/home" element={<Home />} />
-        <Route path="/login" element={<Login />} />
+        <Route
+          path="/home"
+          element={
+            <PublicRoute userInfo={userInfo} isLoading={isLoading} hasCheckedAuth={hasCheckedAuth}>
+              <Home />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            <PublicRoute userInfo={userInfo} isLoading={isLoading} hasCheckedAuth={hasCheckedAuth}>
+              <Login />
+            </PublicRoute>
+          }
+        />
         <Route path="/test" element={<ManagerNotify />} />
 
         {/* private route */}
         <Route
           path="/"
           element={
-            <ProtectedRoute userInfo={userInfo} isLoading={isLoading}>
+            <ProtectedRoute userInfo={userInfo} isLoading={isLoading} hasCheckedAuth={hasCheckedAuth}>
               <AuthenticatedLayout />
             </ProtectedRoute>
           }

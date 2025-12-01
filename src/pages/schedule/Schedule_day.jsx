@@ -3,6 +3,7 @@ import { Search, Loader2, AlertCircle } from 'lucide-react';
 import { getScheduleDaily } from '../../redux/scheduleSlice.js';
 import { toast } from "react-toastify";
 import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from 'react-router-dom';
 
 // Tốc độ cuộn
 const SCROLL_DURATION = "15s";
@@ -22,6 +23,7 @@ const COLUMN_WIDTHS = {
 };
 
 export default function ScheduleDay() {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const { scheduleDaily } = useSelector((state) => state.schedule);
   const [isLoading, setIsLoading] = useState(false);
@@ -142,7 +144,7 @@ export default function ScheduleDay() {
 
         {/* Header Section */}
         <div className="flex items-center mb-4 w-full justify-center flex-shrink-0">
-          <img src="/logo.png" alt="Logo" className="h-24 mr-4" />
+          <img src="/logo.png" alt="Logo" className="h-24 mr-4" onClick={() => navigate('/dashboard')} />
           <div className="flex flex-col items-center">
             <p className="text-3xl font-medium text-red-600 mb-0 leading-tight">
               HỌC VIỆN CÁN BỘ THÀNH PHỐ HỒ CHÍ MINH
