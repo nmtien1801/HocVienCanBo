@@ -39,7 +39,8 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
   ].filter(Boolean);
 
   const gradesItems = [
-    { label: 'Danh sách dự thi cuối môn', path: '/final-exam' },
+    { label: 'Danh sách dự thi cuối môn L1', path: '/final-exam' },
+    { label: 'Danh sách dự thi cuối môn L2', path: '/final-exam-2' },
     { label: 'Danh sách dự thi tốt nghiệp', path: '/graduation-exam' },
     { label: 'Tra cứu điểm thi cuối môn', path: '/look-up-final-exam' },
     { label: 'Tra cứu điểm thi tốt nghiệp', path: '/look-up-graduation-exam' },

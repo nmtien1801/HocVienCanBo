@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Plus, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Loader2, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { getScheduleClass } from '../../redux/scheduleSlice.js'; // Giữ lại nếu cần cho logic khác
 import { getNewsAll } from '../../redux/newSlice.js';
 import { toast } from "react-toastify";
 import { useSelector, useDispatch } from "react-redux";
@@ -33,8 +32,6 @@ export default function ManagerNotify() {
                 limit: pageSize
             }));
 
-            console.log('sssssssss ', res);
-
             if (!res.payload || !res.payload.data) {
                 const errorMsg = res.payload?.message || 'Không thể tải dữ liệu tin tức';
                 setError(errorMsg);
@@ -55,7 +52,7 @@ export default function ManagerNotify() {
     };
 
     const handleAddNew = () => {
-        navigate('/manager-notification/add');
+        navigate('/manager-notification/form');
     };
 
     const totalPages = Math.ceil(totalNewsAll / pageSize);
@@ -161,15 +158,21 @@ export default function ManagerNotify() {
         return newsListAll.map((row, index) => (
             <tr key={row.NewsID || index} className="border-b border-gray-200 hover:bg-gray-50">
                 <td className="px-4 py-3 border-r border-gray-200 text-left">{(currentPage - 1) * pageSize + index + 1}</td>
-                <td className="px-4 py-3 border-r border-gray-200 text-left">{row.Title}</td>
+                <td className="px-4 py-3 border-r border-gray-200 text-left cursor-pointer" onClick={() => navigate(`/manager-notification/form?id=${row.NewsID}`)}>{row.Title}</td>
                 <td className="px-4 py-3 border-r border-gray-200 text-left whitespace-nowrap">{row.NewsID}</td>
                 <td className="px-4 py-3 border-r border-gray-200 text-left truncate max-w-xs">{row.ShortDescription}</td>
                 <td className="px-4 py-3 border-r border-gray-200 text-center">
-                    <img
-                        src={row.ImagesPath || ""}
-                        alt={`Ảnh: ${row.Title}`}
-                        className="w-16 h-16 object-cover rounded mx-auto border border-gray-200"
-                    />
+                    {row.ImagesPath ? (
+                        <img
+                            src={row.ImagesPath}
+                            alt={`Ảnh: ${row.Title}`}
+                            className="w-16 h-16 object-cover rounded mx-auto border border-gray-200"
+                        />
+                    ) : (
+                        <div className="w-16 h-16 bg-gray-100 rounded mx-auto border border-gray-200 flex items-center justify-center text-xs text-gray-400">
+                            No Image
+                        </div>
+                    )}
                 </td>
                 <td className="px-4 py-3 border-r border-gray-200 text-center whitespace-nowrap">{formatDate(row.DateUpdated)}</td>
                 <td className="px-4 py-3 border-r border-gray-200 text-left whitespace-nowrap">{row.UserCreated}</td>

@@ -45,6 +45,11 @@ const getLastDayOfMonth = () => {
 };
 /////////////////////////////
 
+const getImageLink = (path) => {
+  if (!path) return "";
+  return process.env.REACT_APP_API_URL + "/api/file/" + path;
+};
+
 export {
   TypeUserIDCons,
   formatDate,
@@ -52,4 +57,5 @@ export {
   getGenderDisplay,
   getFirstDayOfMonth,
   getLastDayOfMonth,
+  getImageLink
 };

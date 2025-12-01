@@ -3,12 +3,7 @@ import { Box, FormControl, FormHelperText, Stack } from '@mui/material'
 import ApiDashboard from '../../apis/ApiDashboard'
 import { useController } from 'react-hook-form'
 import { toast } from 'react-toastify'
-
-// import { getImageLink } from 'utils/common'
-const getImageLink = (path) => {
-  if (!path) return ''
-  return process.env.REACT_APP_API_URL + '/api/file/' + path
-}
+import { getImageLink } from '../../utils/constants'
 
 export default function UploadField({
   children,
@@ -36,10 +31,10 @@ export default function UploadField({
       return
     }
 
-    // if (file.size > 300 * 1024) {
-    //   toast.error('File size must be less than 200KB')
-    //   return
-    // }
+    if (file.size > 300 * 1024) {
+      toast.error('File size must be less than 200KB')
+      return
+    }
 
     const formData = new FormData()
 
