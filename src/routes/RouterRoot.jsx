@@ -38,7 +38,7 @@ const ProtectedRoute = ({ children, userInfo, isLoading, hasCheckedAuth }) => {
     return <LoadingSpinner />;
   }
 
-  if (!userInfo || !userInfo.UserID) {
+  if (!userInfo) {
     return <Navigate to="/home" replace />;
   }
 
