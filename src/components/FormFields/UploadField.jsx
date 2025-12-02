@@ -1,8 +1,12 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Box, FormControl, FormHelperText, Stack } from '@mui/material'
-import ApiDashboard from '../../apis/ApiDashboard'
-import { useController } from 'react-hook-form'
-import { toast } from 'react-toastify'
+import React, { useState } from "react";
+import { Box, FormControl, FormHelperText, Stack, CircularProgress, Typography } from '@mui/material';
+import ApiDashboard from '../../apis/ApiDashboard';
+import { useController } from 'react-hook-form';
+import { toast } from 'react-toastify';
+import ImageLoader from "../../components/ImageLoader.jsx"; // Giữ nguyên import này
+
+// Kích thước tệp tối đa (200KB)
+const MAX_FILE_SIZE = 200 * 1024; 
 
 export default function UploadField({
   children,
@@ -20,43 +24,58 @@ export default function UploadField({
   } = useController({
     name,
     control,
-  })
+  });
+
+  const [isLoading, setIsLoading] = useState(false);
 
   async function handleChange(e) {
-    const file = e.target.files[0]
+    const file = e.target.files?.[0]; 
 
     if (!file) {
-      toast.error('Vui lòng chọn một tệp hình ảnh hợp lệ.')
-      return
+      // Trường hợp người dùng mở hộp thoại nhưng không chọn tệp nào
+      // Không cần thông báo lỗi, chỉ cần return
+      return;
     }
-
-    const MAX_FILE_SIZE = 200 * 1024;
 
     if (file.size > MAX_FILE_SIZE) {
-      toast.error('Kích thước tệp phải nhỏ hơn 200KB.')
-      return
+      toast.error(`Kích thước tệp phải nhỏ hơn ${MAX_FILE_SIZE / 1024}KB.`);
+      // Xóa tệp khỏi input để cho phép chọn lại
+      e.target.value = null; 
+      return;
     }
 
-    const formData = new FormData()
+    // Kiểm tra loại tệp (tùy chọn)
+    if (!file.type.startsWith('image/')) {
+        toast.error('Vui lòng chọn một tệp hình ảnh hợp lệ.');
+        e.target.value = null; 
+        return;
+    }
 
-    formData.append('myFiles', file)
+    const formData = new FormData();
+    formData.append('myFiles', file);
+
+    setIsLoading(true);
 
     try {
-      const res = await ApiDashboard.uploadApi.uploadFile(formData)
+      const res = await ApiDashboard.uploadApi.uploadFile(formData);
 
-      // Giả định API trả về đối tượng { nameImages: 'path/to/image.jpg' }
       if (res && res.nameImages) {
-        onChange(res.nameImages)
-        onUploadChange?.(res.nameImages)
-        toast.success('Tải tệp lên thành công!')
+        onChange(res.nameImages);
+        onUploadChange?.(res.nameImages);
+        toast.success('Tải tệp lên thành công!');
       } else {
-        toast.error('Tải tệp lên thất bại, không nhận được đường dẫn tệp.')
+        toast.error('Tải tệp lên thất bại, không nhận được đường dẫn tệp.');
       }
-    } catch (error) {
-      console.error('Upload error:', error)
-      toast.error('Lỗi khi tải tệp lên server.')
+    } catch (apiError) {
+      console.error('Upload error:', apiError);
+      toast.error('Lỗi khi tải tệp lên server. Vui lòng thử lại.');
+    } finally {
+      setIsLoading(false); 
+      e.target.value = null;
     }
   }
+
+  const isInputDisabled = disabled || isLoading;
 
   return (
     <Box component="label" htmlFor={`upload-input-${name}`} {...props}>
@@ -71,31 +90,55 @@ export default function UploadField({
               sx={{
                 aspectRatio: '1/1',
                 borderRadius: '8px',
-                cursor: disabled ? 'not-allowed' : 'pointer',
-                // Thêm viền để dễ nhìn khi chưa có ảnh
+                cursor: isInputDisabled ? 'not-allowed' : 'pointer',
                 border: value ? 'none' : '2px dashed #ccc',
-                overflow: 'hidden'
+                overflow: 'hidden',
+                position: 'relative',
+                opacity: isLoading ? 0.7 : 1, // Làm mờ khi đang tải
               }}
             >
-              <Box
-                component="img"
-                width="100%"
-                height="100%"
-                src={value ? getImageLink(value) : '/bg-main.jpg'}
-                alt="img"
-                sx={{
-                  objectFit: 'cover',
-                  display: value ? 'block' : 'none' // Ẩn img nếu chưa có value để thấy border dashed
-                }}
+              <ImageLoader
+                imagePath={value || ''}
+                alt={`Ảnh: ${value}`}
+                className="w-full h-full object-cover rounded mx-auto border border-gray-200"
               />
+              
               {/* Hiển thị placeholder nếu chưa có ảnh */}
-              {!value && (
+              {!value && !isLoading && (
                 <Stack
                   alignItems="center"
                   justifyContent="center"
-                  sx={{ width: '100%', height: '100%', color: 'gray' }}
+                  sx={{ 
+                    position: 'absolute', 
+                    top: 0, 
+                    left: 0, 
+                    width: '100%', 
+                    height: '100%', 
+                    color: 'gray',
+                    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                  }}
                 >
-                  Chọn ảnh
+                  <Typography variant="body2">Chọn ảnh</Typography>
+                </Stack>
+              )}
+
+              {/* Hiển thị trạng thái tải lên */}
+              {isLoading && (
+                <Stack
+                  alignItems="center"
+                  justifyContent="center"
+                  sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                    zIndex: 10,
+                  }}
+                >
+                  <CircularProgress size={24} />
+                  <Typography variant="caption" sx={{ mt: 1 }}>Đang tải...</Typography>
                 </Stack>
               )}
             </Stack>
@@ -106,7 +149,7 @@ export default function UploadField({
         <Box
           component="input"
           id={`upload-input-${name}`}
-          disabled={disabled}
+          disabled={isInputDisabled} // Sử dụng trạng thái kết hợp
           onChange={handleChange}
           type="file"
           accept="image/*" // Chỉ chấp nhận tệp hình ảnh
@@ -115,5 +158,5 @@ export default function UploadField({
       </FormControl>
       {error && <FormHelperText error>{error.message}</FormHelperText>}
     </Box>
-  )
+  );
 }

@@ -44,11 +44,10 @@ const getLastDayOfMonth = () => {
   const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
   return lastDay.toISOString().split("T")[0];
 };
-/////////////////////////////
 
 const getImageLink = (path) => {
   if (!path) return "";
-  return process.env.REACT_APP_API_URL + "/api/file/" + path;
+  return import.meta.env.VITE_BACKEND_URL + "/api/file/" + path;
 };
 
 const createImageUrl = (arrayBuffer, mimeType) => {

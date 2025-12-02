@@ -5,6 +5,7 @@ import { getNewsAll } from '../../redux/newSlice.js';
 import { toast } from "react-toastify";
 import { useSelector, useDispatch } from "react-redux";
 import { formatDate } from '../../utils/constants.js';
+import ImageLoader from "../../components/ImageLoader.jsx";
 
 export default function ManagerNotify() {
     const dispatch = useDispatch();
@@ -163,8 +164,8 @@ export default function ManagerNotify() {
                 <td className="px-4 py-3 border-r border-gray-200 text-left truncate max-w-xs">{row.ShortDescription}</td>
                 <td className="px-4 py-3 border-r border-gray-200 text-center">
                     {row.ImagesPath ? (
-                        <img
-                            src={row.ImagesPath}
+                        <ImageLoader
+                            imagePath={row.ImagesPath || ''}
                             alt={`Ảnh: ${row.Title}`}
                             className="w-16 h-16 object-cover rounded mx-auto border border-gray-200"
                         />
