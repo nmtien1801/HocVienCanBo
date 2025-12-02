@@ -96,7 +96,6 @@ export default function ChangePassTC() {
         toast.error(response.message || 'Đổi mật khẩu thất bại.');
       }
     } catch (error) {
-      console.error("Change password error:", error);
       toast.error("Lỗi hệ thống khi đổi mật khẩu.");
     }
   };

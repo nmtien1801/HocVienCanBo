@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Box, FormControl, FormHelperText, Stack, CircularProgress, Typography } from '@mui/material';
-import ApiDashboard from '../../apis/ApiDashboard';
+import ApiUpload from '../../apis/ApiUpload';
 import { useController } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import ImageLoader from "../../components/ImageLoader.jsx"; // Giữ nguyên import này
@@ -57,11 +57,11 @@ export default function UploadField({
     setIsLoading(true);
 
     try {
-      const res = await ApiDashboard.uploadApi.uploadFile(formData);
+      const res = await ApiUpload.UploadFileApi(formData);
 
-      if (res && res.nameImages) {
-        onChange(res.nameImages);
-        onUploadChange?.(res.nameImages);
+      if (res && res.data) {
+        onChange(res.data);
+        onUploadChange?.(res.data);
         toast.success('Tải tệp lên thành công!');
       } else {
         toast.error('Tải tệp lên thất bại, không nhận được đường dẫn tệp.');

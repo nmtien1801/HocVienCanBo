@@ -46,17 +46,19 @@ export default function Home() {
                 <div className="flex flex-col sm:flex-row gap-6 mb-16">
                     <button
                         onClick={() => handleNavigateToLogin('chinh-tri')}
-                        className="group relative px-12 py-4 bg-red-600 hover:bg-red-700 text-white font-bold text-lg rounded-2xl shadow-2xl transition-all duration-300 transform hover:scale-105 border-4 border-white"
+                        className="group relative px-12 py-4 bg-red-600 hover:bg-red-700 text-white font-bold text-lg rounded-2xl shadow-2xl transition-all duration-300 transform hover:scale-105 border-4 border-white cursor-pointer"
                     >
-                        <span className="relative">TRUNG CẤP LÝ LUẬN CHÍNH TRỊ</span>
+                        {/* Sửa: Thêm class z-10 vào thẻ span */}
+                        <span className="relative z-10">TRUNG CẤP LÝ LUẬN CHÍNH TRỊ</span>
                         <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-red-700 to-red-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     </button>
 
                     <button
                         onClick={() => handleNavigateToLogin('ngan-han')}
-                        className="group relative px-12 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg rounded-2xl shadow-2xl transition-all duration-300 transform hover:scale-105 border-4 border-white"
+                        className="group relative px-12 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg rounded-2xl shadow-2xl transition-all duration-300 transform hover:scale-105 border-4 border-white cursor-pointer"
                     >
-                        <span className="relative">HỆ ĐÀO TẠNG NGẮN HẠN</span>
+                        {/* Sửa: Thêm class z-10 vào thẻ span */}
+                        <span className="relative z-10">HỆ ĐÀO TẠNG NGẮN HẠN</span>
                         <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-700 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     </button>
                 </div>

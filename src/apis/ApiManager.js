@@ -8,7 +8,7 @@ const api = axios.create({
   baseURL: BASE_URL,
   // withCredentials: true,
   headers: {
-    "Content-Type": "application/json",
+    // "Content-Type": "application/json",
   },
   responseType: "json",
 });
@@ -82,7 +82,6 @@ export const ApiManager = {
     return res;
   },
   post: async (url, body, query) => {
-    // console.log('body', body);
     const res = await api.post(url, body, { params: query });
     return res;
   },

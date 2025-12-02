@@ -3,7 +3,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { Loader2, Save, Trash2, RotateCcw } from 'lucide-react';
 import CKEditorField from '../../components/FormFields/CKEditor/CkEditorField';
 import UploadField from '../../components/FormFields/UploadField';
-import ApiNews from '../../apis/ApiNews' 
+import ApiNews from '../../apis/ApiNews'
 import { toast } from 'react-toastify'
 import { useSearchParams } from 'react-router-dom';
 
@@ -36,7 +36,7 @@ export default function FormNotification() {
         if (isEditMode && notificationId) {
             fetchNotificationDetails(notificationId);
         }
-    }, [notificationId, isEditMode]); 
+    }, [notificationId, isEditMode]);
 
     const fetchNotificationDetails = async (id) => {
         setIsLoading(true);
@@ -54,7 +54,6 @@ export default function FormNotification() {
                 toast.error("Không tìm thấy thông báo hoặc lỗi tải dữ liệu.");
             }
         } catch (error) {
-            console.error('Error fetching detail:', error);
             toast.error("Lỗi khi tải chi tiết thông báo.");
         } finally {
             setIsLoading(false);
@@ -112,7 +111,6 @@ export default function FormNotification() {
             }
 
         } catch (error) {
-            console.error('Error:', error);
             toast.error(`Lỗi hệ thống khi ${isEditMode ? 'cập nhật' : 'tạo'} thông báo`);
         } finally {
             setIsLoading(false);
@@ -136,7 +134,6 @@ export default function FormNotification() {
                 }
 
             } catch (error) {
-                console.error('Error deleting:', error);
                 toast.error('Lỗi khi xóa thông báo.');
             } finally {
                 setIsLoading(false);
@@ -256,43 +253,44 @@ export default function FormNotification() {
                         </div>
 
                         {/* Action Buttons*/}
-                        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-end gap-3 rounded-b-lg">
+                        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-lg">
+                            <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
+                                {isEditMode && (
+                                    <button
+                                        type="button"
+                                        onClick={handleDelete}
+                                        disabled={isLoading}
+                                        className="px-3 sm:px-4 py-2 bg-[#d9534f] hover:bg-red-700 text-white rounded-lg flex items-center justify-center gap-1 sm:gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-xs sm:text-sm font-medium whitespace-nowrap"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                        <span>Xóa</span>
+                                    </button>
+                                )}
 
-                            {isEditMode && (
                                 <button
                                     type="button"
-                                    onClick={handleDelete}
+                                    onClick={handleFormSubmit}
                                     disabled={isLoading}
-                                    className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    className="px-3 sm:px-4 py-2 bg-[#337ab7] hover:bg-[#2e6da4] text-white rounded-lg flex items-center justify-center gap-1 sm:gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-xs sm:text-sm font-medium whitespace-nowrap"
                                 >
-                                    <Trash2 className="w-4 h-4" />
-                                    Xóa
+                                    {isLoading ? (
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                    ) : (
+                                        <Save className="w-4 h-4" />
+                                    )}
+                                    <span>{isEditMode ? 'Lưu lại' : 'Thêm mới'}</span>
                                 </button>
-                            )}
 
-                            <button
-                                type="button"
-                                onClick={handleFormSubmit}
-                                disabled={isLoading}
-                                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                            >
-                                {isLoading ? (
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                ) : (
-                                    <Save className="w-4 h-4" />
-                                )}
-                                {isEditMode ? 'Lưu lại' : 'Thêm mới'}
-                            </button>
-
-                            <button
-                                type="button"
-                                onClick={() => window.history.back()}
-                                disabled={isLoading}
-                                className="px-6 py-2 bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                            >
-                                <RotateCcw className="w-4 h-4" />
-                                Trở về danh sách
-                            </button>
+                                <button
+                                    type="button"
+                                    onClick={() => window.history.back()}
+                                    disabled={isLoading}
+                                    className="px-3 sm:px-4 py-2 bg-[#f0ad4e] hover:bg-[#e69c3b] text-white rounded-lg flex items-center justify-center gap-1 sm:gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-xs sm:text-sm font-medium whitespace-nowrap"
+                                >
+                                    <RotateCcw className="w-4 h-4" />
+                                    <span>Trở về danh sách</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
