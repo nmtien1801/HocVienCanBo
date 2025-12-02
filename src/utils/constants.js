@@ -1,4 +1,5 @@
 import moment from "moment";
+import ApiUpload from "../apis/ApiUpload.js";
 
 const TypeUserIDCons = {
   Student: 1,
@@ -50,6 +51,42 @@ const getImageLink = (path) => {
   return process.env.REACT_APP_API_URL + "/api/file/" + path;
 };
 
+const createImageUrl = (arrayBuffer, mimeType) => {
+  const blob = new Blob([arrayBuffer], { type: mimeType });
+  return URL.createObjectURL(blob);
+};
+
+const loadImage = async (url) => {
+  try {
+    if (!url) return null;
+    
+    if (url.startsWith("~/"))
+      url = url.substring(2);
+    else if (url.startsWith("~"))
+      url = url.substring(1);
+    
+    const arrayBuffer = await ApiUpload.GetFileApi(url);
+
+    if (arrayBuffer && arrayBuffer instanceof ArrayBuffer) {
+      // Chuyển ArrayBuffer thành Blob URL
+      const imageUrl = createImageUrl(arrayBuffer, "image/png");
+
+      return imageUrl;
+    } else {
+      console.warn("Response không phải ArrayBuffer:", arrayBuffer);
+      return null;
+    }
+  } catch (error) {
+    console.error("Lỗi khi tải ảnh:", error);
+    return null;
+  }
+};
+
+const arrayBufferToUrl = (arrayBuffer) => {
+    const blob = new Blob([arrayBuffer], { type: "image/png" }); 
+    return URL.createObjectURL(blob);
+};
+
 export {
   TypeUserIDCons,
   formatDate,
@@ -57,5 +94,7 @@ export {
   getGenderDisplay,
   getFirstDayOfMonth,
   getLastDayOfMonth,
-  getImageLink
+  getImageLink,
+  loadImage,
+  arrayBufferToUrl
 };

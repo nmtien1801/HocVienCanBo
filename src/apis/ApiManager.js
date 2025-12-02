@@ -16,15 +16,17 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   const token = btoa(`${username}:${password}`);
   let headerValue = JSON.parse(sessionStorage.getItem("fr"));
-  
+
   config.headers["Authorization"] = `Bearer ${token}`;
   if (headerValue) {
-      config.headers["UserID"] = headerValue.UserID || headerValue.StudentID;
-      config.headers["TypeUserID"] = headerValue.TypeUserID;
-      config.headers["IsOutside"] = headerValue.IsOutside;
-      config.headers["Username"] = headerValue.Code || headerValue.StudentCode;
-      config.headers["Fullname"] = btoa(unescape(encodeURIComponent(headerValue.Name || headerValue.StudentName)));
-    }
+    config.headers["UserID"] = headerValue.UserID || headerValue.StudentID;
+    config.headers["TypeUserID"] = headerValue.TypeUserID;
+    config.headers["IsOutside"] = headerValue.IsOutside;
+    config.headers["Username"] = headerValue.Code || headerValue.StudentCode;
+    config.headers["Fullname"] = btoa(
+      unescape(encodeURIComponent(headerValue.Name || headerValue.StudentName))
+    );
+  }
   return config;
 });
 
@@ -75,7 +77,7 @@ api.interceptors.response.use(
 );
 
 export const ApiManager = {
-  get: async (url, { params } = {}) => {
+  get: async (url, { params } = {}, header) => {
     const res = await api.get(url, { params });
     return res;
   },
@@ -95,6 +97,12 @@ export const ApiManager = {
   patch: async (url, data) => {
     const res = await api.patch(url, data);
     return res.data;
+  },
+  getImageBinary: async (urlPath) => {
+    const response = await api.get(urlPath, {
+      responseType: "arraybuffer",
+    });
+    return response;
   },
 };
 

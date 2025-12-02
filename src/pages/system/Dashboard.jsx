@@ -1,9 +1,10 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Users, Layers, BookCheck, BookX } from 'lucide-react';
 import { useSelector, useDispatch } from "react-redux";
 import { DashboardTotal, ScheduleByMonth, ScheduleByExamination, ListInformation, ScheduleClassSubject } from "../../redux/dashboardSlice.js";
 import { toast } from "react-toastify";
 import { useNavigate } from 'react-router-dom';
+import ImageLoader from "../../components/ImageLoader.jsx";
 
 export default function Dashboard() {
     const dispatch = useDispatch();
@@ -270,16 +271,17 @@ export default function Dashboard() {
                             <button className="text-blue-600 text-xs lg:text-sm hover:underline cursor-pointer" onClick={() => { navigate('/notification') }}>Xem thêm</button>
                         </div>
                         <div className="p-4 lg:p-6 space-y-3 lg:space-y-4">
-                            {listInformation.length > 0 ? (
-                                listInformation.map((item, index) => (
+                            {listInformation.map((item, index) => {
+                                return (
                                     <div key={index} className="flex gap-3 lg:gap-4 p-3 lg:p-0 bg-gray-50 lg:bg-transparent rounded-lg lg:rounded-none">
-                                        <div className={`flex-shrink-0 w-20 lg:w-24 h-12 lg:h-14 rounded shadow-md`}>
-                                            <img
-                                                src={item.ImagesPath}
+                                        <div className="flex-shrink-0 w-20 lg:w-24 h-12 lg:h-14 rounded shadow-md bg-gray-200 flex items-center justify-center">
+                                            <ImageLoader
+                                                imagePath={item.ImagesPath || ''}
                                                 alt="Thông báo"
                                                 className="w-full h-full object-cover rounded cursor-pointer"
                                                 onClick={() => navigate(`/notification-detail?id=${item.NewsID}`)}
                                             />
+
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <h3 className="font-semibold text-gray-800 text-xs lg:text-sm mb-1 line-clamp-2 cursor-pointer" onClick={() => navigate(`/notification-detail?id=${item.NewsID}`)}>
@@ -290,10 +292,8 @@ export default function Dashboard() {
                                             </p>
                                         </div>
                                     </div>
-                                ))
-                            ) : (
-                                <p className="text-gray-400 text-center py-12 text-sm">Không có thông báo</p>
-                            )}
+                                );
+                            })}
                         </div>
                     </div>
                 </div>

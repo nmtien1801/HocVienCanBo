@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { getNewsByID, getNewsOther } from "../../redux/newSlice.js";
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from "react-toastify";
+import ImageLoader from "../../components/ImageLoader.jsx";
 
 export default function NotificationDetail() {
     const dispatch = useDispatch();
@@ -66,8 +67,8 @@ export default function NotificationDetail() {
                             {newsListOther && newsListOther.map((item, index) => (
                                 <div key={index} className="flex gap-4">
                                     <div className={`flex-shrink-0 w-24 h-14 flex items-center justify-center text-white text-[11px] font-bold rounded`}>
-                                        <img
-                                            src={item.ImagesPath}
+                                        <ImageLoader
+                                            imagePath={item.ImagesPath || ''}
                                             alt="Thông báo"
                                             className="w-full h-full object-cover rounded cursor-pointer"
                                             onClick={() => navigate(`/notification-detail?id=${item.NewsID}`)}

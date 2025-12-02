@@ -3,7 +3,6 @@ import { Box, FormControl, FormHelperText, Stack } from '@mui/material'
 import ApiDashboard from '../../apis/ApiDashboard'
 import { useController } from 'react-hook-form'
 import { toast } from 'react-toastify'
-import { getImageLink } from '../../utils/constants'
 
 export default function UploadField({
   children,
@@ -27,12 +26,14 @@ export default function UploadField({
     const file = e.target.files[0]
 
     if (!file) {
-      toast.error('Please select a file')
+      toast.error('Vui lòng chọn một tệp hình ảnh hợp lệ.')
       return
     }
 
-    if (file.size > 300 * 1024) {
-      toast.error('File size must be less than 200KB')
+    const MAX_FILE_SIZE = 200 * 1024;
+
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error('Kích thước tệp phải nhỏ hơn 200KB.')
       return
     }
 
@@ -43,17 +44,22 @@ export default function UploadField({
     try {
       const res = await ApiDashboard.uploadApi.uploadFile(formData)
 
-      if (res) {
+      // Giả định API trả về đối tượng { nameImages: 'path/to/image.jpg' }
+      if (res && res.nameImages) {
         onChange(res.nameImages)
         onUploadChange?.(res.nameImages)
+        toast.success('Tải tệp lên thành công!')
+      } else {
+        toast.error('Tải tệp lên thất bại, không nhận được đường dẫn tệp.')
       }
     } catch (error) {
-      console.error(`${error}`)
+      console.error('Upload error:', error)
+      toast.error('Lỗi khi tải tệp lên server.')
     }
   }
 
   return (
-    <Box component="label" {...props}>
+    <Box component="label" htmlFor={`upload-input-${name}`} {...props}>
       <FormControl fullWidth error={invalid} sx={{ height: '100%', width: '100%', ...sx }}>
         {children ? (
           children
@@ -66,6 +72,9 @@ export default function UploadField({
                 aspectRatio: '1/1',
                 borderRadius: '8px',
                 cursor: disabled ? 'not-allowed' : 'pointer',
+                // Thêm viền để dễ nhìn khi chưa có ảnh
+                border: value ? 'none' : '2px dashed #ccc',
+                overflow: 'hidden'
               }}
             >
               <Box
@@ -74,17 +83,33 @@ export default function UploadField({
                 height="100%"
                 src={value ? getImageLink(value) : '/bg-main.jpg'}
                 alt="img"
-                sx={{ objectFit: 'cover' }}
+                sx={{
+                  objectFit: 'cover',
+                  display: value ? 'block' : 'none' // Ẩn img nếu chưa có value để thấy border dashed
+                }}
               />
+              {/* Hiển thị placeholder nếu chưa có ảnh */}
+              {!value && (
+                <Stack
+                  alignItems="center"
+                  justifyContent="center"
+                  sx={{ width: '100%', height: '100%', color: 'gray' }}
+                >
+                  Chọn ảnh
+                </Stack>
+              )}
             </Stack>
           </Box>
         )}
 
+        {/* Thẻ input ẩn để kích hoạt hộp thoại chọn tệp */}
         <Box
           component="input"
+          id={`upload-input-${name}`}
           disabled={disabled}
           onChange={handleChange}
           type="file"
+          accept="image/*" // Chỉ chấp nhận tệp hình ảnh
           sx={{ display: 'none' }}
         />
       </FormControl>
