@@ -4,6 +4,7 @@ import { getScheduleSubjectMonth, getSubjectLearnAll } from '../../redux/schedul
 import { toast } from "react-toastify";
 import { useSelector, useDispatch } from "react-redux";
 import { getFirstDayOfMonth, getLastDayOfMonth } from '../../utils/constants.js';
+import DropdownSearch from '../../components/FormFields/DropdownSearch.jsx';
 
 export default function Lookup() {
   const dispatch = useDispatch();
@@ -114,24 +115,24 @@ export default function Lookup() {
     } else if (totalPages > 1 && currentPage + delta >= totalPages - 1 && range.indexOf(totalPages) === -1) {
       rangeWithDots.push(totalPages);
     } else if (totalPages === 1 && rangeWithDots.indexOf(1) === -1) {
-        rangeWithDots.push(1);
+      rangeWithDots.push(1);
     }
-    
+
     // Loại bỏ các trường hợp lặp 1...totalPages
     if (totalPages <= 1) return [1];
-    
+
     // Loại bỏ số trang trùng lặp (nếu có 1...2...totalPages)
     const uniqueRange = [];
     rangeWithDots.forEach((item) => {
-        if (uniqueRange.length === 0 || item !== uniqueRange[uniqueRange.length - 1] || item === '...') {
-            uniqueRange.push(item);
-        } else if (typeof item === 'number' && uniqueRange[uniqueRange.length - 1] === '...') {
-            uniqueRange.push(item);
-        }
+      if (uniqueRange.length === 0 || item !== uniqueRange[uniqueRange.length - 1] || item === '...') {
+        uniqueRange.push(item);
+      } else if (typeof item === 'number' && uniqueRange[uniqueRange.length - 1] === '...') {
+        uniqueRange.push(item);
+      }
     });
 
-    return uniqueRange.filter((value, index, self) => 
-        self.indexOf(value) === index || value === '...'
+    return uniqueRange.filter((value, index, self) =>
+      self.indexOf(value) === index || value === '...'
     );
   };
 
@@ -265,10 +266,9 @@ export default function Lookup() {
 
             <div className="flex items-center gap-3 flex-1 min-w-[200px] md:min-w-0">
               <label className="text-gray-600 text-sm whitespace-nowrap">Môn học</label>
-              <select
+              {/* <select
                 value={selectedSubject}
                 onChange={(e) => setSelectedSubject(e.target.value)}
-                // Responsive: flex-1/w-full trên mobile, md:w-80 trên desktop
                 className="border border-gray-300 rounded px-3 py-2 text-sm w-full md:w-80 text-gray-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                 disabled={isLoading || isLoadingSubjects}
               >
@@ -280,7 +280,13 @@ export default function Lookup() {
                     {item.SubjectName}
                   </option>
                 ))}
-              </select>
+              </select> */}
+              <DropdownSearch
+                options={subjectLearnAll}
+                labelKey="SubjectName"
+                valueKey="SubjectID"
+                onChange={(e) => setSelectedSubject(e.target.value)}
+              />
             </div>
 
             <div className='flex gap-4'>
@@ -368,8 +374,8 @@ export default function Lookup() {
                         key={pageNum}
                         onClick={() => setCurrentPage(pageNum)}
                         className={`px-3 py-1 border rounded text-sm ${currentPage === pageNum
-                            ? 'bg-blue-500 text-white border-blue-500'
-                            : 'border-gray-300 hover:bg-gray-100'
+                          ? 'bg-blue-500 text-white border-blue-500'
+                          : 'border-gray-300 hover:bg-gray-100'
                           }`}
                       >
                         {pageNum}
