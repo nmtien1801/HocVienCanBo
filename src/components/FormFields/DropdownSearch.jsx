@@ -6,8 +6,19 @@ export default function DropdownSearch({ options = [], placeholder = "Select opt
   const [selected, setSelected] = useState(null);
 
   const filtered = options.filter((item) =>
-    item[labelKey].toLowerCase().includes(query.toLowerCase())
+    item[labelKey]?.toLowerCase().includes(query.toLowerCase())
   );
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (open && !e.target.closest('.dropdown-container')) {
+        setOpen(false);
+        setQuery("");
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [open]);
 
   const handleSelect = (item) => {
     setSelected(item);
@@ -17,13 +28,14 @@ export default function DropdownSearch({ options = [], placeholder = "Select opt
   };
 
   return (
-    <div className="relative w-64">
+    <div className="relative w-full dropdown-container">
       {!open ? (
         <button
           onClick={() => setOpen(true)}
-          className="w-full bg-white border rounded-xl px-4 py-2 text-left shadow-sm focus:outline-none"
+          className="w-full text-gray-600 bg-white border border-gray-200 rounded-xl px-4 py-2 text-left shadow-sm focus:outline-none focus:border-indigo-400 transition"
+
         >
-          {selected ? selected.label : placeholder}
+          {selected ? selected[labelKey] : placeholder}
         </button>
       ) : (
         <input
@@ -38,7 +50,7 @@ export default function DropdownSearch({ options = [], placeholder = "Select opt
 
       {open && (
         <div className="absolute w-full mt-2 bg-white border rounded-xl shadow-lg p-2 z-10">
-          <div className="max-h-48 overflow-auto">
+          <div className="max-h-100 overflow-auto">
             {filtered.length > 0 ? (
               filtered.map((item) => (
                 <div

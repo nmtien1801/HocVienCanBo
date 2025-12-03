@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import { useSelector, useDispatch } from "react-redux";
 import { formatDate } from '../../utils/constants.js';
 import { TypeUserIDCons } from "../../utils/constants";
+import DropdownSearch from '../../components/FormFields/DropdownSearch.jsx';
 
 export default function TimetableClass() {
   const dispatch = useDispatch();
@@ -240,7 +241,7 @@ export default function TimetableClass() {
           <div className="flex flex-col md:flex-row flex-wrap items-stretch md:items-center gap-4 md:gap-6">
             <div className="flex items-center gap-3 flex-1 min-w-[200px] md:min-w-0">
               <label className="text-gray-600 text-sm whitespace-nowrap">Lớp</label>
-              <select
+              {/* <select
                 value={selectedClass}
                 onChange={(e) => setSelectedClass(e.target.value)}
                 // Responsive: flex-1/w-full trên mobile, md:w-80 trên desktop
@@ -255,7 +256,14 @@ export default function TimetableClass() {
                     {item.ClassName}
                   </option>
                 ))}
-              </select>
+              </select> */}
+              <DropdownSearch
+                options={ClassLearn}
+                placeholder="------ chọn lớp học ------"
+                labelKey="ClassName"
+                valueKey="ClassID"
+                onChange={(e) => setSelectedClass(e.ClassID)}
+              />
             </div>
 
             <div className='flex gap-4'>

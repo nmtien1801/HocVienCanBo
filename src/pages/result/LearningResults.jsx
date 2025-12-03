@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import { useSelector, useDispatch } from "react-redux";
 import ApiStudent from '../../apis/ApiStudent.js';
 import { TypeUserIDCons } from "../../utils/constants";
+import DropdownSearch from '../../components/FormFields/DropdownSearch.jsx';
 
 export default function TimetableClass() {
   const dispatch = useDispatch();
@@ -281,41 +282,25 @@ export default function TimetableClass() {
             {/* Chọn Lớp */}
             <div className="flex items-center gap-3 flex-1 min-w-[200px] md:min-w-0">
               <label className="text-gray-600 text-sm whitespace-nowrap">Lớp</label>
-              <select
-                value={selectedClass}
-                onChange={(e) => setSelectedClass(e.target.value)}
-                className="border border-gray-300 rounded px-3 py-2 text-sm w-full md:w-80 text-gray-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                disabled={isLoading || isLoadingClassLearn}
-              >
-                <option value={0}>
-                  {isLoadingClassLearn ? 'Đang tải...' : '------ chọn lớp học ------'}
-                </option>
-                {ClassLearn?.map((item) => (
-                  <option key={item.ClassID} value={item.ClassID}>
-                    {item.ClassName}
-                  </option>
-                ))}
-              </select>
+              <DropdownSearch
+                options={ClassLearn}
+                placeholder="------ chọn lớp học ------"
+                labelKey="ClassName"
+                valueKey="ClassID"
+                onChange={(e) => setSelectedClass(e.ClassID)}
+              />
             </div>
 
             {/* Chọn Học viên */}
             <div className="flex items-center gap-3 flex-1 min-w-[200px] md:min-w-0">
               <label className="text-gray-600 text-sm whitespace-nowrap">Học viên</label>
-              <select
-                value={selectedStudent}
-                onChange={(e) => setSelectedStudent(e.target.value)}
-                className="border border-gray-300 rounded px-3 py-2 text-sm w-full md:w-80 text-gray-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                disabled={isLoading || isLoadingStudents || !selectedClass || selectedClass === 0}
-              >
-                <option value={0}>
-                  {isLoadingStudents ? 'Đang tải học viên...' : '------ chọn học viên (Tất cả) ------'}
-                </option>
-                {studentOfClass?.map((item) => (
-                  <option key={item.StudentID} value={item.StudentID}>
-                    {item.StudentName}
-                  </option>
-                ))}
-              </select>
+              <DropdownSearch
+                options={studentOfClass}
+                placeholder="------ chọn học viên (Tất cả) ------"
+                labelKey="StudentName"
+                valueKey="StudentID"
+                onChange={(e) => setSelectedClass(e.StudentID)}
+              />
             </div>
 
             <div className='flex gap-4'>

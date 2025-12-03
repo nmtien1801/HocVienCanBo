@@ -255,18 +255,6 @@ export default function FormNotification() {
                         {/* Action Buttons*/}
                         <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-lg">
                             <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
-                                {isEditMode && (
-                                    <button
-                                        type="button"
-                                        onClick={handleDelete}
-                                        disabled={isLoading}
-                                        className="px-3 sm:px-4 py-2 bg-[#d9534f] hover:bg-red-700 text-white rounded-lg flex items-center justify-center gap-1 sm:gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-xs sm:text-sm font-medium whitespace-nowrap"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                        <span>Xóa</span>
-                                    </button>
-                                )}
-
                                 <button
                                     type="button"
                                     onClick={handleFormSubmit}
@@ -280,6 +268,18 @@ export default function FormNotification() {
                                     )}
                                     <span>{isEditMode ? 'Lưu lại' : 'Thêm mới'}</span>
                                 </button>
+
+                                {isEditMode && (
+                                    <button
+                                        type="button"
+                                        onClick={handleDelete}
+                                        disabled={isLoading}
+                                        className="px-3 sm:px-4 py-2 bg-[#d9534f] hover:bg-red-700 text-white rounded-lg flex items-center justify-center gap-1 sm:gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-xs sm:text-sm font-medium whitespace-nowrap"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                        <span>Xóa</span>
+                                    </button>
+                                )}
 
                                 <button
                                     type="button"

@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import { useSelector, useDispatch } from "react-redux";
 import { formatDate } from '../../utils/constants.js';
 import { TypeUserIDCons } from "../../utils/constants";
+import DropdownSearch from '../../components/FormFields/DropdownSearch.jsx';
 
 export default function TimetableClass() {
   const dispatch = useDispatch();
@@ -240,23 +241,14 @@ export default function TimetableClass() {
           {/* Responsive: flex-col/flex-wrap trên mobile, md:flex-row trên desktop */}
           <div className="flex flex-col md:flex-row flex-wrap items-stretch md:items-center gap-4 md:gap-6">
             <div className="flex items-center gap-3 flex-1 min-w-[200px] md:min-w-0">
-              <label className="text-gray-600 text-sm whitespace-nowrap">Lớp</label>
-              <select
-                value={selectedClass}
-                onChange={(e) => setSelectedClass(e.target.value)}
-                // Responsive: flex-1/w-full trên mobile, md:w-80 trên desktop
-                className="border border-gray-300 rounded px-3 py-2 text-sm w-full md:w-80 text-gray-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                disabled={isLoading || isLoadingClassLearn}
-              >
-                <option value={0}>
-                  {isLoadingClassLearn ? 'Đang tải...' : '------ chọn lớp học ------'}
-                </option>
-                {ClassLearn?.map((item) => (
-                  <option key={item.ClassID} value={item.ClassID}>
-                    {item.ClassName}
-                  </option>
-                ))}
-              </select>
+              <label className="text-gray-600 text-sm whitespace-nowrap">Lớp học</label>
+              <DropdownSearch
+                options={ClassLearn}
+                placeholder="------ chọn lớp học ------"
+                labelKey="ClassName"
+                valueKey="ClassID"
+                onChange={(e) => setSelectedClass(e.ClassID)}
+              />
             </div>
 
             <div className='flex gap-4'>

@@ -4,7 +4,7 @@ import ApiStudent from '../../apis/ApiStudent.js';
 import { getSearchPointStudentOutsite } from '../../redux/pointSlice.js';
 import { toast } from "react-toastify";
 import { useSelector, useDispatch } from "react-redux";
-import { formatDate } from '../../utils/constants.js';
+import DropdownSearch from '../../components/FormFields/DropdownSearch.jsx';
 
 export default function LookUpExternalStudent() {
     const dispatch = useDispatch();
@@ -214,21 +214,13 @@ export default function LookUpExternalStudent() {
                     <div className="flex flex-col md:flex-row flex-wrap items-stretch md:items-center gap-4 md:gap-6">
                         <div className="flex items-center gap-3 flex-1 min-w-[200px] md:min-w-0">
                             <label className="text-gray-600 text-sm whitespace-nowrap">Sinh viên</label>
-                            <select
-                                value={selectedStudent}
-                                onChange={(e) => setSelectedStudent(e.target.value)}
-                                className="border border-gray-300 rounded px-3 py-2 text-sm w-full md:w-80 text-gray-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                                disabled={isLoading || isLoadingStudents}
-                            >
-                                <option value={0}>
-                                    {isLoadingStudents ? 'Đang tải...' : '------ chọn sinh viên ------'}
-                                </option>
-                                {studentAll?.map((item) => (
-                                    <option key={item.StudentID} value={item.StudentID}>
-                                        {item.StudentName}
-                                    </option>
-                                ))}
-                            </select>
+                            <DropdownSearch
+                                options={studentAll}
+                                placeholder="------ chọn sinh viên ------"
+                                labelKey="StudentName"
+                                valueKey="StudentID"
+                                onChange={(e) => setSelectedStudent(e.StudentID)}
+                            />
                         </div>
 
                         <div className='flex gap-4'>

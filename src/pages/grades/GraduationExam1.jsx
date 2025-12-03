@@ -6,7 +6,7 @@ import { getClassLearnByUserID } from '../../redux/learningClassSlice.js';
 import { toast } from "react-toastify";
 import { useSelector, useDispatch } from "react-redux";
 import { TypeUserIDCons } from "../../utils/constants.js";
-import { formatDate } from '../../utils/constants.js';
+import DropdownSearch from '../../components/FormFields/DropdownSearch.jsx';
 
 export default function GraduationExam1() {
   const dispatch = useDispatch();
@@ -260,42 +260,24 @@ export default function GraduationExam1() {
           <div className="flex flex-col md:flex-row flex-wrap items-stretch md:items-center gap-4 md:gap-6">
             <div className="flex items-center gap-3 flex-1 min-w-[200px] md:min-w-0">
               <label className="text-gray-600 text-sm whitespace-nowrap">Lớp</label>
-              <select
-                value={selectedClass}
-                onChange={(e) => setSelectedClass(e.target.value)}
-                // Responsive: flex-1/w-full trên mobile, md:w-80 trên desktop
-                className="border border-gray-300 rounded px-3 py-2 text-sm w-full md:w-80 text-gray-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                disabled={isLoading || isLoadingClassLearn}
-              >
-                <option value={0}>
-                  {isLoadingClassLearn ? 'Đang tải...' : '------ chọn lớp học ------'}
-                </option>
-                {ClassLearn?.map((item) => (
-                  <option key={item.ClassID} value={item.ClassID}>
-                    {item.ClassName}
-                  </option>
-                ))}
-              </select>
+              <DropdownSearch
+                options={ClassLearn}
+                placeholder="------ chọn lớp học ------"
+                labelKey="ClassName"
+                valueKey="ClassID"
+                onChange={(e) => setSelectedClass(e.ClassID)}
+              />
             </div>
 
             <div className="flex items-center gap-3 flex-1 min-w-[200px] md:min-w-0">
               <label className="text-gray-600 text-sm whitespace-nowrap">Môn học</label>
-              <select
-                value={selectedSubject}
-                onChange={(e) => setSelectedSubject(e.target.value)}
-                // Responsive: flex-1/w-full trên mobile, md:w-80 trên desktop
-                className="border border-gray-300 rounded px-3 py-2 text-sm w-full md:w-80 text-gray-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                disabled={isLoading || isLoadingSubjects}
-              >
-                <option value={0}>
-                  {isLoadingSubjects ? 'Đang tải...' : '------ chọn môn học ------'}
-                </option>
-                {subjectLearnAll?.map((item) => (
-                  <option key={item.SubjectID} value={item.SubjectID}>
-                    {item.SubjectName}
-                  </option>
-                ))}
-              </select>
+              <DropdownSearch
+                options={subjectLearnAll}
+                placeholder="------ chọn môn học ------"
+                labelKey="SubjectName"
+                valueKey="SubjectID"
+                onChange={(e) => setSelectedSubject(e.SubjectID)}
+              />
             </div>
 
             <div className='flex gap-4'>
