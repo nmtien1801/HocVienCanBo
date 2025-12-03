@@ -16,10 +16,13 @@ import Timetable from "../pages/schedule/Timetable.jsx";
 import Lesson from "../pages/schedule/Lesson.jsx";
 import ScheduleDay from "../pages/schedule/Schedule_day.jsx";
 import ScheduleMonth from "../pages/schedule/Schedule_month.jsx";
-import FinalExam from "../pages/grades/FinalExam.jsx";
-import GraduationExam from "../pages/grades/GraduationExam.jsx";
+import FinalExam from "../pages/grades/FinalExam1.jsx";
+import FinalExam2 from "../pages/grades/FinalExam2.jsx";
+import GraduationExam1 from "../pages/grades/GraduationExam1.jsx";
+import GraduationExam2 from "../pages/grades/GraduationExam2.jsx";
 import LookUpFinalExam from "../pages/grades/LookupFinalExam.jsx";
 import LookUpGraduationExam from "../pages/grades/LookupGraduationExam.jsx";
+import LookUpExternalStudent from "../pages/grades/LookUpExternalStudent.jsx";
 import PrintTranscript from "../pages/grades/PrintTranscript.jsx";
 import LearningResults from "../pages/result/LearningResults.jsx";
 import Notification from "../pages/notification/Notification.jsx";
@@ -120,9 +123,12 @@ function RouterRoot() {
 
           {/* route grades */}
           <Route path="final-exam" element={<FinalExam />} />
-          <Route path="graduation-exam" element={<GraduationExam />} />
+          <Route path="final-exam-2" element={<FinalExam2 />} />
+          <Route path="graduation-exam" element={<GraduationExam1 />} />
+          <Route path="graduation-exam-2" element={<GraduationExam2 />} />
           <Route path="look-up-final-exam" element={<LookUpFinalExam />} />
           <Route path="look-up-graduation-exam" element={<LookUpGraduationExam />} />
+          <Route path="look-up-external-student" element={<LookUpExternalStudent />} />
           <Route path="print-transcript" element={<PrintTranscript />} />
 
           {/* route result */}

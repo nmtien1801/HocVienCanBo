@@ -192,7 +192,6 @@ export default function ManagerNotify() {
                 {/* Filter Section */}
                 <div className="bg-white rounded-lg shadow-sm p-4 md:p-6 mb-6">
                     <div className="flex flex-col md:flex-row flex-wrap items-stretch md:items-center gap-4 md:gap-6">
-                        {/* INPUT TÌM KIẾM THEO TIÊU ĐỀ (Thay cho chọn lớp) */}
                         <div className="flex items-center gap-3 flex-1 min-w-[200px] md:min-w-0">
                             <label className="text-gray-600 text-sm whitespace-nowrap">Tiêu đề</label>
                             <input

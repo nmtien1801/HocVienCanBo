@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Search, FileDown, ChevronUp, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Loader2, AlertCircle } from 'lucide-react';
 import { getSubjectLearnAll } from '../../redux/scheduleSlice.js';
-import { getSearchPoint } from '../../redux/pointSlice.js';
+import { getSearchPointGraduation } from '../../redux/pointSlice.js';
 import { toast } from "react-toastify";
 import { useSelector, useDispatch } from "react-redux";
 import { formatDate } from '../../utils/constants.js';
 
-export default function LookupFinalExam() {
+export default function LookUpExternalStudent() {
     const dispatch = useDispatch();
-    const { SearchPointList, SearchPointTotal } = useSelector((state) => state.point);
+    const { SearchGraduationList, SearchGraduationTotal } = useSelector((state) => state.point);
     const { subjectLearnAll } = useSelector((state) => state.schedule);
     const [selectedSubject, setSelectedSubject] = useState(0);
     const [studentCode, setStudentCode] = useState('');
@@ -42,7 +42,8 @@ export default function LookupFinalExam() {
         setIsLoading(true);
         setError(null);
         try {
-            let res = await dispatch(getSearchPoint({ studentCode: studentCode, subjectID: selectedSubject, page: currentPage, limit: pageSize }));
+            let res = await dispatch(getSearchPointGraduation({ studentCode: studentCode, subjectID: selectedSubject, page: currentPage, limit: pageSize }));
+            console.log('ssss ', res.payload.data);
 
             if (!res.payload || !res.payload.data) {
                 const errorMsg = res.payload?.message || 'Không thể tải dữ liệu';
@@ -85,7 +86,7 @@ export default function LookupFinalExam() {
             <ChevronDown size={14} className="text-gray-600" />;
     };
 
-    const totalPages = Math.ceil(SearchPointTotal / pageSize);
+    const totalPages = Math.ceil(SearchGraduationTotal / pageSize);
 
     // Smart pagination - only show a range of pages
     const getPageNumbers = () => {
@@ -171,7 +172,7 @@ export default function LookupFinalExam() {
         }
 
         // Empty State - No Data Found
-        if (!SearchPointList || SearchPointList.length === 0) {
+        if (!SearchGraduationList || SearchGraduationList.length === 0) {
             return (
                 <tr>
                     <td colSpan="12" className="px-4 py-12 text-center">
@@ -188,7 +189,7 @@ export default function LookupFinalExam() {
         }
 
         // Data Rows
-        return SearchPointList.map((row, index) => (
+        return SearchGraduationList.map((row, index) => (
             <tr key={index} className="border-b border-gray-200 hover:bg-gray-50">
                 <td className="px-4 py-3 border-r border-gray-200">{row.stt}</td>
                 <td className="px-4 py-3 border-r border-gray-200">{row.maHocVien}</td>
@@ -206,7 +207,7 @@ export default function LookupFinalExam() {
         <div className="min-h-screen bg-gray-50 p-4 md:p-8">
             <div className="max-w-[1600px] mx-auto">
                 {/* Header */}
-                <h1 className="text-xl md:text-2xl text-gray-600 mb-6">Tra cứu điểm thi</h1>
+                <h1 className="text-xl md:text-2xl text-gray-600 mb-6">Tra cứu điểm học viên ngoài</h1>
 
                 {/* Filter Section */}
                 <div className="bg-white rounded-lg shadow-sm p-4 md:p-6 mb-6">
@@ -254,7 +255,7 @@ export default function LookupFinalExam() {
                             <button
                                 className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-2 rounded flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed flex-1"
                                 onClick={handleExportExcel}
-                                disabled={isLoading || !SearchPointList || SearchPointList.length === 0}
+                                disabled={isLoading || !SearchGraduationList || SearchGraduationList.length === 0}
                             >
                                 <FileDown size={16} />
                                 <span className='whitespace-nowrap'>Export Excel</span>
@@ -350,7 +351,7 @@ export default function LookupFinalExam() {
                     </div>
 
                     {/* Pagination */}
-                    {!isLoading && !error && SearchPointList && SearchPointList.length > 0 && (
+                    {!isLoading && !error && SearchGraduationList && SearchGraduationList.length > 0 && (
                         <div className="p-4 md:px-6 md:py-4 border-t border-gray-200 flex flex-col md:flex-row items-center justify-between gap-4">
                             {/* Pagination Controls */}
                             <div className="flex items-center gap-2">
@@ -410,7 +411,7 @@ export default function LookupFinalExam() {
 
                             <div className="flex flex-wrap items-center justify-center md:justify-end gap-4">
                                 <span className="text-sm text-gray-600 whitespace-nowrap">
-                                    Hiển thị {((currentPage - 1) * pageSize) + 1} - {Math.min(currentPage * pageSize, SearchPointTotal)} / {SearchPointTotal} kết quả
+                                    Hiển thị {((currentPage - 1) * pageSize) + 1} - {Math.min(currentPage * pageSize, SearchGraduationTotal)} / {SearchGraduationTotal} kết quả
                                 </span>
                                 <div className="flex items-center gap-2">
                                     <span className="text-sm text-gray-600 whitespace-nowrap">Số dòng:</span>

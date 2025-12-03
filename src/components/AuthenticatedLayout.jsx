@@ -45,7 +45,7 @@ function AuthenticatedLayout() {
     // Xác định lề trái (marginLeft) dựa trên trạng thái desktop/mobile
     const contentMargin = isMobile 
         ? '0px' // Trên mobile, sidebar đè lên nội dung, nên không cần margin
-        : (isSidebarOpen ? '268px' : '80px'); // Trên desktop, đẩy nội dung
+        : (isSidebarOpen ? '288px' : '80px'); // Trên desktop, đẩy nội dung
 
     return (
         <div className="h-screen w-full bg-gray-50 text-gray-800 font-sans">

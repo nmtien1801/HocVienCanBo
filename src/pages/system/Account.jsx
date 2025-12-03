@@ -308,9 +308,9 @@ const StudentLayout = ({ userInfo }) => {
 export default function UserInfoForm() {
   const { userInfo } = useSelector((state) => state.auth);
 
-  if (userInfo?.TypeUserID === TypeUserIDCons.Teacher) {
-    return <TeacherLayout userInfo={userInfo} />;
-  } else if (userInfo?.TypeUserID === TypeUserIDCons.Student) {
+  if (userInfo?.TypeUserID === TypeUserIDCons.Student) {
     return <StudentLayout userInfo={userInfo} />;
+  } else {
+    return <TeacherLayout userInfo={userInfo} />;
   }
 }

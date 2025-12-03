@@ -41,9 +41,11 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
   const gradesItems = [
     { label: 'Danh sách dự thi cuối môn L1', path: '/final-exam' },
     { label: 'Danh sách dự thi cuối môn L2', path: '/final-exam-2' },
-    { label: 'Danh sách dự thi tốt nghiệp', path: '/graduation-exam' },
+    { label: 'Danh sách dự thi tốt nghiệp L1', path: '/graduation-exam' },
+    { label: 'Danh sách dự thi tốt nghiệp L2', path: '/graduation-exam-2' },
     { label: 'Tra cứu điểm thi cuối môn', path: '/look-up-final-exam' },
     { label: 'Tra cứu điểm thi tốt nghiệp', path: '/look-up-graduation-exam' },
+    { label: 'Tra cứu điểm học viên ngoài', path: '/look-up-external-student' },
     { label: 'In bảng điểm tổng', path: '/print-transcript' },
   ];
 
@@ -54,7 +56,7 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
   return (
     <aside
       className={`fixed top-0 left-0 h-screen flex flex-col text-white transition-all duration-300 z-10 shadow-xl
-        ${isSidebarOpen ? 'w-[280px]' : 'w-0 lg:w-[80px]'} 
+        ${isSidebarOpen ? 'w-[288px]' : 'w-0 lg:w-[80px]'} 
         bg-gradient-to-b from-[#0081cd] to-[#026aa8]`}
     >
       {/* Sidebar Content */}
