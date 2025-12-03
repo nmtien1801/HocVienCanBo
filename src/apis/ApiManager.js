@@ -38,7 +38,7 @@ api.interceptors.response.use(
     switch (status) {
       case 401: {
         const path = window.location.pathname;
-        const publicPaths = ["/", "/login", "/register", "/forgot-password"];
+        const publicPaths = ["/", "/login", "/studentregisterTC", "/forgot-password"];
 
         // ✅ Nếu đang ở trang public, bỏ qua
         if (publicPaths.includes(path)) {

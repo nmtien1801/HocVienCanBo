@@ -78,7 +78,7 @@ const LoginForm = () => {
                     {/* Nhóm Nút bấm */}
                     <div className="flex justify-center space-x-2">
                         <button
-                            type="submit" // Nút này sẽ kích hoạt handleSubmit
+                            type="submit"
                             className="w-[90px] py-2 text-sm text-black border border-gray-300 bg-white hover:bg-gray-50 transition duration-150 rounded-sm"
                         >
                             Đăng nhập
@@ -86,16 +86,14 @@ const LoginForm = () => {
                         <button
                             type="button"
                             className="w-[160px] py-2 text-sm text-black border border-gray-300 bg-white hover:bg-gray-50 transition duration-150 rounded-sm"
-                            // Tùy chọn: Thêm sự kiện onClick để điều hướng hoặc mở modal
-                            onClick={() => console.log('Chuyển đến trang Đăng ký đóng học phí')}
+                            onClick={() => navigate('/studentregisterTC')}
                         >
                             Đăng ký đóng học phí
                         </button>
                         <button
                             type="button"
                             className="w-[70px] py-2 text-sm text-black border border-gray-300 bg-white hover:bg-gray-50 transition duration-150 rounded-sm"
-                            // Tùy chọn: Thêm sự kiện onClick để điều hướng quay lại
-                            onClick={() => console.log('Quay lại trang trước')}
+                            onClick={() => window.history.back()}
                         >
                             Quay lại
                         </button>

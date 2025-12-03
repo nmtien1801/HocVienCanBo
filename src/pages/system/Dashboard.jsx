@@ -160,7 +160,7 @@ export default function Dashboard() {
                                             <h3 className="font-semibold text-gray-800 text-xs lg:text-sm mb-1 line-clamp-2">
                                                 Lớp: {item.ClassCode} - {item.ClassName}
                                             </h3>
-                                            <p className="text-xs lg:text-sm text-gray-700 mb-1 font-medium line-clamp-1">
+                                            <p className="text-[12px] lg:text-[13px] text-gray-700 font-medium line-clamp-1">
                                                 Môn: {item.SubjectName}
                                             </p>
                                             <p className="text-[10px] lg:text-xs text-gray-600">Ngày học: {item.DayOfWeek} - Kết thúc: {formatDate(item.EndDate)}</p>

@@ -1,0 +1,131 @@
+body {
+    /* Đã thêm box-sizing reset để quản lý padding/border dễ hơn */
+    box-sizing: border-box; 
+    font-family: 'Open Sans', sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #fff;
+    padding: 5px 15px 0; /* Rút gọn padding */
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 25px;
+}
+
+h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+    padding: 0 0 10px 0;
+    border-bottom: 1px solid #ccc;
+}
+
+h4 {
+    font-size: 16px;
+    font-weight: 300;
+    margin-top: 5px;
+    line-height: 22px;
+}
+
+h4 > * {
+    display: inline-block;
+    vertical-align: top;
+}
+
+fieldset {
+    border: 1px solid #ccc;
+    padding: 15px;
+    max-width: 345px;
+    background-color: #fff;
+    border-radius: 5px;
+}
+
+section {
+    padding: 0 15px;
+}
+
+.CaptchaWrap {
+    /* Sử dụng Flexbox tiêu chuẩn và hiện đại */
+    display: flex;
+    align-items: center; /* Tương đương -webkit-box-align: center; */
+    justify-content: center; /* Tương đương -webkit-box-pack: center; */
+}
+
+.CaptchaTxtField {
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    display: block;
+    box-sizing: border-box;
+}
+
+#UserCaptchaCode {
+    padding: 15px 10px;
+    outline: none;
+    font-size: 18px;
+    font-weight: normal;
+    font-family: 'Open Sans', sans-serif;
+    /* Đặt 100% thay vì 343px, sử dụng box-sizing: border-box; để bao gồm padding */
+    width: 100%; 
+}
+
+#CaptchaImageCode {
+    text-align: center;
+    margin-top: 15px;
+    padding: 0; /* Rút gọn padding */
+    width: 300px;
+    overflow: hidden;
+}
+
+.capcode {
+    font-size: 46px;
+    display: block;
+    /* Sử dụng thuộc tính user-select tiêu chuẩn cho trình duyệt */
+    user-select: none;
+    cursor: default;
+    letter-spacing: 1px;
+    color: #ccc;
+    font-family: 'Roboto Slab', serif;
+    font-weight: 100;
+    font-style: italic;
+}
+
+.ReloadBtn {
+    background: url('https://cdn3.iconfinder.com/data/icons/basic-interface/100/update-64.png') left top no-repeat;
+    background-size: 100%;
+    width: 32px;
+    height: 32px;
+    border: 0; /* Rút gọn border: 0px */
+    outline: none; /* Sửa lỗi cú pháp: outline none; -> outline: none; */
+    /* Bỏ các thuộc tính position (bottom, left) nếu không có position: relative/absolute/fixed */
+    /* bottom: 30px; */ 
+    /* left: 310px; */ 
+    cursor: pointer;
+    margin-top: 18px;
+    margin-left: 5px;
+}
+
+.btnSubmit {
+    margin-top: 15px;
+    border: 0; /* Rút gọn border: 0px */
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 18px;
+    background-color: #1285c4;
+    color: #fff;
+    cursor: pointer;
+}
+
+.error {
+    color: red;
+    font-size: 12px;
+    display: none;
+}
+
+.success {
+    color: green;
+    font-size: 18px;
+    margin-bottom: 15px;
+    display: none;
+}
