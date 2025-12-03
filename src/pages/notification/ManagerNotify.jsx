@@ -27,7 +27,7 @@ export default function ManagerNotify() {
         setError(null);
         try {
             let res = await dispatch(getNewsAll({
-                status: 1,
+                status: -100,
                 key: title || '',
                 page: currentPage,
                 limit: pageSize

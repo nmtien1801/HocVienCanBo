@@ -1,37 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import { Search, FileDown, ChevronUp, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Loader2, AlertCircle } from 'lucide-react';
-import { getSubjectLearnAll } from '../../redux/scheduleSlice.js';
-import { getSearchPointGraduation } from '../../redux/pointSlice.js';
+import ApiStudent from '../../apis/ApiStudent.js';
+import { getSearchPointStudentOutsite } from '../../redux/pointSlice.js';
 import { toast } from "react-toastify";
 import { useSelector, useDispatch } from "react-redux";
 import { formatDate } from '../../utils/constants.js';
 
 export default function LookUpExternalStudent() {
     const dispatch = useDispatch();
-    const { SearchGraduationList, SearchGraduationTotal } = useSelector((state) => state.point);
-    const { subjectLearnAll } = useSelector((state) => state.schedule);
-    const [selectedSubject, setSelectedSubject] = useState(0);
-    const [studentCode, setStudentCode] = useState('');
+    const { SearchStudentOutsiteList, SearchStudentOutsiteTotal } = useSelector((state) => state.point);
+    const [studentAll, setStudentAll] = useState([]);
+    const [selectedStudent, setSelectedStudent] = useState(0);
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
 
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
     const [isLoading, setIsLoading] = useState(false);
-    const [isLoadingSubjects, setIsLoadingSubjects] = useState(false);
+    const [isLoadingStudents, setIsLoadingStudents] = useState(false);
     const [error, setError] = useState(null);
 
     useEffect(() => {
         const fetchSubjectLearnAll = async () => {
-            setIsLoadingSubjects(true);
+            setIsLoadingStudents(true);
             try {
-                let res = await dispatch(getSubjectLearnAll());
-                if (!res.payload || !res.payload.data) {
-                    toast.error(res.payload?.message || 'Không thể tải danh sách môn học');
+                let res = await ApiStudent.getStudentOutsiteApi();
+
+                if (!res || !res.data) {
+                    toast.error(res.message);
+                } else {
+                    setStudentAll(res.data)
                 }
             } catch (err) {
                 toast.error('Đã có lỗi xảy ra khi tải danh sách môn học');
             } finally {
-                setIsLoadingSubjects(false);
+                setIsLoadingStudents(false);
             }
         };
 
@@ -42,8 +44,7 @@ export default function LookUpExternalStudent() {
         setIsLoading(true);
         setError(null);
         try {
-            let res = await dispatch(getSearchPointGraduation({ studentCode: studentCode, subjectID: selectedSubject, page: currentPage, limit: pageSize }));
-            console.log('ssss ', res.payload.data);
+            let res = await dispatch(getSearchPointStudentOutsite({ studentID: selectedStudent, page: currentPage, limit: pageSize }));
 
             if (!res.payload || !res.payload.data) {
                 const errorMsg = res.payload?.message || 'Không thể tải dữ liệu';
@@ -86,7 +87,7 @@ export default function LookUpExternalStudent() {
             <ChevronDown size={14} className="text-gray-600" />;
     };
 
-    const totalPages = Math.ceil(SearchGraduationTotal / pageSize);
+    const totalPages = Math.ceil(SearchStudentOutsiteTotal / pageSize);
 
     // Smart pagination - only show a range of pages
     const getPageNumbers = () => {
@@ -172,7 +173,7 @@ export default function LookUpExternalStudent() {
         }
 
         // Empty State - No Data Found
-        if (!SearchGraduationList || SearchGraduationList.length === 0) {
+        if (!SearchStudentOutsiteList || SearchStudentOutsiteList.length === 0) {
             return (
                 <tr>
                     <td colSpan="12" className="px-4 py-12 text-center">
@@ -189,16 +190,15 @@ export default function LookUpExternalStudent() {
         }
 
         // Data Rows
-        return SearchGraduationList.map((row, index) => (
+        return SearchStudentOutsiteList.map((row, index) => (
             <tr key={index} className="border-b border-gray-200 hover:bg-gray-50">
-                <td className="px-4 py-3 border-r border-gray-200">{row.stt}</td>
-                <td className="px-4 py-3 border-r border-gray-200">{row.maHocVien}</td>
-                <td className="px-4 py-3 border-r border-gray-200">{row.hoTen}</td>
-                <td className="px-4 py-3 border-r border-gray-200 text-center">{row.ngaySinh}</td>
-                <td className="px-4 py-3 border-r border-gray-200 text-center">{row.lanThi1}</td>
-                <td className="px-4 py-3 border-r border-gray-200 text-center">{row.lanThi2}</td>
-                <td className="px-4 py-3 border-r border-gray-200 text-center">{row.ketQua}</td>
-                <td className="px-4 py-3">{row.ghiChu}</td>
+                <td className="px-4 py-3 border-r border-gray-200">{row.STT}</td>
+                <td className="px-4 py-3 border-r border-gray-200">{row.StudentCode}</td>
+                <td className="px-4 py-3 border-r border-gray-200">{row.StudentName}</td>
+                <td className="px-4 py-3 border-r border-gray-200 text-center">{row.SubjectName}</td>
+                <td className="px-4 py-3 border-r border-gray-200 text-center">{row.NumberExam}</td>
+                <td className="px-4 py-3 border-r border-gray-200 text-center">{row.TimeStart}</td>
+                <td className="px-4 py-3 border-r border-gray-200 text-center">{row.Score}</td>
             </tr>
         ));
     };
@@ -213,30 +213,19 @@ export default function LookUpExternalStudent() {
                 <div className="bg-white rounded-lg shadow-sm p-4 md:p-6 mb-6">
                     <div className="flex flex-col md:flex-row flex-wrap items-stretch md:items-center gap-4 md:gap-6">
                         <div className="flex items-center gap-3 flex-1 min-w-[200px] md:min-w-0">
-                            <label className="text-gray-600 text-sm whitespace-nowrap">Tìm kiếm</label>
-                            <input
-                                type="text"
-                                value={studentCode}
-                                onChange={(e) => setStudentCode(e.target.value)}
-                                placeholder="Mã học viên"
-                                className="border border-gray-300 rounded px-3 py-2 text-sm w-80 placeholder-gray-400"
-                            />
-                        </div>
-
-                        <div className="flex items-center gap-3 flex-1 min-w-[200px] md:min-w-0">
-                            <label className="text-gray-600 text-sm whitespace-nowrap">Môn học</label>
+                            <label className="text-gray-600 text-sm whitespace-nowrap">Sinh viên</label>
                             <select
-                                value={selectedSubject}
-                                onChange={(e) => setSelectedSubject(e.target.value)}
+                                value={selectedStudent}
+                                onChange={(e) => setSelectedStudent(e.target.value)}
                                 className="border border-gray-300 rounded px-3 py-2 text-sm w-full md:w-80 text-gray-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                                disabled={isLoading || isLoadingSubjects}
+                                disabled={isLoading || isLoadingStudents}
                             >
                                 <option value={0}>
-                                    {isLoadingSubjects ? 'Đang tải...' : '------ chọn môn học ------'}
+                                    {isLoadingStudents ? 'Đang tải...' : '------ chọn sinh viên ------'}
                                 </option>
-                                {subjectLearnAll?.map((item) => (
-                                    <option key={item.SubjectID} value={item.SubjectID}>
-                                        {item.SubjectName}
+                                {studentAll?.map((item) => (
+                                    <option key={item.StudentID} value={item.StudentID}>
+                                        {item.StudentName}
                                     </option>
                                 ))}
                             </select>
@@ -255,7 +244,7 @@ export default function LookUpExternalStudent() {
                             <button
                                 className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-2 rounded flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed flex-1"
                                 onClick={handleExportExcel}
-                                disabled={isLoading || !SearchGraduationList || SearchGraduationList.length === 0}
+                                disabled={isLoading || !SearchStudentOutsiteList || SearchStudentOutsiteList.length === 0}
                             >
                                 <FileDown size={16} />
                                 <span className='whitespace-nowrap'>Export Excel</span>
@@ -270,78 +259,13 @@ export default function LookUpExternalStudent() {
                         <table className="w-full text-sm">
                             <thead className="bg-gray-100 border-b-2 border-gray-300">
                                 <tr>
-                                    <th
-                                        className="px-4 py-3 text-left text-gray-600 font-medium border-r border-gray-200 whitespace-nowrap cursor-pointer hover:bg-gray-100"
-                                        onClick={() => handleSort('stt')}
-                                    >
-                                        <div className="flex items-center gap-2">
-                                            <span>STT</span>
-                                            <SortIcon columnKey="stt" />
-                                        </div>
-                                    </th>
-                                    <th
-                                        className="px-4 py-3 text-left text-gray-600 font-medium border-r border-gray-200 whitespace-nowrap cursor-pointer hover:bg-gray-100"
-                                        onClick={() => handleSort('maHocVien')}
-                                    >
-                                        <div className="flex items-center gap-2">
-                                            <span>Mã số học viên</span>
-                                            <SortIcon columnKey="maHocVien" />
-                                        </div>
-                                    </th>
-                                    <th
-                                        className="px-4 py-3 text-left text-gray-600 font-medium border-r border-gray-200 whitespace-nowrap cursor-pointer hover:bg-gray-100"
-                                        onClick={() => handleSort('hoTen')}
-                                    >
-                                        <div className="flex items-center gap-2">
-                                            <span>Họ và tên</span>
-                                            <SortIcon columnKey="hoTen" />
-                                        </div>
-                                    </th>
-                                    <th
-                                        className="px-4 py-3 text-left text-gray-600 font-medium border-r border-gray-200 whitespace-nowrap cursor-pointer hover:bg-gray-100"
-                                        onClick={() => handleSort('ngaySinh')}
-                                    >
-                                        <div className="flex items-center gap-2">
-                                            <span>Ngày sinh</span>
-                                            <SortIcon columnKey="ngaySinh" />
-                                        </div>
-                                    </th>
-                                    <th
-                                        className="px-4 py-3 text-left text-gray-600 font-medium border-r border-gray-200 whitespace-nowrap cursor-pointer hover:bg-gray-100"
-                                        onClick={() => handleSort('lanThi1')}
-                                    >
-                                        <div className="flex items-center gap-2">
-                                            <span>[LT]Lần thi 1</span>
-                                            <SortIcon columnKey="lanThi1" />
-                                        </div>
-                                    </th>
-                                    <th
-                                        className="px-4 py-3 text-left text-gray-600 font-medium border-r border-gray-200 whitespace-nowrap cursor-pointer hover:bg-gray-100"
-                                        onClick={() => handleSort('lanThi2')}
-                                    >
-                                        <div className="flex items-center gap-2">
-                                            <span>[LT]Lần thi 2</span>
-                                            <SortIcon columnKey="lanThi2" />
-                                        </div>
-                                    </th>
-                                    <th
-                                        className="px-4 py-3 text-left text-gray-600 font-medium border-r border-gray-200 whitespace-nowrap cursor-pointer hover:bg-gray-100"
-                                        onClick={() => handleSort('ketQua')}
-                                    >
-                                        <div className="flex items-center gap-2">
-                                            <span>Kết quả</span>
-                                            <SortIcon columnKey="ketQua" />
-                                        </div>
-                                    </th>
-                                    <th
-                                        className="px-4 py-3 text-left text-gray-600 font-medium whitespace-nowrap cursor-pointer hover:bg-gray-100"
-                                        onClick={() => handleSort('ghiChu')}
-                                    >
-                                        <div className="flex items-center gap-2">
-                                            <span>Ghi chú</span>
-                                            <SortIcon columnKey="ghiChu" />
-                                        </div>
-                                    </th>
+                                    <th className="px-4 py-3 text-center text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap w-16">STT</th>
+                                    <th className="px-4 py-3 text-center text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">Mã học viên</th>
+                                    <th className="px-4 py-3 text-center text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">Họ và Tên</th>
+                                    <th className="px-4 py-3 text-center text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">Môn học</th>
+                                    <th className="px-4 py-3 text-center text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">Lần thi</th>
+                                    <th className="px-4 py-3 text-center text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">Thời gian bắt đầu</th>
+                                    <th className="px-4 py-3 text-center text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">điểm</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -351,7 +275,7 @@ export default function LookUpExternalStudent() {
                     </div>
 
                     {/* Pagination */}
-                    {!isLoading && !error && SearchGraduationList && SearchGraduationList.length > 0 && (
+                    {!isLoading && !error && SearchStudentOutsiteList && SearchStudentOutsiteList.length > 0 && (
                         <div className="p-4 md:px-6 md:py-4 border-t border-gray-200 flex flex-col md:flex-row items-center justify-between gap-4">
                             {/* Pagination Controls */}
                             <div className="flex items-center gap-2">
@@ -411,7 +335,7 @@ export default function LookUpExternalStudent() {
 
                             <div className="flex flex-wrap items-center justify-center md:justify-end gap-4">
                                 <span className="text-sm text-gray-600 whitespace-nowrap">
-                                    Hiển thị {((currentPage - 1) * pageSize) + 1} - {Math.min(currentPage * pageSize, SearchGraduationTotal)} / {SearchGraduationTotal} kết quả
+                                    Hiển thị {((currentPage - 1) * pageSize) + 1} - {Math.min(currentPage * pageSize, SearchStudentOutsiteTotal)} / {SearchStudentOutsiteTotal} kết quả
                                 </span>
                                 <div className="flex items-center gap-2">
                                     <span className="text-sm text-gray-600 whitespace-nowrap">Số dòng:</span>

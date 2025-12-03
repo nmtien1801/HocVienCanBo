@@ -5,6 +5,7 @@ import scheduleReducer from "./scheduleSlice";
 import learningClassReducer from "./learningClassSlice";
 import newReducer from "./newSlice";
 import pointReducer from "./pointSlice";
+import studentReducer from "./studentSlice";
 
 export const store = configureStore({
   reducer: {
@@ -14,5 +15,6 @@ export const store = configureStore({
     learningClass: learningClassReducer,
     news: newReducer,
     point: pointReducer,
+    student: studentReducer
   },
 });
