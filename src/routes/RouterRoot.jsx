@@ -32,7 +32,8 @@ import ChangePassStudent from "../pages/system/ChangePassStudent.jsx";
 import ChangePassTC from "../pages/system/ChangePassTC.jsx";
 import Account from "../pages/system/Account.jsx";
 import Home from "../pages/auth/Home.jsx";
-import Login from "../pages/auth/Login.jsx";
+import LoginTC from "../pages/auth/LoginTC.jsx";
+import LoginHBD from "../pages/auth/LoginHBD.jsx";
 import LoadingSpinner from "../components/LoadingSpinner.jsx";
 import { GetAccount } from "../redux/authSlice.js";
 import ManagerNotify from "../pages/notification/ManagerNotify.jsx";
@@ -90,7 +91,15 @@ function RouterRoot() {
           path="/loginTC"
           element={
             <PublicRoute userInfo={userInfo} isLoading={isLoading} hasCheckedAuth={hasCheckedAuth}>
-              <Login />
+              <LoginTC />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/loginHBD"
+          element={
+            <PublicRoute userInfo={userInfo} isLoading={isLoading} hasCheckedAuth={hasCheckedAuth}>
+              <LoginHBD />
             </PublicRoute>
           }
         />

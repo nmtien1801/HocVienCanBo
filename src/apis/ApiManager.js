@@ -19,7 +19,7 @@ api.interceptors.request.use((config) => {
 
   config.headers["Authorization"] = `Bearer ${token}`;
   if (headerValue) {
-    config.headers["UserID"] = headerValue.UserID || headerValue.StudentID;
+    config.headers["UserID"] = headerValue.UserID || headerValue.StudentID || headerValue.StudentRegisterID;
     config.headers["TypeUserID"] = headerValue.TypeUserID;
     config.headers["IsOutside"] = headerValue.IsOutside;
     config.headers["Username"] = headerValue.Code || headerValue.StudentCode;
@@ -38,14 +38,14 @@ api.interceptors.response.use(
     switch (status) {
       case 401: {
         const path = window.location.pathname;
-        const publicPaths = ["/", "/loginTC", "/studentregisterTC", "/forgot-password"];
+        const publicPaths = ["/", "/loginTC", "/studentregisterTC", "/loginHBD"];
 
         // ✅ Nếu đang ở trang public, bỏ qua
         if (publicPaths.includes(path)) {
           return Promise.reject(error);
         }
 
-        window.location.href = "/loginTC";
+        window.location.href = "/home";
         return Promise.reject(error);
       }
 

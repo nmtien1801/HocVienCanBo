@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { Login } from '../../redux/authSlice';
+import { LoginHDB } from '../../redux/authSlice';
 import { toast } from "react-toastify";
 
 const LoginForm = () => {
@@ -18,7 +18,7 @@ const LoginForm = () => {
             PassWord: password,
         };
         if (username && password) {
-            let res = await dispatch(Login(body));
+            let res = await dispatch(LoginHDB(body));
             if (res && res.payload.data && res.payload.data.TypeUserID !== 0) {
                 navigate('/dashboard');
             } else {
@@ -41,22 +41,20 @@ const LoginForm = () => {
 
                     <div className="flex items-center justify-center space-x-3 mb-6">
                         <div className="flex-grow border-t border-gray-300 max-w-[40px]"></div>
-                        <h1 className="text-xl text-gray-700 font-light tracking-wide">Login Form</h1>
+                        <h1 className="text-xl text-gray-700 font-light tracking-wide">Đăng nhập Hệ bồi dưỡng</h1>
                         <div className="flex-grow border-t border-gray-300 max-w-[40px]"></div>
                     </div>
                 </div>
 
                 {/* --- Form Đăng nhập --- */}
                 <form onSubmit={handleSubmit}>
-
                     {/* Trường Username */}
                     <div className="mb-4">
                         <input
                             type="text"
-                            placeholder="Username"
+                            placeholder="Mã học viên/ Số điện thoại đăng ký"
                             className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:outline-none focus:border-gray-500 placeholder-gray-500 text-sm"
                             required
-                            // 3. Kết nối trạng thái và sự kiện onChange
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                         />
@@ -85,15 +83,15 @@ const LoginForm = () => {
                         </button>
                         <button
                             type="button"
-                            className="w-[160px] py-2 text-sm text-black border border-gray-300 bg-white hover:bg-gray-50 transition duration-150 rounded-sm"
-                            onClick={() => navigate('/studentregisterTC')}
+                            className="w-[90px] py-2 text-sm text-black border border-gray-300 bg-white hover:bg-gray-50 transition duration-150 rounded-sm"
+                            onClick={() => navigate('/studentregisterHDB')}
                         >
-                            Đăng ký đóng học phí
+                            Đăng ký
                         </button>
                         <button
                             type="button"
-                            className="w-[70px] py-2 text-sm text-black border border-gray-300 bg-white hover:bg-gray-50 transition duration-150 rounded-sm"
-                            onClick={() => window.history.back()}
+                            className="w-[90px] py-2 text-sm text-black border border-gray-300 bg-white hover:bg-gray-50 transition duration-150 rounded-sm"
+                            onClick={() => navigate('/home')}
                         >
                             Quay lại
                         </button>

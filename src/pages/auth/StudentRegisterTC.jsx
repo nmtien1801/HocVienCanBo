@@ -2,8 +2,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import ApiAuth from '../../apis/ApiAuth';
 import { toast } from 'react-toastify';
 import '../../components/FormFields/Captcha/captcha.css'
+import { useNavigate } from 'react-router-dom';
 
 export default function HCARegistrationForm() {
+    const navigate = useNavigate();
+
     // 1. STATE DỮ LIỆU FORM
     const [formData, setFormData] = useState({
         StudentName: '',
@@ -32,7 +35,7 @@ export default function HCARegistrationForm() {
             code += chars.charAt(Math.floor(Math.random() * chars.length));
         }
         setCaptchaCode(code);
-        setFormData(prev => ({ ...prev, captcha: '' })); 
+        setFormData(prev => ({ ...prev, captcha: '' }));
         return code;
     }, []);
 
@@ -55,7 +58,7 @@ export default function HCARegistrationForm() {
                 ctx.fillText(captchaCode, canvas.width / 2, canvas.height / 2 + 15);
             }
         }
-    }, [captchaCode]); 
+    }, [captchaCode]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -68,8 +71,8 @@ export default function HCARegistrationForm() {
             CCCD: '', CompanyName: '', CompanyTaxCode: '', GenderID: 'Nam', ClassName: '',
             Position: '', Email: '', Password: '', CompanyAddress: '', captcha: ''
         });
-        toast.info('Đã xóa dữ liệu form và làm mới Captcha.');
-        generateCaptcha(); 
+        generateCaptcha();
+        navigate('/loginTC')
     };
 
     const handleSubmit = async (e) => {
@@ -89,7 +92,7 @@ export default function HCARegistrationForm() {
 
         const payload = {
             StudentName: formData.StudentName,
-            Birthday: formattedBirthday, 
+            Birthday: formattedBirthday,
             PlaceBirthday: formData.PlaceBirthday,
             Nation: formData.Nation,
             Phone: formData.Phone,
@@ -134,8 +137,8 @@ export default function HCARegistrationForm() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
-            <div className="max-w-6xl mx-auto px-4">
+        <div className="min-h-screen bg-gray-50">
+            <div className="max-w-0xl mx-auto px-4">
                 {/* Header */}
                 <div className="text-center mb-8">
                     <div className="mx-auto w-32 h-32 mb-4">
@@ -148,92 +151,105 @@ export default function HCARegistrationForm() {
 
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-8">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                         {/* Left Column */}
-                        <div className="space-y-4">
-                            {/* Input fields */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <div className="space-y-6">
+
+                            {/* 1. Tên Học viên */}
+                            <div className="flex items-center">
+                                <label className="w-1/3 text-sm font-medium text-gray-700 pr-4">
                                     Tên Học viên <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     name="StudentName"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-2/3 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     value={formData.StudentName}
                                     onChange={handleChange}
                                 />
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+
+                            {/* 2. Ngày sinh */}
+                            <div className="flex items-center">
+                                <label className="w-1/3 text-sm font-medium text-gray-700 pr-4">
                                     Ngày sinh <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="date"
                                     name="Birthday"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-2/3 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     value={formData.Birthday}
                                     onChange={handleChange}
                                     placeholder="DD/MM/YYYY"
                                 />
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+
+                            {/* 3. Dân tộc */}
+                            <div className="flex items-center">
+                                <label className="w-1/3 text-sm font-medium text-gray-700 pr-4">
                                     Dân tộc <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     name="Nation"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-2/3 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     value={formData.Nation}
                                     onChange={handleChange}
                                 />
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+
+                            {/* 4. Di động */}
+                            <div className="flex items-center">
+                                <label className="w-1/3 text-sm font-medium text-gray-700 pr-4">
                                     Di động <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="tel"
                                     name="Phone"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-2/3 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     value={formData.Phone}
                                     onChange={handleChange}
                                 />
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+
+                            {/* 5. CCCD */}
+                            <div className="flex items-center">
+                                <label className="w-1/3 text-sm font-medium text-gray-700 pr-4">
                                     CCCD
                                 </label>
                                 <input
                                     type="text"
                                     name="CCCD"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-2/3 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     value={formData.CCCD}
                                     onChange={handleChange}
                                 />
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+
+                            {/* 6. Tên đơn vị */}
+                            <div className="flex items-center">
+                                <label className="w-1/3 text-sm font-medium text-gray-700 pr-4">
                                     Tên đơn vị <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     name="CompanyName"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-2/3 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     placeholder="Đơn vị công tác"
                                     value={formData.CompanyName}
                                     onChange={handleChange}
                                 />
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+
+                            {/* 7. Mã số thuế */}
+                            <div className="flex items-center">
+                                <label className="w-1/3 text-sm font-medium text-gray-700 pr-4">
                                     Mã số thuế <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     name="CompanyTaxCode"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-2/3 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     value={formData.CompanyTaxCode}
                                     onChange={handleChange}
                                 />
@@ -241,92 +257,111 @@ export default function HCARegistrationForm() {
                         </div>
 
                         {/* Right Column */}
-                        <div className="space-y-4">
+                        <div className="space-y-6">
+
+                            {/* 8. Giới tính & Mã Lớp (Giữ nguyên flex-1 để chúng chia đôi cột) */}
                             <div className="flex gap-4">
+                                {/* Giới tính */}
                                 <div className="flex-1">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Giới tính
-                                    </label>
-                                    <select
-                                        name="GenderID"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        value={formData.GenderID}
-                                        onChange={handleChange}
-                                    >
-                                        <option value="Nam">Nam</option>
-                                        <option value="Nữ">Nữ</option>
-                                    </select>
+                                    <div className="flex items-center">
+                                        <label className="w-1/3 text-sm font-medium text-gray-700 pr-4">
+                                            Giới tính
+                                        </label>
+                                        <select
+                                            name="GenderID"
+                                            className="w-2/3 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            value={formData.GenderID}
+                                            onChange={handleChange}
+                                        >
+                                            <option value="Nam">Nam</option>
+                                            <option value="Nữ">Nữ</option>
+                                        </select>
+                                    </div>
                                 </div>
+
+                                {/* Mã Lớp */}
                                 <div className="flex-1">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Mã Lớp <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="ClassName"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        value={formData.ClassName}
-                                        onChange={handleChange}
-                                    />
+                                    <div className="flex items-center">
+                                        <label className="w-1/3 text-sm font-medium text-gray-700 pr-4">
+                                            Mã Lớp <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="ClassName"
+                                            className="w-2/3 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            value={formData.ClassName}
+                                            onChange={handleChange}
+                                        />
+                                    </div>
                                 </div>
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+
+                            {/* 9. Nơi sinh */}
+                            <div className="flex items-center">
+                                <label className="w-1/3 text-sm font-medium text-gray-700 pr-4">
                                     Nơi sinh <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     name="PlaceBirthday"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-2/3 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     value={formData.PlaceBirthday}
                                     onChange={handleChange}
                                 />
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+
+                            {/* 10. Chức danh/ Chức vụ */}
+                            <div className="flex items-center">
+                                <label className="w-1/3 text-sm font-medium text-gray-700 pr-4">
                                     Chức danh/ Chức vụ
                                 </label>
                                 <input
                                     type="text"
                                     name="Position"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-2/3 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     value={formData.Position}
                                     onChange={handleChange}
                                 />
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+
+                            {/* 11. Email */}
+                            <div className="flex items-center">
+                                <label className="w-1/3 text-sm font-medium text-gray-700 pr-4">
                                     Email <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="email"
                                     name="Email"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-2/3 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     value={formData.Email}
                                     onChange={handleChange}
                                 />
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+
+                            {/* 12. Mật khẩu */}
+                            <div className="flex items-center">
+                                <label className="w-1/3 text-sm font-medium text-gray-700 pr-4">
                                     Mật khẩu <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="password"
                                     name="Password"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-2/3 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     placeholder="Mật khẩu đăng nhập"
                                     value={formData.Password}
                                     onChange={handleChange}
                                 />
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+
+                            {/* 13. Địa chỉ đơn vị */}
+                            <div className="flex items-center">
+                                <label className="w-1/3 text-sm font-medium text-gray-700 pr-4">
                                     Địa chỉ đơn vị <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     name="CompanyAddress"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-2/3 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     value={formData.CompanyAddress}
                                     onChange={handleChange}
                                 />
@@ -364,13 +399,13 @@ export default function HCARegistrationForm() {
                         <div className="flex gap-4 mt-6">
                             <button
                                 type="submit"
-                                className="px-8 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="btnSubmit"
                             >
                                 Đăng ký
                             </button>
                             <button
                                 type="button"
-                                className="px-8 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                                className="btnBack"
                                 onClick={handleClearForm}
                             >
                                 Trở về

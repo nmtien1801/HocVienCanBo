@@ -5,12 +5,21 @@ const initialState = {
   userInfo: {},
   isLoading: false,
   hasCheckedAuth: false,
+  type: "",
 };
 
 export const Login = createAsyncThunk("auth/Login", async (data, thunkAPI) => {
   const response = await ApiAuth.LoginTCApi(data);
   return response;
 });
+
+export const LoginHDB = createAsyncThunk(
+  "auth/LoginHDB",
+  async (data, thunkAPI) => {
+    const response = await ApiAuth.LoginHDBApi(data);
+    return response;
+  }
+);
 
 export const GetAccount = createAsyncThunk(
   "auth/GetAccount",
@@ -45,7 +54,9 @@ const authSlice = createSlice({
         state.isLoading = false;
         if (action.payload.data) {
           state.userInfo = action.payload.data || {};
+          sessionStorage.setItem("type", "TC");
           sessionStorage.setItem("fr", JSON.stringify(action.payload.data));
+          state.type = "TC";
         }
       })
       .addCase(Login.rejected, (state, action) => {
@@ -61,12 +72,31 @@ const authSlice = createSlice({
         state.userInfo = action.payload;
         state.isLoading = false;
         state.hasCheckedAuth = true;
+        state.type = sessionStorage.getItem("type");;
       })
       .addCase(GetAccount.rejected, (state, action) => {
         state.userInfo = null;
         state.isLoading = false;
         state.hasCheckedAuth = true;
         sessionStorage.removeItem("fr");
+      });
+
+    // LoginHDB
+    builder
+      .addCase(LoginHDB.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(LoginHDB.fulfilled, (state, action) => {
+        state.isLoading = false;
+        if (action.payload.data) {
+          state.userInfo = action.payload.data || {};
+          sessionStorage.setItem("fr", JSON.stringify(action.payload.data));
+          state.type = "HBD";
+          sessionStorage.setItem("type", "HBD");
+        }
+      })
+      .addCase(LoginHDB.rejected, (state, action) => {
+        state.isLoading = false;
       });
   },
 });

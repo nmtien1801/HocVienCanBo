@@ -5,7 +5,11 @@ export default function Home() {
     const navigate = useNavigate();
 
     const handleNavigateToLogin = (type) => {
-        navigate('/loginTC', { state: { userType: type } });
+        if(type === 'chinh-tri'){
+            navigate('/loginTC');
+        }else{
+            navigate('/loginHBD');
+        }
     };
 
     return (

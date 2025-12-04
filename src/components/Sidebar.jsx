@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { Home, FileEdit, BarChart3, TrendingUp, Calendar, ChevronDown, User, X } from 'lucide-react';
 import { useSelector } from "react-redux";
@@ -7,6 +7,26 @@ import { TypeUserIDCons } from "../utils/constants";
 export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
   const { userInfo } = useSelector((state) => state.auth);
   const [expandedMenu, setExpandedMenu] = useState('system');
+  const [role, setRole] = useState({ role: "", canAccess: false });
+
+  useEffect(() => {
+    const userType = userInfo?.TypeUserID;
+    const studentType = userInfo?.TypeStudentID;
+    if (userType) {
+      if (userType !== TypeUserIDCons.Student) {
+        setRole({ role: "TC_TRUE", canAccess: true });; // Teacher, Admin
+      } else {
+        setRole({ role: "TC_FALSE", canAccess: false }); // Student
+      }
+    } else if (studentType) {
+      if (studentType !== TypeUserIDCons.Student) {
+        setRole({ role: "HBD_TRUE", canAccess: true }); // Teacher, Admin
+      } else {
+        setRole({ role: "HBD_FALSE", canAccess: false }); // Student
+      }
+    }
+
+  }, [userInfo, TypeUserIDCons.Student])
 
   const toggleMenu = (menu) => {
     setExpandedMenu(prev => prev === menu ? null : menu);
@@ -14,9 +34,7 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
 
   const systemItems = [
     { label: 'Trang chủ', path: '/dashboard' },
-    userInfo?.TypeUserID !== TypeUserIDCons.Student
-      ? { label: 'Đổi mật khẩu học viên', path: '/change-pass-student' }
-      : null,
+    role.canAccess ? { label: 'Đổi mật khẩu học viên', path: '/change-pass-student' } : null,
     { label: 'Đổi mật khẩu tài khoản', path: '/change-pass-tc' },
     { label: 'Thông tin tài khoản', path: '/account' },
     userInfo?.TypeUserID === TypeUserIDCons.Administrator
@@ -25,13 +43,9 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
   ].filter(Boolean)
 
   const scheduleItems = [
-    userInfo?.TypeUserID !== TypeUserIDCons.Student
-      ? { label: 'Lịch dạy tháng', path: '/schedule-teach-month' }
-      : { label: 'Lịch học tháng', path: '/schedule-month' },
+    role.canAccess ? { label: 'Lịch dạy tháng', path: '/schedule-teach-month' } : { label: 'Lịch học tháng', path: '/schedule-month' },
     { label: 'Tra cứu lịch học - môn học', path: '/lookup' },
-    userInfo?.TypeUserID !== TypeUserIDCons.Student
-      ? { label: 'Lịch thi tháng', path: '/schedule-exam-month' }
-      : null,
+    role.canAccess ? { label: 'Lịch thi tháng', path: '/schedule-exam-month' } : null,
     { label: 'Thời khóa biểu lớp', path: '/timetable-class' },
     { label: 'Thời khóa biểu của tôi', path: '/timetable' },
     { label: 'Bài giảng của môn', path: '/lesson' },
@@ -145,90 +159,94 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
                 )}
               </div>
 
-              {/* Lịch học */}
-              <div>
-                <button
-                  onClick={() => toggleMenu('schedule')}
-                  className={`w-full px-3 py-2.5 flex items-center gap-3 rounded-lg hover:bg-white/10 transition-all ${expandedMenu === 'schedule' ? 'bg-white/15 shadow-sm' : ''
-                    }`}
-                >
-                  <FileEdit className="w-5 h-5 flex-shrink-0" />
-                  <span className="flex-1 text-left text-sm font-medium">Lịch học</span>
-                  <ChevronDown className={`w-4 h-4 transition-transform ${expandedMenu === 'schedule' ? 'rotate-180' : ''}`} />
-                </button>
+              {(role.role === "TC_TRUE" || role.role === "TC_TRUE") &&
+                <>
+                  {/* Lịch học */}
+                  <div>
+                    <button
+                      onClick={() => toggleMenu('schedule')}
+                      className={`w-full px-3 py-2.5 flex items-center gap-3 rounded-lg hover:bg-white/10 transition-all ${expandedMenu === 'schedule' ? 'bg-white/15 shadow-sm' : ''
+                        }`}
+                    >
+                      <FileEdit className="w-5 h-5 flex-shrink-0" />
+                      <span className="flex-1 text-left text-sm font-medium">Lịch học</span>
+                      <ChevronDown className={`w-4 h-4 transition-transform ${expandedMenu === 'schedule' ? 'rotate-180' : ''}`} />
+                    </button>
 
-                {expandedMenu === 'schedule' && (
-                  <div className="mt-1 ml-2 space-y-0.5">
-                    {scheduleItems.map((item, index) => (
-                      <NavLink
-                        key={index}
-                        to={item.path}
-                        onClick={() => window.innerWidth < 1024 && onToggleSidebar?.()}
-                        className={({ isActive }) =>
-                          `flex items-center gap-2 px-3 py-2 pl-10 rounded-lg transition-all text-sm no-underline text-white ${isActive
-                            ? 'bg-white/20 font-semibold shadow-sm'
-                            : 'hover:bg-white/10'
-                          }`
-                        }
-                      >
-                        <div className="w-1.5 h-1.5 bg-white rounded-full flex-shrink-0"></div>
-                        <span className="truncate">{item.label}</span>
-                      </NavLink>
-                    ))}
+                    {expandedMenu === 'schedule' && (
+                      <div className="mt-1 ml-2 space-y-0.5">
+                        {scheduleItems.map((item, index) => (
+                          <NavLink
+                            key={index}
+                            to={item.path}
+                            onClick={() => window.innerWidth < 1024 && onToggleSidebar?.()}
+                            className={({ isActive }) =>
+                              `flex items-center gap-2 px-3 py-2 pl-10 rounded-lg transition-all text-sm no-underline text-white ${isActive
+                                ? 'bg-white/20 font-semibold shadow-sm'
+                                : 'hover:bg-white/10'
+                              }`
+                            }
+                          >
+                            <div className="w-1.5 h-1.5 bg-white rounded-full flex-shrink-0"></div>
+                            <span className="truncate">{item.label}</span>
+                          </NavLink>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
 
-              {/* Tra cứu điểm */}
-              {userInfo?.TypeUserID !== TypeUserIDCons.Student && <div>
-                <button
-                  onClick={() => toggleMenu('grades')}
-                  className={`w-full px-3 py-2.5 flex items-center gap-3 rounded-lg hover:bg-white/10 transition-all ${expandedMenu === 'grades' ? 'bg-white/15 shadow-sm' : ''
-                    }`}
-                >
-                  <BarChart3 className="w-5 h-5 flex-shrink-0" />
-                  <span className="flex-1 text-left text-sm font-medium">Tra cứu điểm</span>
-                  <ChevronDown className={`w-4 h-4 transition-transform ${expandedMenu === 'grades' ? 'rotate-180' : ''}`} />
-                </button>
+                  {/* Tra cứu điểm */}
+                  {role.canAccess && <div>
+                    <button
+                      onClick={() => toggleMenu('grades')}
+                      className={`w-full px-3 py-2.5 flex items-center gap-3 rounded-lg hover:bg-white/10 transition-all ${expandedMenu === 'grades' ? 'bg-white/15 shadow-sm' : ''
+                        }`}
+                    >
+                      <BarChart3 className="w-5 h-5 flex-shrink-0" />
+                      <span className="flex-1 text-left text-sm font-medium">Tra cứu điểm</span>
+                      <ChevronDown className={`w-4 h-4 transition-transform ${expandedMenu === 'grades' ? 'rotate-180' : ''}`} />
+                    </button>
 
-                {expandedMenu === 'grades' && (
-                  <div className="mt-1 ml-2 space-y-0.5">
-                    {gradesItems.map((item, index) => (
-                      <NavLink
-                        key={index}
-                        to={item.path}
-                        onClick={() => window.innerWidth < 1024 && onToggleSidebar?.()}
-                        className={({ isActive }) =>
-                          `flex items-center gap-2 px-3 py-2 pl-10 rounded-lg transition-all text-sm no-underline text-white ${isActive
-                            ? 'bg-white/20 font-semibold shadow-sm'
-                            : 'hover:bg-white/10'
-                          }`
-                        }
-                      >
-                        <div className="w-1.5 h-1.5 bg-white rounded-full flex-shrink-0"></div>
-                        <span className="truncate">{item.label}</span>
-                      </NavLink>
-                    ))}
+                    {expandedMenu === 'grades' && (
+                      <div className="mt-1 ml-2 space-y-0.5">
+                        {gradesItems.map((item, index) => (
+                          <NavLink
+                            key={index}
+                            to={item.path}
+                            onClick={() => window.innerWidth < 1024 && onToggleSidebar?.()}
+                            className={({ isActive }) =>
+                              `flex items-center gap-2 px-3 py-2 pl-10 rounded-lg transition-all text-sm no-underline text-white ${isActive
+                                ? 'bg-white/20 font-semibold shadow-sm'
+                                : 'hover:bg-white/10'
+                              }`
+                            }
+                          >
+                            <div className="w-1.5 h-1.5 bg-white rounded-full flex-shrink-0"></div>
+                            <span className="truncate">{item.label}</span>
+                          </NavLink>
+                        ))}
+                      </div>
+                    )}
+                  </div>}
+
+                  {/* Kết quả học tập */}
+                  <div>
+                    <NavLink
+                      to="/learning-results"
+                      onClick={() => window.innerWidth < 1024 && onToggleSidebar?.()}
+                      className={({ isActive }) =>
+                        `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-sm no-underline text-white ${isActive
+                          ? 'bg-white/20 font-semibold shadow-sm'
+                          : 'hover:bg-white/10'
+                        }`
+                      }
+                    >
+                      <TrendingUp className="w-5 h-5 flex-shrink-0" />
+                      <span className="flex-1 text-left font-medium">Kết quả học tập</span>
+                    </NavLink>
                   </div>
-                )}
-              </div>}
-
-              {/* Kết quả học tập */}
-              <div>
-                <NavLink
-                  to="/learning-results"
-                  onClick={() => window.innerWidth < 1024 && onToggleSidebar?.()}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-sm no-underline text-white ${isActive
-                      ? 'bg-white/20 font-semibold shadow-sm'
-                      : 'hover:bg-white/10'
-                    }`
-                  }
-                >
-                  <TrendingUp className="w-5 h-5 flex-shrink-0" />
-                  <span className="flex-1 text-left font-medium">Kết quả học tập</span>
-                </NavLink>
-              </div>
+                </>
+              }
 
               {/* Thông báo */}
               <div>
@@ -274,27 +292,29 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
               >
                 <Home className="w-6 h-6" />
               </button>
-              <button
-                onClick={() => toggleMenu('schedule')}
-                className="p-3 hover:bg-white/10 rounded-lg transition-colors w-full flex justify-center"
-                title="Lịch học"
-              >
-                <FileEdit className="w-6 h-6" />
-              </button>
-              <button
-                onClick={() => toggleMenu('grades')}
-                className="p-3 hover:bg-white/10 rounded-lg transition-colors w-full flex justify-center"
-                title="Tra cứu điểm"
-              >
-                <BarChart3 className="w-6 h-6" />
-              </button>
-              <NavLink
-                to="/learning-results"
-                className="p-3 hover:bg-white/10 rounded-lg transition-colors w-full flex justify-center no-underline text-white"
-                title="Kết quả học tập"
-              >
-                <TrendingUp className="w-6 h-6" />
-              </NavLink>
+              {(role.role === "TC_TRUE" || role.role === "TC_TRUE") && <>
+                <button
+                  onClick={() => toggleMenu('schedule')}
+                  className="p-3 hover:bg-white/10 rounded-lg transition-colors w-full flex justify-center"
+                  title="Lịch học"
+                >
+                  <FileEdit className="w-6 h-6" />
+                </button>
+                <button
+                  onClick={() => toggleMenu('grades')}
+                  className="p-3 hover:bg-white/10 rounded-lg transition-colors w-full flex justify-center"
+                  title="Tra cứu điểm"
+                >
+                  <BarChart3 className="w-6 h-6" />
+                </button>
+                <NavLink
+                  to="/learning-results"
+                  className="p-3 hover:bg-white/10 rounded-lg transition-colors w-full flex justify-center no-underline text-white"
+                  title="Kết quả học tập"
+                >
+                  <TrendingUp className="w-6 h-6" />
+                </NavLink>
+              </>}
               <button
                 onClick={() => toggleMenu('notifications')}
                 className="p-3 hover:bg-white/10 rounded-lg transition-colors w-full flex justify-center"

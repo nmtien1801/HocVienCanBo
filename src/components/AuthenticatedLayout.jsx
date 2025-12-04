@@ -4,21 +4,20 @@ import {
 } from "react-router-dom";
 import SlideBar from "./Sidebar";
 import Header from "./Header";
+import { useSelector, useDispatch } from "react-redux";
 
-const MOBILE_BREAKPOINT = 1024; // lg breakpoint in Tailwind CSS
+const MOBILE_BREAKPOINT = 1024;
 
 function AuthenticatedLayout() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [isMobile, setIsMobile] = useState(window.innerWidth < MOBILE_BREAKPOINT);
+    const { type } = useSelector((state) => state.auth);
 
     // Xử lý sự kiện thay đổi kích thước màn hình
     useEffect(() => {
         const handleResize = () => {
             const currentIsMobile = window.innerWidth < MOBILE_BREAKPOINT;
             setIsMobile(currentIsMobile);
-            
-            // Nếu chuyển sang mobile, tự động đóng sidebar (để tránh lỗi layout)
-            // Nếu chuyển sang desktop, đặt lại trạng thái mở mặc định
             if (currentIsMobile) {
                 setIsSidebarOpen(false);
             } else {
@@ -27,14 +26,11 @@ function AuthenticatedLayout() {
         };
 
         window.addEventListener('resize', handleResize);
-        // Thiết lập trạng thái ban đầu
         handleResize();
 
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    // Xử lý logic đóng sidebar khi click ra ngoài trên mobile
-    // (Không cần thiết nếu sử dụng Header để đóng/mở, nhưng là một phương pháp tốt)
     const sidebarRef = useRef(null);
 
     // Xử lý Toggle Sidebar
@@ -42,7 +38,6 @@ function AuthenticatedLayout() {
         setIsSidebarOpen(prev => !prev);
     }
 
-    // Xác định lề trái (marginLeft) dựa trên trạng thái desktop/mobile
     const contentMargin = isMobile 
         ? '0px' // Trên mobile, sidebar đè lên nội dung, nên không cần margin
         : (isSidebarOpen ? '288px' : '80px'); // Trên desktop, đẩy nội dung
