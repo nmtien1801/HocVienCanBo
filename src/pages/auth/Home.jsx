@@ -5,7 +5,7 @@ export default function Home() {
     const navigate = useNavigate();
 
     const handleNavigateToLogin = (type) => {
-        navigate('/login', { state: { userType: type } });
+        navigate('/loginTC', { state: { userType: type } });
     };
 
     return (
@@ -58,7 +58,7 @@ export default function Home() {
                         className="group relative px-12 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg rounded-2xl shadow-2xl transition-all duration-300 transform hover:scale-105 border-4 border-white cursor-pointer"
                     >
                         {/* Sửa: Thêm class z-10 vào thẻ span */}
-                        <span className="relative z-10">HỆ ĐÀO TẠNG NGẮN HẠN</span>
+                        <span className="relative z-10">HỆ BỒI DƯỠNG NGẮN HẠN</span>
                         <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-700 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     </button>
                 </div>

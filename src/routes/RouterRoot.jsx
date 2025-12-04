@@ -87,7 +87,7 @@ function RouterRoot() {
           }
         />
         <Route
-          path="/login"
+          path="/loginTC"
           element={
             <PublicRoute userInfo={userInfo} isLoading={isLoading} hasCheckedAuth={hasCheckedAuth}>
               <Login />

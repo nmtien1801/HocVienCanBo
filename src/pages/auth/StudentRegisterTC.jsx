@@ -23,23 +23,16 @@ export default function HCARegistrationForm() {
         captcha: '' // Giá trị người dùng nhập
     });
 
-    // 2. STATE CHO CAPTCHA
-    const [captchaCode, setCaptchaCode] = useState(''); // Mã CAPTCHA thực tế cần hiển thị
-    const [captchaError, setCaptchaError] = useState('');
-    const [successMessage, setSuccessMessage] = useState('');
+    const [captchaCode, setCaptchaCode] = useState('');
 
-    // Hàm tạo CAPTCHA mới (nên được đặt ở ngoài hoặc sử dụng useCallback)
     const generateCaptcha = useCallback(() => {
-        // *** LƯU Ý QUAN TRỌNG: Đây là logic tạo CAPTCHA MẪU đơn giản. 
-        // Trong ứng dụng thực tế, bạn cần logic phức tạp hơn (sử dụng thư viện hoặc API backend).
         const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
         let code = '';
         for (let i = 0; i < 6; i++) {
             code += chars.charAt(Math.floor(Math.random() * chars.length));
         }
         setCaptchaCode(code);
-        setFormData(prev => ({ ...prev, captcha: '' })); // Xóa input cũ
-        setCaptchaError(''); // Xóa lỗi cũ
+        setFormData(prev => ({ ...prev, captcha: '' })); 
         return code;
     }, []);
 
@@ -56,15 +49,13 @@ export default function HCARegistrationForm() {
                 const ctx = canvas.getContext('2d');
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                // Cài đặt phong cách giống như CSS cũ
                 ctx.font = 'italic 100 46px "Roboto Slab", serif';
                 ctx.fillStyle = '#ccc';
                 ctx.textAlign = 'center';
-                // Đặt text ở giữa canvas
                 ctx.fillText(captchaCode, canvas.width / 2, canvas.height / 2 + 15);
             }
         }
-    }, [captchaCode]); // Chạy lại khi captchaCode thay đổi
+    }, [captchaCode]); 
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -77,28 +68,28 @@ export default function HCARegistrationForm() {
             CCCD: '', CompanyName: '', CompanyTaxCode: '', GenderID: 'Nam', ClassName: '',
             Position: '', Email: '', Password: '', CompanyAddress: '', captcha: ''
         });
-        setCaptchaError('');
-        setSuccessMessage('');
-        generateCaptcha(); // Làm mới CAPTCHA khi xóa form
+        toast.info('Đã xóa dữ liệu form và làm mới Captcha.');
+        generateCaptcha(); 
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setSuccessMessage('');
-        setCaptchaError('');
 
         // 3. XÁC THỰC CAPTCHA TRÊN CLIENT
         if (formData.captcha.toUpperCase() !== captchaCode.toUpperCase()) {
-            setCaptchaError('Mã Captcha không đúng. Vui lòng thử lại.');
+            toast.error('Mã Captcha không đúng. Vui lòng thử lại.');
             generateCaptcha(); // Làm mới CAPTCHA
             return;
         }
 
         const genderIDValue = formData.GenderID === 'Nam' ? 1 : 0; // Giả định: 1 = Nam, 0 = Nữ
+        const formattedBirthday = formData.Birthday
+            ? formData.Birthday.replace(/-/g, '/')
+            : '';
 
         const payload = {
             StudentName: formData.StudentName,
-            Birthday: formData.Birthday,
+            Birthday: formattedBirthday, 
             PlaceBirthday: formData.PlaceBirthday,
             Nation: formData.Nation,
             Phone: formData.Phone,
@@ -113,24 +104,30 @@ export default function HCARegistrationForm() {
             CompanyAddress: formData.CompanyAddress,
             TypeStudentID: 1,
             // Đảm bảo không gửi trường captcha lên BE
+            PositionPlan: "test",
+            Academy: "",
+            TimeWork: "",
+            OfficalManager: "",
+            Address: "",
+            Description: "",
+            FilePath: ""
         };
 
         console.log('Form data submitted (Payload to BE):', payload);
 
-        // 4. GỌI API
         try {
             let res = await ApiAuth.StudentRegisterApi(payload);
+            console.log('Response from API:', res);
+
             if (!res.data) {
-                toast.error(res.message);
-                // Nếu BE báo lỗi (kể cả lỗi xác thực dữ liệu), làm mới CAPTCHA
+                toast.error(res.message || 'Đăng ký thất bại. Vui lòng kiểm tra lại thông tin.');
                 generateCaptcha();
             } else {
-                setSuccessMessage('Đăng ký thành công!');
-                toast.success('Đăng ký TC thành công!');
-                // Bạn có thể chọn clear form hoặc chuyển hướng ở đây
-                // handleClearForm(); 
+                toast.success('Đăng ký thành công!');
+                handleClearForm();
             }
         } catch (error) {
+            console.error('API Registration Error:', error);
             toast.error('Lỗi kết nối hoặc xử lý. Vui lòng thử lại.');
             generateCaptcha();
         }
@@ -140,7 +137,6 @@ export default function HCARegistrationForm() {
         <div className="min-h-screen bg-gray-50 py-8">
             <div className="max-w-6xl mx-auto px-4">
                 {/* Header */}
-                {/* ... (Giữ nguyên) */}
                 <div className="text-center mb-8">
                     <div className="mx-auto w-32 h-32 mb-4">
                         <img src="/logo.png" alt="HCA Logo" className="w-full h-full object-contain" />
@@ -156,20 +152,18 @@ export default function HCARegistrationForm() {
                         {/* Left Column */}
                         <div className="space-y-4">
                             {/* Input fields */}
-                            {/* Chỉ thay đổi onChange thành handleChange chung */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     Tên Học viên <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
-                                    name="StudentName" // Thêm thuộc tính name
+                                    name="StudentName"
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     value={formData.StudentName}
                                     onChange={handleChange}
                                 />
                             </div>
-                            {/* ... Các trường khác cũng cần thêm thuộc tính name và dùng handleChange */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     Ngày sinh <span className="text-red-500">*</span>
@@ -342,9 +336,6 @@ export default function HCARegistrationForm() {
 
                     {/* Captcha Section */}
                     <div className="mt-6 flex flex-col items-center space-y-4">
-                        {/* Hiển thị thông báo thành công nếu có */}
-                        {successMessage && <span className="text-green-600 text-lg">{successMessage}</span>}
-
                         <input
                             id="UserCaptchaCode"
                             name="captcha"
@@ -355,8 +346,6 @@ export default function HCARegistrationForm() {
                             onChange={handleChange}
                             autoComplete="off"
                         />
-                        {/* Hiển thị lỗi Captcha nếu có */}
-                        {captchaError && <span className="text-red-500 text-sm">{captchaError}</span>}
 
                         <div className="CaptchaWrap flex items-center justify-center">
                             <div id="CaptchaImageCode" className="CaptchaTxtField">
@@ -393,7 +382,7 @@ export default function HCARegistrationForm() {
                 {/* Footer */}
                 <div className="text-center mt-8">
                     <h2 className="text-xl font-semibold text-gray-700 mb-2">
-                        HỌC VIỆN CẢN BỘ
+                        HỌC VIỆN CÁN BỘ
                     </h2>
                     <p className="text-sm text-gray-500">
                         ©2024 All Rights Reserved. Privacy and Terms

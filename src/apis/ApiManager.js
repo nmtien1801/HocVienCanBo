@@ -38,14 +38,14 @@ api.interceptors.response.use(
     switch (status) {
       case 401: {
         const path = window.location.pathname;
-        const publicPaths = ["/", "/login", "/studentregisterTC", "/forgot-password"];
+        const publicPaths = ["/", "/loginTC", "/studentregisterTC", "/forgot-password"];
 
         // ✅ Nếu đang ở trang public, bỏ qua
         if (publicPaths.includes(path)) {
           return Promise.reject(error);
         }
 
-        window.location.href = "/login";
+        window.location.href = "/loginTC";
         return Promise.reject(error);
       }
 

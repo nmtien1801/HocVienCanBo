@@ -8,7 +8,7 @@ const initialState = {
 };
 
 export const Login = createAsyncThunk("auth/Login", async (data, thunkAPI) => {
-  const response = await ApiAuth.LoginApi(data);
+  const response = await ApiAuth.LoginTCApi(data);
   return response;
 });
 
