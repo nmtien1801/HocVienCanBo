@@ -258,7 +258,7 @@ export default function GraduationExam2() {
         <div className="bg-white rounded-lg shadow-sm p-4 md:p-6 mb-6">
           {/* Responsive: flex-col/flex-wrap trên mobile, md:flex-row trên desktop */}
           <div className="flex flex-col md:flex-row flex-wrap items-stretch md:items-center gap-4 md:gap-6">
-            <div className="flex items-center gap-3 flex-1 min-w-[200px] md:min-w-0">
+            {/* <div className="flex items-center gap-3 flex-1 min-w-[200px] md:min-w-0">
               <label className="text-gray-600 text-sm whitespace-nowrap">Lớp</label>
               <DropdownSearch
                 options={ClassLearn}
@@ -267,7 +267,7 @@ export default function GraduationExam2() {
                 valueKey="ClassID"
                 onChange={(e) => setSelectedClass(e.ClassID)}
               />
-            </div>
+            </div> */}
 
             <div className="flex items-center gap-3 flex-1 min-w-[200px] md:min-w-0">
               <label className="text-gray-600 text-sm whitespace-nowrap">Môn học</label>
@@ -285,7 +285,7 @@ export default function GraduationExam2() {
                 // Responsive: w-full trên mobile, md:w-auto trên desktop
                 className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-2 rounded flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed flex-1"
                 onClick={handleSearch}
-                disabled={isLoading || !selectedClass}
+                disabled={isLoading}
               >
                 {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
                 Tìm kiếm

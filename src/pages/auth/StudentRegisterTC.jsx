@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import '../../components/FormFields/Captcha/captcha.css'
 import { useNavigate } from 'react-router-dom';
 
-export default function HCARegistrationForm() {
+export default function StudentRegisterTC() {
     const navigate = useNavigate();
 
     // 1. STATE DỮ LIỆU FORM
@@ -111,7 +111,7 @@ export default function HCARegistrationForm() {
                 toast.error(res.message || 'Đăng ký thất bại. Vui lòng kiểm tra lại thông tin.');
                 generateCaptcha();
             } else {
-                toast.success('Đăng ký thành công!');
+                toast.success('Đăng ký thành công! Vui lòng chờ bộ phận xét duyệt kiểm tra và thông báo cho bạn!');
                 handleClearForm();
             }
         } catch (error) {

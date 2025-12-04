@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import '../../components/FormFields/Captcha/captcha.css'
 import { useNavigate } from 'react-router-dom';
 
-export default function HCARegistrationForm() {
+export default function StudentRegisterHBD() {
     const navigate = useNavigate();
 
     // 1. STATE DỮ LIỆU FORM
@@ -25,6 +25,8 @@ export default function HCARegistrationForm() {
         CompanyAddress: '',
         captcha: '' // Giá trị người dùng nhập
     });
+
+    const [selectedFile, setSelectedFile] = useState(null);
 
     const [captchaCode, setCaptchaCode] = useState('');
 
@@ -61,8 +63,12 @@ export default function HCARegistrationForm() {
     }, [captchaCode]);
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
+        const { name, value, files } = e.target;
+        if (name === 'FileAttach' && files && files.length > 0) {
+            setSelectedFile(files[0]);
+        } else {
+            setFormData({ ...formData, [name]: value });
+        }
     };
 
     const handleClearForm = () => {
@@ -71,6 +77,7 @@ export default function HCARegistrationForm() {
             CCCD: '', CompanyName: '', CompanyTaxCode: '', GenderID: 'Nam', ClassName: '',
             Position: '', Email: '', Password: '', CompanyAddress: '', captcha: ''
         });
+        setSelectedFile(null);
         generateCaptcha();
         navigate('/loginTC')
     };
@@ -85,10 +92,17 @@ export default function HCARegistrationForm() {
             return;
         }
 
+        const registrationData = new FormData();
         const genderIDValue = formData.GenderID === 'Nam' ? 1 : 0; // Giả định: 1 = Nam, 0 = Nữ
         const formattedBirthday = formData.Birthday
             ? formData.Birthday.replace(/-/g, '/')
             : '';
+        let fileName = "";
+        if (selectedFile) {
+            fileName = selectedFile.name;
+        } else {
+            fileName = ""
+        }
 
         const payload = {
             ...formData,
@@ -102,16 +116,17 @@ export default function HCARegistrationForm() {
             OfficalManager: "",
             Address: "",
             Description: "",
-            FilePath: ""
+            FilePath: fileName
         };
 
         try {
             let res = await ApiAuth.StudentRegisterApi(payload);
+            console.log('ssss ', res);
             if (!res.data) {
                 toast.error(res.message || 'Đăng ký thất bại. Vui lòng kiểm tra lại thông tin.');
                 generateCaptcha();
             } else {
-                toast.success('Đăng ký thành công!');
+                toast.success('Đăng ký thành công! Vui lòng thanh toán để đối soát');
                 handleClearForm();
             }
         } catch (error) {
@@ -244,7 +259,7 @@ export default function HCARegistrationForm() {
                         {/* Right Column */}
                         <div className="space-y-6">
 
-                            {/* 8. Giới tính & Mã Lớp (Giữ nguyên flex-1 để chúng chia đôi cột) */}
+                            {/* 8. Giới tính & Mã Lớp */}
                             <div className="flex gap-4">
                                 {/* Giới tính */}
                                 <div className="flex-1">
@@ -349,6 +364,18 @@ export default function HCARegistrationForm() {
                                     className="w-3/4 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     value={formData.CompanyAddress}
                                     onChange={handleChange}
+                                />
+                            </div>
+                            <div className="flex items-center">
+                                <label className="w-1/5 text-sm font-medium text-gray-700 pr-2">
+                                    File đính kèm (.rar.zip)
+                                </label>
+                                <input
+                                    type="file"
+                                    name="FileAttach"
+                                    accept=".zip,.rar"
+                                    onChange={handleChange}
+                                    className="w-3/4 text-sm text-gray-700 file:mr-4 file:py-1 file:px-3 file:rounded-md file:border file:border-gray-400 file:text-sm file:font-medium file:bg-gray-200 hover:file:bg-gray-300"
                                 />
                             </div>
                         </div>

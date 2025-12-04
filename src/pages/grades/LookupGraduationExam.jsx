@@ -5,6 +5,7 @@ import { getSearchPointGraduation } from '../../redux/pointSlice.js';
 import { toast } from "react-toastify";
 import { useSelector, useDispatch } from "react-redux";
 import DropdownSearch from '../../components/FormFields/DropdownSearch.jsx';
+import { formatDate } from '../../utils/constants.js';
 
 export default function LookupGraduationExam() {
     const dispatch = useDispatch();
@@ -190,14 +191,14 @@ export default function LookupGraduationExam() {
         // Data Rows
         return SearchGraduationList.map((row, index) => (
             <tr key={index} className="border-b border-gray-200 hover:bg-gray-50">
-                <td className="px-4 py-3 border-r border-gray-200">{row.stt}</td>
-                <td className="px-4 py-3 border-r border-gray-200">{row.maHocVien}</td>
-                <td className="px-4 py-3 border-r border-gray-200">{row.hoTen}</td>
-                <td className="px-4 py-3 border-r border-gray-200 text-center">{row.ngaySinh}</td>
-                <td className="px-4 py-3 border-r border-gray-200 text-center">{row.lanThi1}</td>
-                <td className="px-4 py-3 border-r border-gray-200 text-center">{row.lanThi2}</td>
-                <td className="px-4 py-3 border-r border-gray-200 text-center">{row.ketQua}</td>
-                <td className="px-4 py-3">{row.ghiChu}</td>
+                <td className="px-4 py-3 border-r border-gray-200">{row.STT}</td>
+                <td className="px-4 py-3 border-r border-gray-200">{row.StudentCode}</td>
+                <td className="px-4 py-3 border-r border-gray-200">{row.StudentName}</td>
+                <td className="px-4 py-3 border-r border-gray-200 text-center">{formatDate(row.Birthday)}</td>
+                <td className="px-4 py-3 border-r border-gray-200 text-center">{row.Score1}</td>
+                <td className="px-4 py-3 border-r border-gray-200 text-center">{row.Score2}</td>
+                <td className="px-4 py-3 border-r border-gray-200 text-center">{row.Result}</td>
+                <td className="px-4 py-3">{row.Description}</td>
             </tr>
         ));
     };

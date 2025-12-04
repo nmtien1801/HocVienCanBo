@@ -32,7 +32,7 @@ export default function DropdownSearch({ options = [], placeholder = "Select opt
       {!open ? (
         <button
           onClick={() => setOpen(true)}
-          className="w-full text-gray-600 bg-white border border-gray-200 rounded-xl px-4 py-2 text-left shadow-sm focus:outline-none focus:border-indigo-400 transition"
+          className="w-full text-gray-600 bg-white border border-gray-200 rounded-md px-4 py-2 text-left shadow-sm focus:outline-none focus:border-indigo-400 transition"
 
         >
           {selected ? selected[labelKey] : placeholder}
@@ -40,7 +40,7 @@ export default function DropdownSearch({ options = [], placeholder = "Select opt
       ) : (
         <input
           type="text"
-          className="w-full border rounded-xl px-4 py-2 shadow-sm focus:outline-none"
+          className="w-full border rounded-md px-4 py-2 shadow-sm focus:outline-none"
           placeholder="Search..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -49,14 +49,15 @@ export default function DropdownSearch({ options = [], placeholder = "Select opt
       )}
 
       {open && (
-        <div className="absolute w-full mt-2 bg-white border rounded-xl shadow-lg p-2 z-10">
+        <div
+          className="absolute w-full mt-2 bg-white border rounded-md shadow-lg p-2 z-10">
           <div className="max-h-100 overflow-auto">
             {filtered.length > 0 ? (
               filtered.map((item) => (
                 <div
                   key={item[valueKey]}
                   onClick={() => handleSelect(item)}
-                  className="px-3 py-2 cursor-pointer rounded-lg hover:bg-gray-100"
+                  className="px-3 py-2 cursor-pointer rounded-md hover:bg-gray-100"
                 >
                   {item[labelKey]}
                 </div>
