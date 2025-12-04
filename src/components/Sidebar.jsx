@@ -159,7 +159,7 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
                 )}
               </div>
 
-              {(role.role === "TC_TRUE" || role.role === "TC_TRUE") &&
+              {(role.role === "TC_TRUE" || role.role === "TC_FALSE") &&
                 <>
                   {/* Lịch học */}
                   <div>
@@ -292,7 +292,7 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
               >
                 <Home className="w-6 h-6" />
               </button>
-              {(role.role === "TC_TRUE" || role.role === "TC_TRUE") && <>
+              {(role.role === "TC_TRUE" || role.role === "TC_FALSE") && <>
                 <button
                   onClick={() => toggleMenu('schedule')}
                   className="p-3 hover:bg-white/10 rounded-lg transition-colors w-full flex justify-center"

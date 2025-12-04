@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import ApiAuth from '../../apis/ApiAuth';
 import { toast } from "react-toastify";
-import { useSelector } from "react-redux"; 
+import { useSelector } from "react-redux";
 
 const PasswordInput = ({ label, name, value, isShown, onChange, onToggle }) => (
   <div className="mb-6 flex flex-col md:flex-row md:items-center">
@@ -32,7 +32,7 @@ const PasswordInput = ({ label, name, value, isShown, onChange, onToggle }) => (
 );
 
 export default function ChangePassTC() {
-  const { userInfo } = useSelector((state) => state.auth);
+  const { userInfo, type } = useSelector((state) => state.auth);
   const [formData, setFormData] = useState({
     tenDangNhap: userInfo ? userInfo.StudentName || userInfo.Name : '',
     PassWordOld: '',
@@ -83,7 +83,13 @@ export default function ChangePassTC() {
     }
 
     try {
-      let response = await ApiAuth.ChangePasswordApi(formData);
+      let response
+      if (type === "TC") {
+        response = await ApiAuth.ChangePasswordApi(formData);
+      } else {
+        response = await ApiAuth.ChangePasswordHBDApi(formData);
+      }
+
       if (response && response.data) {
         toast.success('Đổi mật khẩu thành công!');
         setFormData(prev => ({

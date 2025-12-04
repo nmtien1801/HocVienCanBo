@@ -91,23 +91,12 @@ export default function HCARegistrationForm() {
             : '';
 
         const payload = {
-            StudentName: formData.StudentName,
+            ...formData,
             Birthday: formattedBirthday,
-            PlaceBirthday: formData.PlaceBirthday,
-            Nation: formData.Nation,
-            Phone: formData.Phone,
-            CCCD: formData.CCCD,
-            CompanyName: formData.CompanyName,
-            CompanyTaxCode: formData.CompanyTaxCode,
             GenderID: genderIDValue,
-            ClassName: formData.ClassName,
-            Position: formData.Position,
-            Email: formData.Email,
-            Password: formData.Password,
-            CompanyAddress: formData.CompanyAddress,
-            TypeStudentID: 1,
             // Đảm bảo không gửi trường captcha lên BE
-            PositionPlan: "test",
+            TypeStudentID: 1,
+            PositionPlan: "",
             Academy: "",
             TimeWork: "",
             OfficalManager: "",
@@ -116,12 +105,8 @@ export default function HCARegistrationForm() {
             FilePath: ""
         };
 
-        console.log('Form data submitted (Payload to BE):', payload);
-
         try {
             let res = await ApiAuth.StudentRegisterApi(payload);
-            console.log('Response from API:', res);
-
             if (!res.data) {
                 toast.error(res.message || 'Đăng ký thất bại. Vui lòng kiểm tra lại thông tin.');
                 generateCaptcha();
@@ -157,13 +142,13 @@ export default function HCARegistrationForm() {
 
                             {/* 1. Tên Học viên */}
                             <div className="flex items-center">
-                                <label className="w-1/3 text-sm font-medium text-gray-700 pr-4">
+                                <label className="w-1/5 text-sm font-medium text-gray-700 pr-2">
                                     Tên Học viên <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     name="StudentName"
-                                    className="w-2/3 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-3/4 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     value={formData.StudentName}
                                     onChange={handleChange}
                                 />
@@ -171,13 +156,13 @@ export default function HCARegistrationForm() {
 
                             {/* 2. Ngày sinh */}
                             <div className="flex items-center">
-                                <label className="w-1/3 text-sm font-medium text-gray-700 pr-4">
+                                <label className="w-1/5 text-sm font-medium text-gray-700 pr-2">
                                     Ngày sinh <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="date"
                                     name="Birthday"
-                                    className="w-2/3 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-3/4 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     value={formData.Birthday}
                                     onChange={handleChange}
                                     placeholder="DD/MM/YYYY"
@@ -186,13 +171,13 @@ export default function HCARegistrationForm() {
 
                             {/* 3. Dân tộc */}
                             <div className="flex items-center">
-                                <label className="w-1/3 text-sm font-medium text-gray-700 pr-4">
+                                <label className="w-1/5 text-sm font-medium text-gray-700 pr-2">
                                     Dân tộc <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     name="Nation"
-                                    className="w-2/3 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-3/4 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     value={formData.Nation}
                                     onChange={handleChange}
                                 />
@@ -200,13 +185,13 @@ export default function HCARegistrationForm() {
 
                             {/* 4. Di động */}
                             <div className="flex items-center">
-                                <label className="w-1/3 text-sm font-medium text-gray-700 pr-4">
+                                <label className="w-1/5 text-sm font-medium text-gray-700 pr-2">
                                     Di động <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="tel"
                                     name="Phone"
-                                    className="w-2/3 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-3/4 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     value={formData.Phone}
                                     onChange={handleChange}
                                 />
@@ -214,13 +199,13 @@ export default function HCARegistrationForm() {
 
                             {/* 5. CCCD */}
                             <div className="flex items-center">
-                                <label className="w-1/3 text-sm font-medium text-gray-700 pr-4">
+                                <label className="w-1/5 text-sm font-medium text-gray-700 pr-2">
                                     CCCD
                                 </label>
                                 <input
                                     type="text"
                                     name="CCCD"
-                                    className="w-2/3 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-3/4 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     value={formData.CCCD}
                                     onChange={handleChange}
                                 />
@@ -228,13 +213,13 @@ export default function HCARegistrationForm() {
 
                             {/* 6. Tên đơn vị */}
                             <div className="flex items-center">
-                                <label className="w-1/3 text-sm font-medium text-gray-700 pr-4">
+                                <label className="w-1/5 text-sm font-medium text-gray-700 pr-2">
                                     Tên đơn vị <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     name="CompanyName"
-                                    className="w-2/3 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-3/4 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     placeholder="Đơn vị công tác"
                                     value={formData.CompanyName}
                                     onChange={handleChange}
@@ -243,13 +228,13 @@ export default function HCARegistrationForm() {
 
                             {/* 7. Mã số thuế */}
                             <div className="flex items-center">
-                                <label className="w-1/3 text-sm font-medium text-gray-700 pr-4">
+                                <label className="w-1/5 text-sm font-medium text-gray-700 pr-2">
                                     Mã số thuế <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     name="CompanyTaxCode"
-                                    className="w-2/3 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-3/4 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     value={formData.CompanyTaxCode}
                                     onChange={handleChange}
                                 />
@@ -264,12 +249,12 @@ export default function HCARegistrationForm() {
                                 {/* Giới tính */}
                                 <div className="flex-1">
                                     <div className="flex items-center">
-                                        <label className="w-1/3 text-sm font-medium text-gray-700 pr-4">
+                                        <label className="w-1/5 text-sm font-medium text-gray-700 pr-2">
                                             Giới tính
                                         </label>
                                         <select
                                             name="GenderID"
-                                            className="w-2/3 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            className="w-3/4 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                             value={formData.GenderID}
                                             onChange={handleChange}
                                         >
@@ -282,13 +267,13 @@ export default function HCARegistrationForm() {
                                 {/* Mã Lớp */}
                                 <div className="flex-1">
                                     <div className="flex items-center">
-                                        <label className="w-1/3 text-sm font-medium text-gray-700 pr-4">
-                                            Mã Lớp <span className="text-red-500">*</span>
+                                        <label className="w-1/5 text-sm font-medium text-gray-700 pr-2">
+                                            Lớp <span className="text-red-500">*</span>
                                         </label>
                                         <input
                                             type="text"
                                             name="ClassName"
-                                            className="w-2/3 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            className="w-3/4 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                             value={formData.ClassName}
                                             onChange={handleChange}
                                         />
@@ -298,13 +283,13 @@ export default function HCARegistrationForm() {
 
                             {/* 9. Nơi sinh */}
                             <div className="flex items-center">
-                                <label className="w-1/3 text-sm font-medium text-gray-700 pr-4">
+                                <label className="w-1/5 text-sm font-medium text-gray-700 pr-2">
                                     Nơi sinh <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     name="PlaceBirthday"
-                                    className="w-2/3 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-3/4 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     value={formData.PlaceBirthday}
                                     onChange={handleChange}
                                 />
@@ -312,13 +297,13 @@ export default function HCARegistrationForm() {
 
                             {/* 10. Chức danh/ Chức vụ */}
                             <div className="flex items-center">
-                                <label className="w-1/3 text-sm font-medium text-gray-700 pr-4">
+                                <label className="w-1/5 text-sm font-medium text-gray-700 pr-2">
                                     Chức danh/ Chức vụ
                                 </label>
                                 <input
                                     type="text"
                                     name="Position"
-                                    className="w-2/3 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-3/4 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     value={formData.Position}
                                     onChange={handleChange}
                                 />
@@ -326,13 +311,13 @@ export default function HCARegistrationForm() {
 
                             {/* 11. Email */}
                             <div className="flex items-center">
-                                <label className="w-1/3 text-sm font-medium text-gray-700 pr-4">
+                                <label className="w-1/5 text-sm font-medium text-gray-700 pr-2">
                                     Email <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="email"
                                     name="Email"
-                                    className="w-2/3 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-3/4 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     value={formData.Email}
                                     onChange={handleChange}
                                 />
@@ -340,13 +325,13 @@ export default function HCARegistrationForm() {
 
                             {/* 12. Mật khẩu */}
                             <div className="flex items-center">
-                                <label className="w-1/3 text-sm font-medium text-gray-700 pr-4">
+                                <label className="w-1/5 text-sm font-medium text-gray-700 pr-2">
                                     Mật khẩu <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="password"
                                     name="Password"
-                                    className="w-2/3 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-3/4 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     placeholder="Mật khẩu đăng nhập"
                                     value={formData.Password}
                                     onChange={handleChange}
@@ -355,13 +340,13 @@ export default function HCARegistrationForm() {
 
                             {/* 13. Địa chỉ đơn vị */}
                             <div className="flex items-center">
-                                <label className="w-1/3 text-sm font-medium text-gray-700 pr-4">
+                                <label className="w-1/5 text-sm font-medium text-gray-700 pr-2">
                                     Địa chỉ đơn vị <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     name="CompanyAddress"
-                                    className="w-2/3 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-3/4 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     value={formData.CompanyAddress}
                                     onChange={handleChange}
                                 />

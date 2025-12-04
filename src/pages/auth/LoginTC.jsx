@@ -19,7 +19,7 @@ const LoginForm = () => {
         };
         if (username && password) {
             let res = await dispatch(Login(body));
-            if (res && res.payload.data && res.payload.data.TypeUserID !== 0) {
+            if (res && res.payload.data) {
                 navigate('/dashboard');
             } else {
                 toast.error(res.payload.message);
