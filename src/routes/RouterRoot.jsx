@@ -37,7 +37,8 @@ import LoginHBD from "../pages/auth/LoginHBD.jsx";
 import LoadingSpinner from "../components/LoadingSpinner.jsx";
 import { GetAccount } from "../redux/authSlice.js";
 import ManagerNotify from "../pages/notification/ManagerNotify.jsx";
-import StudentRegister from "../pages/auth/StudentRegister.jsx"
+import StudentRegisterTC from "../pages/auth/StudentRegisterTC.jsx"
+import StudentRegisterHBD from "../pages/auth/StudentRegisterHBD.jsx"
 
 const ProtectedRoute = ({ children, userInfo, isLoading, hasCheckedAuth }) => {
   if (isLoading || !hasCheckedAuth) {
@@ -104,10 +105,18 @@ function RouterRoot() {
           }
         />
         <Route
-          path="/studentregister"
+          path="/studentregisterTC"
           element={
             <PublicRoute userInfo={userInfo} isLoading={isLoading} hasCheckedAuth={hasCheckedAuth}>
-              <StudentRegister />
+              <StudentRegisterTC />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/studentregisterHBD"
+          element={
+            <PublicRoute userInfo={userInfo} isLoading={isLoading} hasCheckedAuth={hasCheckedAuth}>
+              <StudentRegisterHBD />
             </PublicRoute>
           }
         />

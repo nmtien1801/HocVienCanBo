@@ -84,7 +84,7 @@ const LoginForm = () => {
                         <button
                             type="button"
                             className="w-[90px] py-2 text-sm text-black border border-gray-300 bg-white hover:bg-gray-50 transition duration-150 rounded-sm"
-                            onClick={() => navigate('/studentregisterHDB')}
+                            onClick={() => navigate('/studentregisterHBD')}
                         >
                             Đăng ký
                         </button>
