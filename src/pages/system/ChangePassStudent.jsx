@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { toast } from "react-toastify";
+import ApiAuth from '../../apis/ApiAuth';
 
 const DEFAULT_NEW_PASSWORD = "123456";
 
@@ -30,23 +31,15 @@ export default function ChangePassStudent() {
     if (!isConfirm) return;
 
     const payload = {
-      maHocVien: formData.maHocVien,
-      PassWordOld: DEFAULT_NEW_PASSWORD,
-      PassWordNew: DEFAULT_NEW_PASSWORD,
+      UserNameReset: formData.maHocVien,
     };
 
-    // --- GỌI API THẬT ---
-    /*
-    let response = await ApiAuth.ChangePasswordApi(payload);
-    if (response && response.data) {
-        toast.success(`Đã đặt lại mật khẩu của ${formData.maHocVien} thành ${DEFAULT_NEW_PASSWORD}!`);
+    let response = await ApiAuth.RestPassWordApi(payload);
+    if (response) {
+        toast.success(response.message);
     } else {
-        toast.error(response.message || 'Lỗi khi đặt lại mật khẩu.');
+        toast.error(response.message);
     }
-    */
-
-    // --- MÔ PHỎNG THÀNH CÔNG ---
-    toast.success(`Đã gửi yêu cầu đặt lại mật khẩu cho ${formData.maHocVien} thành ${DEFAULT_NEW_PASSWORD}.`);
 
     setFormData({ maHocVien: '' });
   };

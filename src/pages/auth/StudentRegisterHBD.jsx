@@ -121,7 +121,6 @@ export default function StudentRegisterHBD() {
 
         try {
             let res = await ApiAuth.StudentRegisterApi(payload);
-            console.log('ssss ', res);
             if (!res.data) {
                 toast.error(res.message || 'Đăng ký thất bại. Vui lòng kiểm tra lại thông tin.');
                 generateCaptcha();

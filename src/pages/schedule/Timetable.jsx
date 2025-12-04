@@ -47,7 +47,9 @@ export default function TimetableClass() {
       }
     };
 
-    fetchClassLearn();
+    if(ClassLearn.length === 0){
+      fetchClassLearn();
+    }
   }, [dispatch]);
 
   useEffect(() => {

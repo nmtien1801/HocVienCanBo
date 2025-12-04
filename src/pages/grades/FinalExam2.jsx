@@ -65,8 +65,12 @@ export default function FinalExam2() {
       }
     };
 
-    fetchSubjectLearnAll();
-    fetchClassLearn();
+    if (subjectLearnAll.length === 0) {
+      fetchSubjectLearnAll();
+    }
+    if(ClassLearn.length === 0){
+      fetchClassLearn();
+    }
   }, [dispatch]);
 
 

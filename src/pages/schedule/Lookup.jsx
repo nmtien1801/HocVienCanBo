@@ -33,7 +33,9 @@ export default function Lookup() {
       }
     };
 
-    fetchSubjectLearnAll();
+    if (subjectLearnAll.length === 0) {
+      fetchSubjectLearnAll();
+    }
   }, [dispatch]);
 
   useEffect(() => {

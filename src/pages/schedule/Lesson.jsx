@@ -63,8 +63,12 @@ export default function TimetableClass() {
       }
     };
 
-    fetchSubjectLearnAll();
-    fetchClassLearn();
+    if (subjectLearnAll.length === 0) {
+      fetchSubjectLearnAll();
+    }
+    if (ClassLearn.length === 0) {
+      fetchClassLearn();
+    }
   }, [dispatch]);
 
 

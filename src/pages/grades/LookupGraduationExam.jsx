@@ -36,7 +36,9 @@ export default function LookupGraduationExam() {
             }
         };
 
-        fetchSubjectLearnAll();
+        if (subjectLearnAll.length === 0) {
+            fetchSubjectLearnAll();
+        }
     }, [dispatch]);
 
     const fetchListSearchPoint = async () => {

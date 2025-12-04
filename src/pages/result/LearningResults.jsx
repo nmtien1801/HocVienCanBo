@@ -54,7 +54,9 @@ export default function TimetableClass() {
       }
     };
 
-    fetchClassLearn();
+    if(ClassLearn.length === 0){
+      fetchClassLearn();
+    }
   }, [dispatch]);
 
   // tải danh sách Học viên khi Lớp thay đổi

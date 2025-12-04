@@ -74,8 +74,6 @@ function RouterRoot() {
     }
   }, [dispatch, hasCheckedAuth, isLoading]);
 
-  console.log('userInfo ', userInfo);
-
   return (
     <Router>
       <Routes>
