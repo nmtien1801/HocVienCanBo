@@ -86,7 +86,7 @@ const LoginForm = () => {
                         <button
                             type="button"
                             className="w-[160px] py-2 text-sm text-black border border-gray-300 bg-white hover:bg-gray-50 transition duration-150 rounded-sm"
-                            onClick={() => navigate('/studentregisterTC')}
+                            onClick={() => navigate('/studentregister')}
                         >
                             Đăng ký đóng học phí
                         </button>
