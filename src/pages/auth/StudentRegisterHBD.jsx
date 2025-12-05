@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import ApiAuth from '../../apis/ApiAuth';
 import { toast } from 'react-toastify';
 import '../../components/FormFields/Captcha/captcha.css'
 import { useNavigate } from 'react-router-dom';
+import ApiUpload from '../../apis/ApiUpload';
 
 export default function StudentRegisterHBD() {
     const navigate = useNavigate();
@@ -62,6 +62,7 @@ export default function StudentRegisterHBD() {
         }
     }, [captchaCode]);
 
+    // chọn file 
     const handleChange = (e) => {
         const { name, value, files } = e.target;
         if (name === 'FileAttach' && files && files.length > 0) {
@@ -92,7 +93,20 @@ export default function StudentRegisterHBD() {
             return;
         }
 
-        const registrationData = new FormData();
+        // Xử lý Upload File đính kèm nếu có
+        if (selectedFile) {
+            // Thực hiện tải file lên Server
+            uploadedFilePath = await ApiUpload.UploadFileApi(selectedFile);
+            console.log('aaaa ', uploadedFilePath);
+            
+            if (!uploadedFilePath) {
+                 toast.error('Lỗi upload file đính kèm.');
+                 setIsLoading(false);
+                 return;
+            }
+        }
+
+        // đăng ký
         const genderIDValue = formData.GenderID === 'Nam' ? 1 : 0; // Giả định: 1 = Nam, 0 = Nữ
         const formattedBirthday = formData.Birthday
             ? formData.Birthday.replace(/-/g, '/')
@@ -120,14 +134,14 @@ export default function StudentRegisterHBD() {
         };
 
         try {
-            let res = await ApiAuth.StudentRegisterApi(payload);
-            if (!res.data) {
-                toast.error(res.message || 'Đăng ký thất bại. Vui lòng kiểm tra lại thông tin.');
-                generateCaptcha();
-            } else {
-                toast.success('Đăng ký thành công! Vui lòng thanh toán để đối soát');
-                handleClearForm();
-            }
+            // let res = await ApiAuth.StudentRegisterApi(payload);
+            // if (!res.data) {
+            //     toast.error(res.message || 'Đăng ký thất bại. Vui lòng kiểm tra lại thông tin.');
+            //     generateCaptcha();
+            // } else {
+            //     toast.success('Đăng ký thành công! Vui lòng thanh toán để đối soát');
+            //     handleClearForm();
+            // }
         } catch (error) {
             console.error('API Registration Error:', error);
             toast.error('Lỗi kết nối hoặc xử lý. Vui lòng thử lại.');

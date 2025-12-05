@@ -15,9 +15,12 @@ export const getClassLearnByUserID = createAsyncThunk(
 
 const learningClassSlice = createSlice({
   name: "learningClass",
-  initialState,
-
-  reducers: {},
+  initialState: initialState,
+  reducers: {
+    resetLearningClass: (state) => {
+      return initialState;
+    },
+  },
 
   extraReducers: (builder) => {
     // getClassLearnByUserID
@@ -32,8 +35,5 @@ const learningClassSlice = createSlice({
   },
 });
 
-// Export actions
-export const {} = learningClassSlice.actions;
-
-// Export reducer
+export const { resetLearningClass } = learningClassSlice.actions;
 export default learningClassSlice.reducer;

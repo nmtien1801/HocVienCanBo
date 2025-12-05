@@ -1,5 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import ApiAuth from "../apis/ApiAuth.js";
+import { resetLearningClass } from "./learningClassSlice.js"; 
+import { resetSchedule } from "./scheduleSlice.js"; 
 
 const initialState = {
   userInfo: {},
@@ -32,16 +34,20 @@ export const GetAccount = createAsyncThunk(
   }
 );
 
+export const logout = createAsyncThunk("auth/Logout", async (_, { dispatch }) => {
+    localStorage.removeItem("fr");
+    localStorage.removeItem("type");
+    dispatch(resetLearningClass()); 
+    dispatch(resetSchedule()); 
+
+    return null;
+});
+
 const authSlice = createSlice({
   name: "auth",
   initialState,
 
   reducers: {
-    logout: (state) => {
-      state.userInfo = null;
-      state.isLoading = false;
-      state.hasCheckedAuth = false;
-    },
   },
 
   extraReducers: (builder) => {
@@ -72,7 +78,7 @@ const authSlice = createSlice({
         state.userInfo = action.payload;
         state.isLoading = false;
         state.hasCheckedAuth = true;
-        state.type = localStorage.getItem("type");;
+        state.type = localStorage.getItem("type");
       })
       .addCase(GetAccount.rejected, (state, action) => {
         state.userInfo = null;
@@ -98,11 +104,19 @@ const authSlice = createSlice({
       .addCase(LoginHDB.rejected, (state, action) => {
         state.isLoading = false;
       });
+
+    // logout
+    builder
+        .addCase(logout.fulfilled, (state) => {
+            state.userInfo = {};
+            state.isLoading = false;
+            state.hasCheckedAuth = true;
+            state.type = "";
+        });
   },
 });
 
-// Export actions
-export const { logout } = authSlice.actions;
+export { }; 
 
 // Export reducer
 export default authSlice.reducer;

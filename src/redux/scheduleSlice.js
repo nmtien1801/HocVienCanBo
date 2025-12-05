@@ -14,12 +14,27 @@ const initialState = {
   scheduleDaily: [],
   pointSum: [],
   totalPointSum: 0,
+  GraduationMonthList: [],
+  GraduationMonthTotal: 0,
 };
 
 export const getScheduleMonth = createAsyncThunk(
-  "schedule/getScheduleMonthApi",
+  "schedule/getScheduleMonth",
   async ({ startDate, endDate, page, limit }, thunkAPI) => {
     const response = await ApiSchedule.getScheduleMonthApi(
+      startDate,
+      endDate,
+      page,
+      limit
+    );
+    return response;
+  }
+);
+
+export const getScheduleGraduationMonth = createAsyncThunk(
+  "schedule/getScheduleGraduationMonth",
+  async ({ startDate, endDate, page, limit }, thunkAPI) => {
+    const response = await ApiSchedule.getScheduleGraduationMonthApi(
       startDate,
       endDate,
       page,
@@ -101,7 +116,11 @@ const scheduleSlice = createSlice({
   name: "schedule",
   initialState,
 
-  reducers: {},
+  reducers: {
+    resetSchedule: (state) => {
+      return initialState;
+    },
+  },
 
   extraReducers: (builder) => {
     // getScheduleMonth
@@ -178,11 +197,22 @@ const scheduleSlice = createSlice({
         }
       })
       .addCase(printPointSum.rejected, (state, action) => {});
+
+    // getScheduleGraduationMonth
+    builder
+      .addCase(getScheduleGraduationMonth.pending, (state) => {})
+      .addCase(getScheduleGraduationMonth.fulfilled, (state, action) => {
+        if (action.payload) {
+          state.GraduationMonthList = action.payload.data || [];
+          state.GraduationMonthTotal = action.payload.totals || 0;
+        }
+      })
+      .addCase(getScheduleGraduationMonth.rejected, (state, action) => {});
   },
 });
 
 // Export actions
-export const {} = scheduleSlice.actions;
+export const {resetSchedule} = scheduleSlice.actions;
 
 // Export reducer
 export default scheduleSlice.reducer;
