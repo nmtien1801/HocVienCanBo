@@ -2,14 +2,19 @@ import React, { useEffect, useState } from "react";
 import { Users, Layers, BookCheck, BookX } from 'lucide-react';
 import { useSelector, useDispatch } from "react-redux";
 import { DashboardTotal, ScheduleByMonth, ScheduleByExamination, ListInformation, ScheduleClassSubject } from "../../redux/dashboardSlice.js";
+import { getScheduleDaily } from '../../redux/scheduleSlice.js';
 import { toast } from "react-toastify";
 import { useNavigate } from 'react-router-dom';
 import ImageLoader from "../../components/ImageLoader.jsx";
+import { TypeUserIDCons } from "../../utils/constants";
 
 export default function Dashboard() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { dashboardTotal, scheduleByMonth, scheduleByExamination, listInformation, scheduleClassSubject } = useSelector((state) => state.dashboard);
+    const { scheduleDaily } = useSelector((state) => state.schedule);
+    const { userInfo } = useSelector((state) => state.auth);
+    const [dataSchedule, setDataSchedule] = useState(); // lịch học lớp của bạn
 
     useEffect(() => {
         const fetchDashboardTotal = async () => {
@@ -45,10 +50,25 @@ export default function Dashboard() {
             let res = await dispatch(ScheduleClassSubject());
             if (!res.payload || !res.payload.data) {
                 toast.error(res.payload?.message);
+            } else {
+                setDataSchedule(res.payload.data)
             }
         };
 
+        const fetchScheduleDaily = async () => {
+            let res = await dispatch(getScheduleDaily());
+            if (!res.payload || !res.payload.data) {
+                toast.error(res.payload?.message);
+            } else {
+                setDataSchedule(res.payload.data)
+            }
+        };
+
+        fetchScheduleDaily();
         fetchScheduleClassSubject();
+        // if (userInfo?.TypeUserID !== TypeUserIDCons.Student || userInfo?.TypeStudentID !== TypeUserIDCons.Student) {
+        // } else {
+        // }
         fetchDashboardTotal();
         fetchScheduleByMonth();
         fetchListInformation();
@@ -146,7 +166,7 @@ export default function Dashboard() {
                     <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
                         <div className="px-4 lg:px-6 py-3 lg:py-4 border-b border-gray-200 flex items-center justify-between">
                             <h2 className="text-base lg:text-lg font-medium text-gray-700">Lịch học trong tháng</h2>
-                            <button className="text-blue-600 text-xs lg:text-sm hover:underline cursor-pointer" onClick={() => { navigate('/scheduleMonth') }}>Xem thêm</button>
+                            <button className="text-blue-600 text-xs lg:text-sm hover:underline cursor-pointer" onClick={() => { navigate('/schedule-teach-month') }}>Xem thêm</button>
                         </div>
                         <div className="p-4 lg:p-6 space-y-3 lg:space-y-4 max-h-96 overflow-y-auto">
                             {scheduleByMonth.length > 0 ? (
