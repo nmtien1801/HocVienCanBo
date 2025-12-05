@@ -7,13 +7,17 @@ const studentSlice = createSlice({
   name: "student",
   initialState,
 
-  reducers: {},
+  reducers: {
+    resetStudent: (state) => {
+      return initialState;
+    },
+  },
 
   extraReducers: (builder) => {},
 });
 
 // Export actions
-export const {} = studentSlice.actions;
+export const { resetStudent } = studentSlice.actions;
 
 // Export reducer
 export default studentSlice.reducer;

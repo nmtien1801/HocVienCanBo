@@ -53,7 +53,11 @@ const dashboardSlice = createSlice({
   name: "dashboard",
   initialState,
 
-  reducers: {},
+  reducers: {
+    resetDashboard: (state) => {
+      return initialState;
+    },
+  },
 
   extraReducers: (builder) => {
     // DashboardTotal
@@ -109,7 +113,7 @@ const dashboardSlice = createSlice({
 });
 
 // Export actions
-export const {} = dashboardSlice.actions;
+export const {resetDashboard} = dashboardSlice.actions;
 
 // Export reducer
 export default dashboardSlice.reducer;

@@ -12,7 +12,7 @@ const performLogout = (dispatch) => {
   dispatch(logout());
 
   // Buộc chuyển hướng người dùng
-  window.location.href = "/home";
+  window.location.href = "/";
 };
 
 // Hàm cập nhật mốc thời gian hoạt động

@@ -1,7 +1,11 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import ApiAuth from "../apis/ApiAuth.js";
-import { resetLearningClass } from "./learningClassSlice.js"; 
-import { resetSchedule } from "./scheduleSlice.js"; 
+import { resetLearningClass } from "./learningClassSlice.js";
+import { resetSchedule } from "./scheduleSlice.js";
+import { resetDashboard } from "./dashboardSlice";
+import { resetNew } from "./newSlice";
+import { resetPoint } from "./pointSlice";
+import { resetStudent } from "./studentSlice";
 
 const initialState = {
   userInfo: {},
@@ -34,21 +38,27 @@ export const GetAccount = createAsyncThunk(
   }
 );
 
-export const logout = createAsyncThunk("auth/Logout", async (_, { dispatch }) => {
+export const logout = createAsyncThunk(
+  "auth/Logout",
+  async (_, { dispatch }) => {
     localStorage.removeItem("fr");
     localStorage.removeItem("type");
-    dispatch(resetLearningClass()); 
-    dispatch(resetSchedule()); 
+    dispatch(resetLearningClass());
+    dispatch(resetSchedule());
+    dispatch(resetDashboard());
+    dispatch(resetNew());
+    dispatch(resetPoint());
+    dispatch(resetStudent());
 
     return null;
-});
+  }
+);
 
 const authSlice = createSlice({
   name: "auth",
   initialState,
 
-  reducers: {
-  },
+  reducers: {},
 
   extraReducers: (builder) => {
     // Login
@@ -106,17 +116,16 @@ const authSlice = createSlice({
       });
 
     // logout
-    builder
-        .addCase(logout.fulfilled, (state) => {
-            state.userInfo = {};
-            state.isLoading = false;
-            state.hasCheckedAuth = true;
-            state.type = "";
-        });
+    builder.addCase(logout.fulfilled, (state) => {
+      state.userInfo = {};
+      state.isLoading = false;
+      state.hasCheckedAuth = true;
+      state.type = "";
+    });
   },
 });
 
-export { }; 
+export {};
 
 // Export reducer
 export default authSlice.reducer;

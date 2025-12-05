@@ -14,8 +14,8 @@ export default function Dashboard() {
     const { dashboardTotal, scheduleByMonth, scheduleByExamination, listInformation, scheduleClassSubject } = useSelector((state) => state.dashboard);
     const { scheduleDaily } = useSelector((state) => state.schedule);
     const { userInfo } = useSelector((state) => state.auth);
-    const [dataSchedule, setDataSchedule] = useState(); // lịch học lớp của bạn
-
+    const [dataSchedule, setDataSchedule] = useState([]); // lịch học lớp của bạn
+    let role = userInfo?.TypeUserID !== TypeUserIDCons.Student && userInfo?.TypeStudentID !== TypeUserIDCons.Student
     useEffect(() => {
         const fetchDashboardTotal = async () => {
             let res = await dispatch(DashboardTotal());
@@ -48,27 +48,28 @@ export default function Dashboard() {
 
         const fetchScheduleClassSubject = async () => {
             let res = await dispatch(ScheduleClassSubject());
-            if (!res.payload || !res.payload.data) {
+            if (!res.payload) {
                 toast.error(res.payload?.message);
             } else {
-                setDataSchedule(res.payload.data)
+                setDataSchedule(res.payload)
             }
         };
 
         const fetchScheduleDaily = async () => {
             let res = await dispatch(getScheduleDaily());
-            if (!res.payload || !res.payload.data) {
+
+            if (!res.payload) {
                 toast.error(res.payload?.message);
             } else {
                 setDataSchedule(res.payload.data)
             }
         };
 
-        fetchScheduleDaily();
-        fetchScheduleClassSubject();
-        // if (userInfo?.TypeUserID !== TypeUserIDCons.Student || userInfo?.TypeStudentID !== TypeUserIDCons.Student) {
-        // } else {
-        // }
+        if (role) {
+            fetchScheduleDaily();
+        } else {
+            fetchScheduleClassSubject();
+        }
         fetchDashboardTotal();
         fetchScheduleByMonth();
         fetchListInformation();
@@ -238,12 +239,12 @@ export default function Dashboard() {
                     {/* Lịch học của lớp bạn */}
                     <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
                         <div className="px-4 lg:px-6 py-3 lg:py-4 border-b border-gray-200 flex items-center justify-between">
-                            <h2 className="text-base lg:text-lg font-medium text-gray-700">Lịch học của lớp bạn</h2>
-                            <button className="text-blue-600 text-xs lg:text-sm hover:underline cursor-pointer">Xem thêm</button>
+                            <h2 className="text-base lg:text-lg font-medium text-gray-700">{role ? 'Lịch học trong ngày' : 'Lịch học của lớp bạn'}</h2>
+                            <button className="text-blue-600 text-xs lg:text-sm hover:underline cursor-pointer" onClick={() => navigate(role ? '/schedule-day' : '/timetable')}>Xem thêm</button>
                         </div>
                         <div className="p-4 lg:p-6 space-y-4 max-h-96 overflow-y-auto">
-                            {scheduleClassSubject && scheduleClassSubject.length > 0 ? (
-                                scheduleClassSubject.map((item, index) => {
+                            {dataSchedule && dataSchedule.length > 0 ? (
+                                dataSchedule.map((item, index) => {
                                     const startDate = new Date(item.DateStart);
                                     const formattedStartDate = startDate.toLocaleDateString('vi-VN');
                                     const displayDate = `${startDate.getDate().toString().padStart(2, '0')}/${(startDate.getMonth() + 1).toString().padStart(2, '0')}/${startDate.getFullYear()}`;
@@ -252,13 +253,13 @@ export default function Dashboard() {
                                         <div key={index} className="flex gap-3 items-start">
                                             {/* Date Badge */}
                                             <div className="flex-shrink-0 bg-teal-500 text-white px-3 py-1.5 rounded font-medium text-sm shadow-md min-w-[100px] text-center">
-                                                {displayDate}
+                                                {role ? 'Room: ' + item.RoomName : displayDate}
                                             </div>
 
                                             {/* Timeline Dot and Line */}
                                             <div className="flex flex-col items-center pt-1">
                                                 <div className="w-3 h-3 rounded-full border-2 border-gray-300 bg-white"></div>
-                                                {index < scheduleClassSubject.length - 1 && (
+                                                {index < dataSchedule.length - 1 && (
                                                     <div className="w-0.5 h-full bg-gray-200 min-h-[60px]"></div>
                                                 )}
                                             </div>
@@ -269,7 +270,18 @@ export default function Dashboard() {
                                                     {item.SubjectCode} - {item.SubjectName}
                                                 </h3>
                                                 <p className="text-xs text-gray-600 mb-0.5">
-                                                    <span className="font-medium">Thời gian:</span> {formattedStartDate} đến {new Date(item.DateEnd).toLocaleDateString('vi-VN')} - <span className="font-medium">Ngày học:</span> {item.WeekDay}
+                                                    {role
+                                                        ? (
+                                                            <>
+                                                                <span className="font-medium">Thời gian:</span> {new Date(item.DateStartSubject).toLocaleDateString('vi-VN')} đến {new Date(item.DateEndSubject).toLocaleDateString('vi-VN')}
+                                                            </>
+                                                        )
+                                                        : (
+                                                            <>
+                                                                <span className="font-medium">Thời gian:</span> {formattedStartDate} đến {new Date(item.DateEnd).toLocaleDateString('vi-VN')} - <span className="font-medium">Ngày học:</span> {item.WeekDay}
+                                                            </>
+                                                        )
+                                                    }
                                                 </p>
                                                 <p className="text-xs text-gray-600">
                                                     <span className="font-medium">Ngày thi:</span> {new Date(item.DateNumberDayGraduation).toLocaleDateString('vi-VN')}

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-toastify';
-import '../../components/FormFields/Captcha/captcha.css'
+// Import ApiAuth để sử dụng cho chức năng đăng ký
+import ApiAuth from '../../apis/ApiAuth';
+import '../../components/FormFields/Captcha/captcha.css';
 import { useNavigate } from 'react-router-dom';
 import ApiUpload from '../../apis/ApiUpload';
 
@@ -27,9 +29,10 @@ export default function StudentRegisterHBD() {
     });
 
     const [selectedFile, setSelectedFile] = useState(null);
-
     const [captchaCode, setCaptchaCode] = useState('');
+    const [isLoading, setIsLoading] = useState(false); // Sửa lỗi: Thêm trạng thái loading
 
+    // 2. LOGIC TẠO VÀ VẼ CAPTCHA
     const generateCaptcha = useCallback(() => {
         const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
         let code = '';
@@ -37,7 +40,7 @@ export default function StudentRegisterHBD() {
             code += chars.charAt(Math.floor(Math.random() * chars.length));
         }
         setCaptchaCode(code);
-        setFormData(prev => ({ ...prev, captcha: '' }));
+        setFormData(prev => ({ ...prev, captcha: '' })); // Xóa input captcha của người dùng
         return code;
     }, []);
 
@@ -62,7 +65,6 @@ export default function StudentRegisterHBD() {
         }
     }, [captchaCode]);
 
-    // chọn file 
     const handleChange = (e) => {
         const { name, value, files } = e.target;
         if (name === 'FileAttach' && files && files.length > 0) {
@@ -80,49 +82,57 @@ export default function StudentRegisterHBD() {
         });
         setSelectedFile(null);
         generateCaptcha();
-        navigate('/loginTC')
+        navigate('/loginTC');
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setIsLoading(true);
 
-        // 3. XÁC THỰC CAPTCHA TRÊN CLIENT
+        // A. XÁC THỰC CAPTCHA TRÊN CLIENT
         if (formData.captcha.toUpperCase() !== captchaCode.toUpperCase()) {
             toast.error('Mã Captcha không đúng. Vui lòng thử lại.');
             generateCaptcha(); // Làm mới CAPTCHA
+            setIsLoading(false);
             return;
         }
 
-        // Xử lý Upload File đính kèm nếu có
+        let uploadedFilePath = "";
+        let fileName = "";
+
         if (selectedFile) {
-            // Thực hiện tải file lên Server
-            uploadedFilePath = await ApiUpload.UploadFileApi(selectedFile);
-            console.log('aaaa ', uploadedFilePath);
-            
-            if (!uploadedFilePath) {
-                 toast.error('Lỗi upload file đính kèm.');
-                 setIsLoading(false);
-                 return;
+            try {
+                const uploadFormData = new FormData();
+                uploadFormData.append('file', selectedFile);
+
+                uploadedFilePath = await ApiUpload.UploadFileApi(uploadFormData);
+
+                if (!uploadedFilePath) {
+                    toast.error('Lỗi upload file đính kèm. Vui lòng thử lại.');
+                    setIsLoading(false);
+                    return;
+                }
+                fileName = selectedFile.name;
+            } catch (error) {
+                console.error('File Upload Error:', error);
+                toast.error('Lỗi kết nối khi tải file.');
+                setIsLoading(false);
+                generateCaptcha();
+                return;
             }
         }
 
-        // đăng ký
-        const genderIDValue = formData.GenderID === 'Nam' ? 1 : 0; // Giả định: 1 = Nam, 0 = Nữ
+        // Chuẩn bị Payload Đăng ký
+        const genderIDValue = formData.GenderID === 'Nam' ? 1 : 0; // 1 = Nam, 0 = Nữ
         const formattedBirthday = formData.Birthday
             ? formData.Birthday.replace(/-/g, '/')
             : '';
-        let fileName = "";
-        if (selectedFile) {
-            fileName = selectedFile.name;
-        } else {
-            fileName = ""
-        }
 
         const payload = {
             ...formData,
             Birthday: formattedBirthday,
             GenderID: genderIDValue,
-            // Đảm bảo không gửi trường captcha lên BE
+            captcha: undefined,
             TypeStudentID: 1,
             PositionPlan: "",
             Academy: "",
@@ -130,32 +140,40 @@ export default function StudentRegisterHBD() {
             OfficalManager: "",
             Address: "",
             Description: "",
-            FilePath: fileName
+            FilePath: uploadedFilePath || fileName,
         };
 
         try {
-            // let res = await ApiAuth.StudentRegisterApi(payload);
-            // if (!res.data) {
-            //     toast.error(res.message || 'Đăng ký thất bại. Vui lòng kiểm tra lại thông tin.');
-            //     generateCaptcha();
-            // } else {
-            //     toast.success('Đăng ký thành công! Vui lòng thanh toán để đối soát');
-            //     handleClearForm();
-            // }
+            let res = await ApiAuth.StudentRegisterApi(payload);
+            if (!res.data) {
+                toast.error(res.message);
+                generateCaptcha();
+            } else {
+                toast.success('Đăng ký thành công! Vui lòng thanh toán để đối soát');
+                handleClearForm();
+            }
         } catch (error) {
             console.error('API Registration Error:', error);
             toast.error('Lỗi kết nối hoặc xử lý. Vui lòng thử lại.');
             generateCaptcha();
+        } finally {
+            setIsLoading(false);
         }
     };
 
     return (
         <div className="min-h-screen bg-gray-50">
             <div className="max-w-0xl mx-auto px-4">
+
                 {/* Header */}
-                <div className="text-center mb-8">
+                <div className="text-center mb-8 pt-10">
                     <div className="mx-auto w-32 h-32 mb-4">
-                        <img src="/logo.png" alt="HCA Logo" className="w-full h-full object-contain" onClick={() => navigate('/home')}  />
+                        <img
+                            src="/logo.png"
+                            alt="HCA Logo"
+                            className="w-full h-full object-contain cursor-pointer"
+                            onClick={() => navigate('/home')}
+                        />
                     </div>
                     <h1 className="text-2xl font-semibold text-gray-700">
                         Đăng ký học viên hệ bồi dưỡng
@@ -163,71 +181,75 @@ export default function StudentRegisterHBD() {
                 </div>
 
                 {/* Form */}
-                <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-8">
+                <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-xl p-8">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+
                         {/* Left Column */}
                         <div className="space-y-6">
 
-                            {/* 1. Tên Học viên */}
+                            {/* Tên Học viên */}
                             <div className="flex items-center">
-                                <label className="w-1/5 text-sm font-medium text-gray-700 pr-2">
+                                <label className="w-1/4 text-sm font-medium text-gray-700 pr-2">
                                     Tên Học viên <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     name="StudentName"
+                                    required
                                     className="w-3/4 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     value={formData.StudentName}
                                     onChange={handleChange}
                                 />
                             </div>
 
-                            {/* 2. Ngày sinh */}
+                            {/* Ngày sinh */}
                             <div className="flex items-center">
-                                <label className="w-1/5 text-sm font-medium text-gray-700 pr-2">
+                                <label className="w-1/4 text-sm font-medium text-gray-700 pr-2">
                                     Ngày sinh <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="date"
                                     name="Birthday"
+                                    required
                                     className="w-3/4 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     value={formData.Birthday}
                                     onChange={handleChange}
-                                    placeholder="DD/MM/YYYY"
                                 />
                             </div>
 
-                            {/* 3. Dân tộc */}
+                            {/* Dân tộc */}
                             <div className="flex items-center">
-                                <label className="w-1/5 text-sm font-medium text-gray-700 pr-2">
+                                <label className="w-1/4 text-sm font-medium text-gray-700 pr-2">
                                     Dân tộc <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     name="Nation"
+                                    required
                                     className="w-3/4 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     value={formData.Nation}
                                     onChange={handleChange}
                                 />
                             </div>
 
-                            {/* 4. Di động */}
+                            {/* Di động */}
                             <div className="flex items-center">
-                                <label className="w-1/5 text-sm font-medium text-gray-700 pr-2">
+                                <label className="w-1/4 text-sm font-medium text-gray-700 pr-2">
                                     Di động <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="tel"
                                     name="Phone"
+                                    required
                                     className="w-3/4 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     value={formData.Phone}
                                     onChange={handleChange}
                                 />
                             </div>
 
-                            {/* 5. CCCD */}
+                            {/* CCCD */}
                             <div className="flex items-center">
-                                <label className="w-1/5 text-sm font-medium text-gray-700 pr-2">
+                                <label className="w-1/4 text-sm font-medium text-gray-700 pr-2">
                                     CCCD
                                 </label>
                                 <input
@@ -239,14 +261,15 @@ export default function StudentRegisterHBD() {
                                 />
                             </div>
 
-                            {/* 6. Tên đơn vị */}
+                            {/* Tên đơn vị */}
                             <div className="flex items-center">
-                                <label className="w-1/5 text-sm font-medium text-gray-700 pr-2">
+                                <label className="w-1/4 text-sm font-medium text-gray-700 pr-2">
                                     Tên đơn vị <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     name="CompanyName"
+                                    required
                                     className="w-3/4 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     placeholder="Đơn vị công tác"
                                     value={formData.CompanyName}
@@ -254,14 +277,15 @@ export default function StudentRegisterHBD() {
                                 />
                             </div>
 
-                            {/* 7. Mã số thuế */}
+                            {/* Mã số thuế */}
                             <div className="flex items-center">
-                                <label className="w-1/5 text-sm font-medium text-gray-700 pr-2">
+                                <label className="w-1/4 text-sm font-medium text-gray-700 pr-2">
                                     Mã số thuế <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     name="CompanyTaxCode"
+                                    required
                                     className="w-3/4 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     value={formData.CompanyTaxCode}
                                     onChange={handleChange}
@@ -272,60 +296,58 @@ export default function StudentRegisterHBD() {
                         {/* Right Column */}
                         <div className="space-y-6">
 
-                            {/* 8. Giới tính & Mã Lớp */}
+                            {/* Giới tính & Mã Lớp */}
                             <div className="flex gap-4">
                                 {/* Giới tính */}
-                                <div className="flex-1">
-                                    <div className="flex items-center">
-                                        <label className="w-1/5 text-sm font-medium text-gray-700 pr-2">
-                                            Giới tính
-                                        </label>
-                                        <select
-                                            name="GenderID"
-                                            className="w-3/4 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            value={formData.GenderID}
-                                            onChange={handleChange}
-                                        >
-                                            <option value="Nam">Nam</option>
-                                            <option value="Nữ">Nữ</option>
-                                        </select>
-                                    </div>
+                                <div className="flex-1 flex items-center">
+                                    <label className="w-1/3 text-sm font-medium text-gray-700 pr-2">
+                                        Giới tính
+                                    </label>
+                                    <select
+                                        name="GenderID"
+                                        className="w-2/3 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        value={formData.GenderID}
+                                        onChange={handleChange}
+                                    >
+                                        <option value="Nam">Nam</option>
+                                        <option value="Nữ">Nữ</option>
+                                    </select>
                                 </div>
 
                                 {/* Mã Lớp */}
-                                <div className="flex-1">
-                                    <div className="flex items-center">
-                                        <label className="w-1/5 text-sm font-medium text-gray-700 pr-2">
-                                            Lớp <span className="text-red-500">*</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="ClassName"
-                                            className="w-3/4 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            value={formData.ClassName}
-                                            onChange={handleChange}
-                                        />
-                                    </div>
+                                <div className="flex-1 flex items-center">
+                                    <label className="w-1/3 text-sm font-medium text-gray-700 pr-2">
+                                        Lớp <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="ClassName"
+                                        required
+                                        className="w-2/3 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        value={formData.ClassName}
+                                        onChange={handleChange}
+                                    />
                                 </div>
                             </div>
 
-                            {/* 9. Nơi sinh */}
+                            {/* Nơi sinh */}
                             <div className="flex items-center">
-                                <label className="w-1/5 text-sm font-medium text-gray-700 pr-2">
+                                <label className="w-1/4 text-sm font-medium text-gray-700 pr-2">
                                     Nơi sinh <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     name="PlaceBirthday"
+                                    required
                                     className="w-3/4 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     value={formData.PlaceBirthday}
                                     onChange={handleChange}
                                 />
                             </div>
 
-                            {/* 10. Chức danh/ Chức vụ */}
+                            {/* Chức danh/ Chức vụ */}
                             <div className="flex items-center">
-                                <label className="w-1/5 text-sm font-medium text-gray-700 pr-2">
+                                <label className="w-1/4 text-sm font-medium text-gray-700 pr-2">
                                     Chức danh/ Chức vụ
                                 </label>
                                 <input
@@ -337,28 +359,30 @@ export default function StudentRegisterHBD() {
                                 />
                             </div>
 
-                            {/* 11. Email */}
+                            {/* Email */}
                             <div className="flex items-center">
-                                <label className="w-1/5 text-sm font-medium text-gray-700 pr-2">
+                                <label className="w-1/4 text-sm font-medium text-gray-700 pr-2">
                                     Email <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="email"
                                     name="Email"
+                                    required
                                     className="w-3/4 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     value={formData.Email}
                                     onChange={handleChange}
                                 />
                             </div>
 
-                            {/* 12. Mật khẩu */}
+                            {/* Mật khẩu */}
                             <div className="flex items-center">
-                                <label className="w-1/5 text-sm font-medium text-gray-700 pr-2">
+                                <label className="w-1/4 text-sm font-medium text-gray-700 pr-2">
                                     Mật khẩu <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="password"
                                     name="Password"
+                                    required
                                     className="w-3/4 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     placeholder="Mật khẩu đăng nhập"
                                     value={formData.Password}
@@ -366,21 +390,24 @@ export default function StudentRegisterHBD() {
                                 />
                             </div>
 
-                            {/* 13. Địa chỉ đơn vị */}
+                            {/* Địa chỉ đơn vị */}
                             <div className="flex items-center">
-                                <label className="w-1/5 text-sm font-medium text-gray-700 pr-2">
+                                <label className="w-1/4 text-sm font-medium text-gray-700 pr-2">
                                     Địa chỉ đơn vị <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     name="CompanyAddress"
+                                    required
                                     className="w-3/4 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     value={formData.CompanyAddress}
                                     onChange={handleChange}
                                 />
                             </div>
+
+                            {/* File đính kèm */}
                             <div className="flex items-center">
-                                <label className="w-1/5 text-sm font-medium text-gray-700 pr-2">
+                                <label className="w-1/4 text-sm font-medium text-gray-700 pr-2">
                                     File đính kèm (.rar.zip)
                                 </label>
                                 <input
@@ -395,12 +422,13 @@ export default function StudentRegisterHBD() {
                     </div>
 
                     {/* Captcha Section */}
-                    <div className="mt-6 flex flex-col items-center space-y-4">
+                    <div className="mt-8 flex flex-col items-center space-y-4">
                         <input
                             id="UserCaptchaCode"
                             name="captcha"
                             type="text"
                             placeholder="Nhập đúng mã Captcha dưới đây"
+                            required
                             className="w-full max-w-md px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             value={formData.captcha}
                             onChange={handleChange}
@@ -424,14 +452,16 @@ export default function StudentRegisterHBD() {
                         <div className="flex gap-4 mt-6">
                             <button
                                 type="submit"
-                                className="btnSubmit"
+                                className={`btnSubmit ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                disabled={isLoading}
                             >
-                                Đăng ký
+                                {isLoading ? 'Đang xử lý...' : 'Đăng ký'}
                             </button>
                             <button
                                 type="button"
                                 className="btnBack"
                                 onClick={handleClearForm}
+                                disabled={isLoading}
                             >
                                 Trở về
                             </button>
@@ -440,7 +470,7 @@ export default function StudentRegisterHBD() {
                 </form>
 
                 {/* Footer */}
-                <div className="text-center mt-8">
+                <div className="text-center mt-8 pb-10">
                     <h2 className="text-xl font-semibold text-gray-700 mb-2">
                         HỌC VIỆN CÁN BỘ
                     </h2>

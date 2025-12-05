@@ -36,7 +36,11 @@ const newSlice = createSlice({
   name: "news",
   initialState,
 
-  reducers: {},
+  reducers: {
+    resetNew: (state) => {
+      return initialState;
+    },
+  },
 
   extraReducers: (builder) => {
     // getNewsByID
@@ -66,7 +70,7 @@ const newSlice = createSlice({
 });
 
 // Export actions
-export const {} = newSlice.actions;
+export const {resetNew} = newSlice.actions;
 
 // Export reducer
 export default newSlice.reducer;

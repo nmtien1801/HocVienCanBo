@@ -110,7 +110,11 @@ const pointSlice = createSlice({
   name: "points",
   initialState,
 
-  reducers: {},
+  reducers: {
+    resetPoint: (state) => {
+      return initialState;
+    },
+  },
 
   extraReducers: (builder) => {
     // getListExamination
@@ -179,7 +183,7 @@ const pointSlice = createSlice({
 });
 
 // Export actions
-export const {} = pointSlice.actions;
+export const {resetPoint} = pointSlice.actions;
 
 // Export reducer
 export default pointSlice.reducer;
