@@ -141,6 +141,8 @@ export default function StudentRegisterHBD() {
             Address: "",
             Description: "",
             FilePath: uploadedFilePath || fileName,
+            StudentCode: "",
+            OfficalWork: ""
         };
 
         try {
