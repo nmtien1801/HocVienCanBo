@@ -24,7 +24,7 @@ export const LoginHDB = createAsyncThunk(
 export const GetAccount = createAsyncThunk(
   "auth/GetAccount",
   async (thunkAPI) => {
-    const userString = sessionStorage.getItem("fr");
+    const userString = localStorage.getItem("fr");
     if (userString) {
       return JSON.parse(userString);
     }
@@ -54,8 +54,8 @@ const authSlice = createSlice({
         state.isLoading = false;
         if (action.payload.data) {
           state.userInfo = action.payload.data || {};
-          sessionStorage.setItem("type", "TC");
-          sessionStorage.setItem("fr", JSON.stringify(action.payload.data));
+          localStorage.setItem("type", "TC");
+          localStorage.setItem("fr", JSON.stringify(action.payload.data));
           state.type = "TC";
         }
       })
@@ -72,13 +72,13 @@ const authSlice = createSlice({
         state.userInfo = action.payload;
         state.isLoading = false;
         state.hasCheckedAuth = true;
-        state.type = sessionStorage.getItem("type");;
+        state.type = localStorage.getItem("type");;
       })
       .addCase(GetAccount.rejected, (state, action) => {
         state.userInfo = null;
         state.isLoading = false;
         state.hasCheckedAuth = true;
-        sessionStorage.removeItem("fr");
+        localStorage.removeItem("fr");
       });
 
     // LoginHDB
@@ -90,9 +90,9 @@ const authSlice = createSlice({
         state.isLoading = false;
         if (action.payload.data) {
           state.userInfo = action.payload.data || {};
-          sessionStorage.setItem("fr", JSON.stringify(action.payload.data));
+          localStorage.setItem("fr", JSON.stringify(action.payload.data));
           state.type = "HBD";
-          sessionStorage.setItem("type", "HBD");
+          localStorage.setItem("type", "HBD");
         }
       })
       .addCase(LoginHDB.rejected, (state, action) => {

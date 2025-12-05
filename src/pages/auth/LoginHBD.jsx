@@ -32,11 +32,10 @@ const LoginForm = () => {
     return (
         <div className="flex items-center justify-center min-h-screen bg-white">
             <div className="w-full max-w-xs sm:max-w-[360px] bg-white p-4 sm:p-0 text-center">
-
                 {/* Phần Logo và Tiêu đề */}
                 <div className="mb-6">
                     <div className="mx-auto w-32 h-32 mb-4">
-                        <img src="/logo.png" alt="HCA Logo" className="w-full h-full object-contain" />
+                        <img src="/logo.png" alt="HCA Logo" className="w-full h-full object-contain" onClick={() => navigate('/home')} />
                     </div>
 
                     <div className="flex items-center justify-center space-x-3 mb-6">

@@ -26,7 +26,7 @@ export default function Header({ toggleSidebar }) {
 
     const handleLogout = async () => {
         // Chuyển hướng về trang đăng nhập
-        sessionStorage.removeItem("fr");
+        localStorage.removeItem("fr");
         dispatch(logout());
         navigate('/home');
     }

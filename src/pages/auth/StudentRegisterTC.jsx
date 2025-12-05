@@ -127,7 +127,7 @@ export default function StudentRegisterTC() {
                 {/* Header */}
                 <div className="text-center mb-8">
                     <div className="mx-auto w-32 h-32 mb-4">
-                        <img src="/logo.png" alt="HCA Logo" className="w-full h-full object-contain" />
+                        <img src="/logo.png" alt="HCA Logo" className="w-full h-full object-contain" onClick={() => navigate('/home')} />
                     </div>
                     <h1 className="text-2xl font-semibold text-gray-700">
                         Đăng ký đóng học phí hệ Trung Cấp Chính Trị
