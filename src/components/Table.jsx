@@ -29,9 +29,51 @@ const StudentGrades = ({ data, COLUMN_MAPPING }) => {
       case 'studentName':
         return client.name;
       default:
-        return subject[field];
+        // Cần kiểm tra subject tồn tại trước khi truy cập field
+        return subject ? subject[field] : null;
     }
   };
+
+  /**
+   * Hàm lấy nội dung cho ô trong HÀNG CHÍNH (client row)
+   */
+  const getHeaderCellContent = (key, client) => {
+    const isExpanded = expandedRows[client.id];
+
+    switch (key) {
+      case 'cot1': 
+        return (
+          <div className="
+            w-6 h-6 flex items-center justify-center 
+            bg-white 
+            rounded-sm 
+            border border-gray-400 
+            shadow-sm 
+            hover:bg-gray-100 
+            transition duration-150 ease-in-out
+            transform active:scale-95
+            cursor-pointer
+          ">
+            {isExpanded ? (
+              <Minus className="w-4 h-4 text-gray-700" />
+            ) : (
+              <Plus className="w-4 h-4 text-gray-700" />
+            )}
+          </div>
+        );
+      case 'cot2': 
+        return client.id;
+      case 'cot3':
+        return <span className="font-medium">{client.name}</span>;
+      default: // Các cột khác chỉ để trống
+        return '';
+    }
+  };
+
+  // Lấy key của các cột quan trọng để áp dụng style phù hợp cho Header Row
+  const studentIdColKey = COLUMN_MAPPING.find(col => col.key === 'cot1')?.key;
+  const studentNameColKey = COLUMN_MAPPING.find(col => col.key === 'cot2')?.key;
+
 
   return (
     <div className="w-full overflow-x-auto bg-white">
@@ -47,31 +89,25 @@ const StudentGrades = ({ data, COLUMN_MAPPING }) => {
           </tr>
         </thead>
         <tbody>
-          {data.map((client, studentIndex) => (
+          {data.map((client) => (
             <React.Fragment key={client.id}>
               {/* Header row for client (Hàng chính) */}
               <tr
                 className="bg-gray-50 hover:bg-gray-100 cursor-pointer border-b"
                 onClick={() => toggleRow(client.id)}
               >
-                {/* Cột icon (Cột 1) */}
-                <td className="px-4 py-2 border">
-                  <div className="w-4 h-4 flex items-center justify-center bg-white rounded-sm border border-gray-400 shadow-sm hover:bg-gray-100 transition duration-150 ease-in-out transform active:scale-95 cursor-pointer">
-                    {expandedRows[client.id] ? (
-                      <Minus className="w-4 h-4" />
-                    ) : (
-                      <Plus className="w-4 h-4 text-gray-600" />
-                    )}
-                  </div>
-                </td>
-                <td className="px-4 py-2 text-sm text-gray-900 border">{client.id}</td>
-                <td className="px-4 py-2 text-sm text-gray-900 border font-medium">{client.name}</td>
-                <td className="px-4 py-2 border"></td>
-                <td className="px-4 py-2 border"></td>
-                <td className="px-4 py-2 border"></td>
-                <td className="px-4 py-2 border"></td>
-                <td className="px-4 py-2 border"></td>
-                <td className="px-4 py-2 border"></td>
+                {/* SỬA LỖI: Duyệt qua COLUMN_MAPPING để render các cột của Hàng chính */}
+                {COLUMN_MAPPING.map(col => (
+                  <td
+                    key={col.key}
+                    // Áp dụng style class của cột chi tiết, nhưng đảm bảo màu text cho thông tin chính
+                    className={`px-4 py-2 text-sm border 
+                           ${col.key === studentIdColKey || col.key === studentNameColKey ? 'text-gray-900' : 'text-gray-600'} 
+                           ${col.styleClass || ''}`}
+                  >
+                    {getHeaderCellContent(col.key, client)}
+                  </td>
+                ))}
               </tr>
 
               {/* Subject rows (Hàng chi tiết) */}

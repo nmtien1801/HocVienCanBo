@@ -119,14 +119,6 @@ function RouterRoot() {
             </PublicRoute>
           }
         />
-        <Route
-          path="/test"
-          element={
-            <PublicRoute userInfo={userInfo} isLoading={isLoading} hasCheckedAuth={hasCheckedAuth}>
-              <Test />
-            </PublicRoute>
-          }
-        />
 
         {/* private route */}
         <Route
@@ -143,6 +135,7 @@ function RouterRoot() {
           <Route path="change-pass-student" element={<ChangePassStudent />} />
           <Route path="change-pass-tc" element={<ChangePassTC />} />
           <Route path="account" element={<Account />} />
+          <Route path="test" element={<Test />} />
 
 
           {/* route schedule */}
