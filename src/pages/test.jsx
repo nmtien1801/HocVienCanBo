@@ -1,12 +1,12 @@
 // Ví dụ: file MyPage.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
-import { Search } from 'lucide-react';
+import { Search, Loader2, AlertCircle } from 'lucide-react';
 import StudentGroupedTable from '../components/Table';
 import DropdownSearch from '../components/FormFields/DropdownSearch.jsx';
 import { getClassLearnByUserID } from '../redux/learningClassSlice.js';
-import { getSubjectLearnAll } from '../redux/scheduleSlice.js';
+import { getSubjectLearnAll, getScheduleLesson } from '../redux/scheduleSlice.js';
 import { TypeUserIDCons } from "../utils/constants";
 
 function MyPage() {
@@ -15,12 +15,17 @@ function MyPage() {
     const IS_STUDENT = userInfo?.TypeUserID !== TypeUserIDCons.Teacher;
     const { ClassLearn } = useSelector((state) => state.learningClass);
     const { subjectLearnAll } = useSelector((state) => state.schedule);
+    const { scheduleLesson, totalScheduleLesson } = useSelector((state) => state.schedule);
 
     const [selectedClass, setSelectedClass] = useState('');
     const [selectedSubject, setSelectedSubject] = useState(0);
     const [isLoadingClassLearn, setIsLoadingClassLearn] = useState(false);
     const [isLoadingSubjects, setIsLoadingSubjects] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(2);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [hasSearched, setHasSearched] = useState(false); // Thêm state để theo dõi đã tìm kiếm chưa
 
     useEffect(() => {
         const fetchClassLearn = async () => {
@@ -67,83 +72,85 @@ function MyPage() {
         }
     }, [dispatch, ClassLearn.length, subjectLearnAll.length, IS_STUDENT]);
 
-    const handleSearch = () => {
-        setCurrentPage(1); // Reset về trang 1 khi tìm kiếm
+    const fetchScheduleClass = async () => {
+        if (!selectedClass) {
+            return;
+        }
+
+        setIsLoading(true);
+        setError(null);
+        try {
+            let res = await dispatch(getScheduleLesson({
+                classLearnID: selectedClass,
+                subjectID: selectedSubject,
+                page: currentPage,
+                limit: pageSize
+            }));
+
+            if (!res.payload || !res.payload.data) {
+                const errorMsg = res.payload?.message || 'Không thể tải dữ liệu';
+                setError(errorMsg);
+                toast.error(errorMsg);
+            }
+        } catch (err) {
+            const errorMsg = 'Đã có lỗi xảy ra khi tải dữ liệu';
+            setError(errorMsg);
+            toast.error(errorMsg);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Chỉ fetch khi đã hasSearched và có thay đổi phân trang
+    useEffect(() => {
+        if (hasSearched && selectedClass) {
+            fetchScheduleClass();
+        }
+    }, [currentPage, pageSize]);
+
+    const handleSearch = async () => {
+        if (!selectedClass) {
+            toast.warning('Vui lòng chọn lớp học');
+            return;
+        }
+        setHasSearched(true); // Đánh dấu đã thực hiện tìm kiếm
+        setCurrentPage(1);
+        fetchScheduleClass();
     };
 
     const STYLE_CLASSES = {
-        STT: "px-4 py-2 text-sm text-gray-600 border text-center",
-        NGAY_HOC: "px-4 py-2 text-sm text-gray-600 border text-center",
-        BUOI_HOC: "px-4 py-2 text-sm text-gray-600 border text-center", 
-        BAI_GIANG: "px-4 py-2 text-sm text-gray-900 border",
-        GIANG_VIEN: "px-4 py-2 text-sm text-gray-900 border",
-        SO_TIET: "px-4 py-2 text-sm text-gray-900 border text-center",
-        PHONG_HOC: "px-4 py-2 text-sm text-gray-900 border text-center",
+        COLLAPSE: "px-4 py-2 text-sm text-gray-700 border text-center",
+        STUDENT_ID: "px-4 py-2 text-sm text-gray-700 border text-center",
+        STUDENT_NAME: "px-4 py-2 text-sm text-gray-700 border",
+        DATE: "px-4 py-2 text-sm text-gray-600 border text-center",
+        PERIOD: "px-4 py-2 text-sm text-gray-600 border text-center",
+        LESSON: "px-4 py-2 text-sm text-gray-900 border",
+        TEACHER: "px-4 py-2 text-sm text-gray-900 border",
+        NUMBER_CALCULATOR: "px-4 py-2 text-sm text-gray-900 border text-center",
+        ROOM: "px-4 py-2 text-sm text-gray-900 border text-center",
     };
 
     const COLUMN_MAPPING = [
-        { key: 'cot1', header: 'STT', dataField: 'subjectIndex', styleClass: STYLE_CLASSES.STT },
-        { key: 'cot2', header: 'Ngày học', dataField: 'DateAir', styleClass: STYLE_CLASSES.NGAY_HOC },
-        { key: 'cot3', header: 'Buổi học', dataField: 'Period', styleClass: STYLE_CLASSES.BUOI_HOC },
-        { key: 'cot4', header: 'Bài giảng', dataField: 'LessonName', styleClass: STYLE_CLASSES.BAI_GIANG },
-        { key: 'cot5', header: 'Giảng viên', dataField: 'TeacherName', styleClass: STYLE_CLASSES.GIANG_VIEN },
-        { key: 'cot6', header: 'Số tiết', dataField: 'NumberCaculator', styleClass: STYLE_CLASSES.SO_TIET },
-        { key: 'cot7', header: 'Phòng học', dataField: 'RoomID', styleClass: STYLE_CLASSES.PHONG_HOC },
+        { key: 'cot', header: '', dataField: 'collapseControl', styleClass: STYLE_CLASSES.COLLAPSE },
+        { key: 'cot2', header: 'STT', dataField: 'subjectIndex', styleClass: STYLE_CLASSES.DATE },
+        { key: 'cot3', header: 'ID Lớp', dataField: 'studentId', styleClass: STYLE_CLASSES.STUDENT_ID },
+        { key: 'cot4', header: 'Tên Lớp', dataField: 'studentName', styleClass: STYLE_CLASSES.STUDENT_NAME },
+        { key: 'cot5', header: 'Ngày học', dataField: 'DateAir', styleClass: STYLE_CLASSES.DATE },
+        { key: 'cot6', header: 'Buổi học', dataField: 'Period', styleClass: STYLE_CLASSES.PERIOD },
+        { key: 'cot7', header: 'Bài giảng', dataField: 'LessonName', styleClass: STYLE_CLASSES.LESSON },
+        { key: 'cot8', header: 'Giảng viên', dataField: 'TeacherName', styleClass: STYLE_CLASSES.TEACHER },
+        { key: 'cot9', header: 'Số tiết', dataField: 'NumberCaculator', styleClass: STYLE_CLASSES.NUMBER_CALCULATOR },
+        { key: 'cot10', header: 'Phòng học', dataField: 'RoomID', styleClass: STYLE_CLASSES.ROOM },
     ];
 
-    // Dữ liệu mẫu lịch học (tương tự Lesson.jsx)
-    const data = [
-        {
-            id: '2321233001',
-            name: 'Lớp A - Năm học 2024',
-            subjects: [
-                { DateAir: '2024-12-09', Period: 'Sáng', LessonName: 'Lịch sử Đảng', TeacherName: 'Thầy Nguyễn Văn A', NumberCaculator: 3, RoomID: 'A101' },
-                { DateAir: '2024-12-10', Period: 'Chiều', LessonName: 'Triết học', TeacherName: 'Cô Trần Thị B', NumberCaculator: 2, RoomID: 'A102' },
-                { DateAir: '2024-12-11', Period: 'Sáng', LessonName: 'Kinh tế chính trị', TeacherName: 'Thầy Hoàng Văn C', NumberCaculator: 2, RoomID: 'A103' },
-            ]
-        },
-        {
-            id: '2321233005',
-            name: 'Lớp B - Năm học 2024',
-            subjects: [
-                { DateAir: '2024-12-09', Period: 'Chiều', LessonName: 'Lý luận Đảng', TeacherName: 'Cô Lê Thị D', NumberCaculator: 2, RoomID: 'B101' },
-                { DateAir: '2024-12-12', Period: 'Sáng', LessonName: 'Chính sách xã hội', TeacherName: 'Thầy Dương Văn E', NumberCaculator: 3, RoomID: 'B102' },
-            ]
-        },
-        {
-            id: '2321233010',
-            name: 'Lớp C - Năm học 2024',
-            subjects: [
-                { DateAir: '2024-12-13', Period: 'Sáng', LessonName: 'Pháp luật cơ bản', TeacherName: 'Thầy Võ Văn F', NumberCaculator: 2, RoomID: 'C101' },
-                { DateAir: '2024-12-14', Period: 'Chiều', LessonName: 'Kỹ năng lãnh đạo', TeacherName: 'Cô Bùi Thị G', NumberCaculator: 3, RoomID: 'C102' },
-                { DateAir: '2024-12-15', Period: 'Sáng', LessonName: 'Tư tưởng Hồ Chí Minh', TeacherName: 'Thầy Phạm Văn H', NumberCaculator: 2, RoomID: 'C103' },
-            ]
-        },
-        {
-            id: '2321233015',
-            name: 'Lớp D - Năm học 2024',
-            subjects: [
-                { DateAir: '2024-12-16', Period: 'Sáng', LessonName: 'Quản lý công', TeacherName: 'Cô Vũ Thị I', NumberCaculator: 3, RoomID: 'D101' },
-                { DateAir: '2024-12-17', Period: 'Chiều', LessonName: 'Giao tiếp hiệu quả', TeacherName: 'Thầy Trương Văn K', NumberCaculator: 2, RoomID: 'D102' },
-            ]
-        },
-        {
-            id: '2321233020',
-            name: 'Lớp E - Năm học 2024',
-            subjects: [
-                { DateAir: '2024-12-18', Period: 'Sáng', LessonName: 'Đạo đức công vụ', TeacherName: 'Cô Chu Thị L', NumberCaculator: 2, RoomID: 'E101' },
-                { DateAir: '2024-12-19', Period: 'Sáng', LessonName: 'Luật hành chính', TeacherName: 'Thầy Đinh Văn M', NumberCaculator: 3, RoomID: 'E102' },
-                { DateAir: '2024-12-20', Period: 'Chiều', LessonName: 'Thực hành công vụ', TeacherName: 'Cô Ngô Thị N', NumberCaculator: 4, RoomID: 'E103' },
-            ]
-        },
-    ];
+    const data = scheduleLesson && Array.isArray(scheduleLesson) ? scheduleLesson : [];
 
     return (
-        <div className="p-8 bg-gray-50 min-h-screen">
-            <div className="max-w-7xl mx-auto">
-                <h1 className="text-3xl font-bold text-gray-800 mb-6">Bảng Điểm Học Viên</h1>
-                <p className="text-gray-600 mb-6">
-                    Ví dụ về component Table với phân trang. Click vào hàng để mở rộng chi tiết môn học.
+        <div className="p-4 sm:p-8 bg-gray-50 min-h-screen">
+            <div className="max-w-[1400px] mx-auto">
+                <h1 className="text-xl md:text-3xl font-bold text-gray-800 mb-6">Bảng Điểm Học Viên (Lịch Học Demo)</h1>
+                <p className="text-gray-600 mb-6 text-sm">
+                    Đây là ví dụ về bảng phân nhóm (**StudentGroupedTable**) và phân trang. **Click vào hàng màu xám** để mở rộng chi tiết lịch học của lớp.
                 </p>
 
                 {/* Filter Section */}
@@ -180,16 +187,59 @@ function MyPage() {
                         </button>
                     </div>
                 </div>
-                
-                {/* Table với phân trang: mỗi trang 2 mục */}
-                <StudentGroupedTable 
-                    data={data} 
-                    COLUMN_MAPPING={COLUMN_MAPPING}
-                    defaultPageSize={2}
-                    showPagination={true}
-                />
+
+                {/* Hiển thị message khi chưa tìm kiếm */}
+                {!hasSearched && (
+                    <div className="bg-white rounded-lg shadow-sm p-12">
+                        <div className="flex flex-col items-center justify-center gap-3">
+                            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+                                <Search size={32} className="text-gray-400" />
+                            </div>
+                            <p className="text-gray-700 font-medium">Vui lòng chọn lớp học</p>
+                            <p className="text-gray-500 text-sm">Chọn lớp học và nhấn "Tìm kiếm" để xem Thời khóa biểu</p>
+                        </div>
+                    </div>
+                )}
+
+                {/* Hiển thị loading */}
+                {hasSearched && isLoading && (
+                    <div className="bg-white rounded-lg shadow-sm p-12">
+                        <div className="flex flex-col items-center justify-center gap-3">
+                            <Loader2 size={32} className="text-gray-400 animate-spin" />
+                            <p className="text-gray-600">Đang tải dữ liệu...</p>
+                        </div>
+                    </div>
+                )}
+
+                {/* Hiển thị error */}
+                {hasSearched && !isLoading && error && (
+                    <div className="bg-white rounded-lg shadow-sm p-12">
+                        <div className="flex flex-col items-center justify-center gap-3">
+                            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+                                <AlertCircle size={32} className="text-red-500" />
+                            </div>
+                            <p className="text-red-600 font-medium">Lỗi: {error}</p>
+                        </div>
+                    </div>
+                )}
+
+                {/* Hiển thị bảng khi đã tìm kiếm và không có lỗi */}
+                {hasSearched && !isLoading && !error && (
+                    <StudentGroupedTable
+                        data={data}
+                        COLUMN_MAPPING={COLUMN_MAPPING}
+                        defaultPageSize={pageSize}
+                        showPagination={true}
+                        currentPage={currentPage}
+                        setCurrentPage={setCurrentPage}
+                        pageSize={pageSize}
+                        setPageSize={setPageSize}
+                        totalItems={totalScheduleLesson || 0}
+                    />
+                )}
             </div>
         </div>
     );
 }
+
 export default MyPage;
