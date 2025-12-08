@@ -10,7 +10,7 @@ import DropdownSearch from '../../components/FormFields/DropdownSearch.jsx';
 export default function TimetableClass() {
   const dispatch = useDispatch();
   const { userInfo } = useSelector((state) => state.auth);
-  const IS_STUDENT = userInfo?.TypeUserID !== TypeUserIDCons.Teacher;
+  const IS_STUDENT = userInfo?.TypeUserID === TypeUserIDCons.Student;
   const { scheduleLesson, totalScheduleLesson } = useSelector((state) => state.schedule);
   const { ClassLearn } = useSelector((state) => state.learningClass);
   const { subjectLearnAll } = useSelector((state) => state.schedule);

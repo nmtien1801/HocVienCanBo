@@ -101,7 +101,7 @@ const Table = ({
                 <th
                   key={col.key}
                   className={`
-                    px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider
+                    px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-300
                     ${col.dataField === 'collapseControl' ? 'w-12' : ''}
                   `}
                 >

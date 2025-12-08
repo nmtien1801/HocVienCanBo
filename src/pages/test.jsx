@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import { Search, Loader2, AlertCircle, FileDown } from 'lucide-react';
-import StudentGroupedTable from '../components/Table';
+import StudentGroupedTable from '../components/CustomTable/Table.jsx';
 import DropdownSearch from '../components/FormFields/DropdownSearch.jsx';
 import { getClassLearnByUserID } from '../redux/learningClassSlice.js';
 import { getSubjectLearnAll, getScheduleLesson } from '../redux/scheduleSlice.js';
@@ -12,7 +12,7 @@ import { TypeUserIDCons } from "../utils/constants";
 function MyPage() {
     const dispatch = useDispatch();
     const { userInfo } = useSelector((state) => state.auth);
-    const IS_STUDENT = userInfo?.TypeUserID !== TypeUserIDCons.Teacher;
+    const IS_STUDENT = userInfo?.TypeUserID === TypeUserIDCons.Student;
     const { ClassLearn } = useSelector((state) => state.learningClass);
     const { subjectLearnAll } = useSelector((state) => state.schedule);
     const { scheduleLesson, totalScheduleLesson } = useSelector((state) => state.schedule);

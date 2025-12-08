@@ -11,7 +11,7 @@ import DropdownSearch from '../../components/FormFields/DropdownSearch.jsx';
 export default function GraduationExam1() {
   const dispatch = useDispatch();
   const { userInfo } = useSelector((state) => state.auth);
-  const IS_STUDENT = userInfo?.TypeUserID !== TypeUserIDCons.Teacher;
+  const IS_STUDENT = userInfo?.TypeUserID === TypeUserIDCons.Student;
   const { GraduateList, GraduateTotal } = useSelector((state) => state.point);
   const { ClassLearn } = useSelector((state) => state.learningClass);
   const { subjectLearnAll } = useSelector((state) => state.schedule);

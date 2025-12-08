@@ -11,7 +11,7 @@ import DropdownSearch from '../../components/FormFields/DropdownSearch.jsx';
 export default function TimetableClass() {
   const dispatch = useDispatch();
   const { userInfo } = useSelector((state) => state.auth);
-  const IS_STUDENT = userInfo?.TypeUserID !== TypeUserIDCons.Teacher;
+  const IS_STUDENT = userInfo?.TypeUserID === TypeUserIDCons.Student;
   const { pointSum, totalPointSum } = useSelector((state) => state.schedule);
   const { ClassLearn } = useSelector((state) => state.learningClass);
   const [studentOfClass, setStudentOfClass] = useState([]);
@@ -54,7 +54,7 @@ export default function TimetableClass() {
       }
     };
 
-    if(ClassLearn.length === 0){
+    if (ClassLearn.length === 0) {
       fetchClassLearn();
     }
   }, [dispatch]);
@@ -301,7 +301,7 @@ export default function TimetableClass() {
                 placeholder="------ chọn học viên (Tất cả) ------"
                 labelKey="StudentName"
                 valueKey="StudentID"
-                onChange={(e) => setSelectedClass(e.StudentID)}
+                onChange={(e) => setSelectedStudent(e.StudentID)}
               />
             </div>
 
