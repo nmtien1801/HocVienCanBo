@@ -9,6 +9,18 @@ import { getClassLearnByUserID } from '../redux/learningClassSlice.js';
 import { getSubjectLearnAll, getScheduleLesson } from '../redux/scheduleSlice.js';
 import { TypeUserIDCons } from "../utils/constants";
 
+const STYLE_CLASSES = {
+    COLLAPSE: "px-4 py-2 text-sm text-gray-700 border text-center",
+    STUDENT_ID: "px-4 py-2 text-sm text-gray-700 border text-center",
+    STUDENT_NAME: "px-4 py-2 text-sm text-gray-700 border",
+    DATE: "px-4 py-2 text-sm text-gray-600 border text-center",
+    PERIOD: "px-4 py-2 text-sm text-gray-600 border text-center",
+    LESSON: "px-4 py-2 text-sm text-gray-900 border",
+    TEACHER: "px-4 py-2 text-sm text-gray-900 border",
+    NUMBER_CALCULATOR: "px-4 py-2 text-sm text-gray-900 border text-center",
+    ROOM: "px-4 py-2 text-sm text-gray-900 border text-center",
+};
+
 function MyPage() {
     const dispatch = useDispatch();
     const { userInfo } = useSelector((state) => state.auth);
@@ -22,7 +34,7 @@ function MyPage() {
     const [isLoadingClassLearn, setIsLoadingClassLearn] = useState(false);
     const [isLoadingSubjects, setIsLoadingSubjects] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(2);
+    const [pageSize, setPageSize] = useState(20);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const [hasSearched, setHasSearched] = useState(false); // Thêm state để theo dõi đã tìm kiếm chưa
@@ -118,40 +130,41 @@ function MyPage() {
         fetchScheduleClass();
     };
 
-    const STYLE_CLASSES = {
-        COLLAPSE: "px-4 py-2 text-sm text-gray-700 border text-center",
-        STUDENT_ID: "px-4 py-2 text-sm text-gray-700 border text-center",
-        STUDENT_NAME: "px-4 py-2 text-sm text-gray-700 border",
-        DATE: "px-4 py-2 text-sm text-gray-600 border text-center",
-        PERIOD: "px-4 py-2 text-sm text-gray-600 border text-center",
-        LESSON: "px-4 py-2 text-sm text-gray-900 border",
-        TEACHER: "px-4 py-2 text-sm text-gray-900 border",
-        NUMBER_CALCULATOR: "px-4 py-2 text-sm text-gray-900 border text-center",
-        ROOM: "px-4 py-2 text-sm text-gray-900 border text-center",
-    };
+
 
     const COLUMN_MAPPING = [
         { key: 'cot', header: '', dataField: 'collapseControl', styleClass: STYLE_CLASSES.COLLAPSE },
         { key: 'cot2', header: 'STT', dataField: 'subjectIndex', styleClass: STYLE_CLASSES.DATE },
-        { key: 'cot3', header: 'ID Lớp', dataField: 'studentId', styleClass: STYLE_CLASSES.STUDENT_ID },
-        { key: 'cot4', header: 'Tên Lớp', dataField: 'studentName', styleClass: STYLE_CLASSES.STUDENT_NAME },
-        { key: 'cot5', header: 'Ngày học', dataField: 'DateAir', styleClass: STYLE_CLASSES.DATE },
-        { key: 'cot6', header: 'Buổi học', dataField: 'Period', styleClass: STYLE_CLASSES.PERIOD },
-        { key: 'cot7', header: 'Bài giảng', dataField: 'LessonName', styleClass: STYLE_CLASSES.LESSON },
-        { key: 'cot8', header: 'Giảng viên', dataField: 'TeacherName', styleClass: STYLE_CLASSES.TEACHER },
-        { key: 'cot9', header: 'Số tiết', dataField: 'NumberCaculator', styleClass: STYLE_CLASSES.NUMBER_CALCULATOR },
-        { key: 'cot10', header: 'Phòng học', dataField: 'RoomID', styleClass: STYLE_CLASSES.ROOM },
+        { key: 'cot3', header: 'Ngày học', dataField: 'DateAir', styleClass: STYLE_CLASSES.DATE },
+        { key: 'cot4', header: 'Buổi học', dataField: 'Period', styleClass: STYLE_CLASSES.PERIOD },
+        { key: 'cot5', header: 'Bài giảng', dataField: 'LessonName', styleClass: STYLE_CLASSES.LESSON },
+        { key: 'cot6', header: 'Giảng viên', dataField: 'TeacherName', styleClass: STYLE_CLASSES.TEACHER },
+        { key: 'cot7', header: 'Số tiết', dataField: 'NumberCaculator', styleClass: STYLE_CLASSES.NUMBER_CALCULATOR },
+        { key: 'cot8', header: 'Phòng học', dataField: 'RoomID', styleClass: STYLE_CLASSES.ROOM },
     ];
 
-    const data = scheduleLesson && Array.isArray(scheduleLesson) ? scheduleLesson : [];
+    // nhóm data 
+    const dataForTable = useMemo(() => {
+        if (!scheduleLesson || !Array.isArray(scheduleLesson) || scheduleLesson.length === 0) {
+            return [];
+        }
+
+        const classObject = ClassLearn.find(c => c.ClassID === selectedClass);
+        const className = classObject ? classObject.ClassName : `Lớp ID: ${selectedClass}`;
+
+        return [
+            {
+                id: className, // Hiện ở cột 1 [+]
+                name: "", // Hiện ở cột 2 [+]
+                subjects: scheduleLesson, // Đặt tất cả buổi học vào mảng subjects
+            },
+        ];
+    }, [scheduleLesson, selectedClass, ClassLearn]);
 
     return (
         <div className="p-4 sm:p-8 bg-gray-50 min-h-screen">
             <div className="max-w-[1400px] mx-auto">
                 <h1 className="text-xl md:text-3xl font-bold text-gray-800 mb-6">Bảng Điểm Học Viên (Lịch Học Demo)</h1>
-                <p className="text-gray-600 mb-6 text-sm">
-                    Đây là ví dụ về bảng phân nhóm (**StudentGroupedTable**) và phân trang. **Click vào hàng màu xám** để mở rộng chi tiết lịch học của lớp.
-                </p>
 
                 {/* Filter Section */}
                 <div className="bg-white rounded-lg shadow-sm p-4 md:p-6 mb-6">
@@ -226,7 +239,7 @@ function MyPage() {
                 {/* Hiển thị bảng khi đã tìm kiếm và không có lỗi */}
                 {hasSearched && !isLoading && !error && (
                     <StudentGroupedTable
-                        data={data}
+                        data={dataForTable}
                         COLUMN_MAPPING={COLUMN_MAPPING}
                         defaultPageSize={pageSize}
                         showPagination={true}

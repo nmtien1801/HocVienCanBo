@@ -4,7 +4,7 @@ import { TypeUserIDCons, formatDate, formatToISODate, getGenderDisplay } from ".
 
 const TeacherLayout = ({ userInfo }) => {
   const [formData, setFormData] = useState({
-    maNguoiDung: userInfo?.UserID || '',
+    maNguoiDung: userInfo?.Code || '',
     hoVaTen: userInfo?.Name || '',
     nhom: '',
     dangHoatDong: userInfo?.Status === 1 || false,
