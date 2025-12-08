@@ -2,24 +2,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
-import { Search, Loader2, AlertCircle } from 'lucide-react';
+import { Search, Loader2, AlertCircle, FileDown } from 'lucide-react';
 import StudentGroupedTable from '../components/Table';
 import DropdownSearch from '../components/FormFields/DropdownSearch.jsx';
 import { getClassLearnByUserID } from '../redux/learningClassSlice.js';
 import { getSubjectLearnAll, getScheduleLesson } from '../redux/scheduleSlice.js';
 import { TypeUserIDCons } from "../utils/constants";
-
-const STYLE_CLASSES = {
-    COLLAPSE: "px-4 py-2 text-sm text-gray-700 border text-center",
-    STUDENT_ID: "px-4 py-2 text-sm text-gray-700 border text-center",
-    STUDENT_NAME: "px-4 py-2 text-sm text-gray-700 border",
-    DATE: "px-4 py-2 text-sm text-gray-600 border text-center",
-    PERIOD: "px-4 py-2 text-sm text-gray-600 border text-center",
-    LESSON: "px-4 py-2 text-sm text-gray-900 border",
-    TEACHER: "px-4 py-2 text-sm text-gray-900 border",
-    NUMBER_CALCULATOR: "px-4 py-2 text-sm text-gray-900 border text-center",
-    ROOM: "px-4 py-2 text-sm text-gray-900 border text-center",
-};
 
 function MyPage() {
     const dispatch = useDispatch();
@@ -113,6 +101,11 @@ function MyPage() {
         }
     };
 
+    const handleExportExcel = () => {
+        // TODO: Implement Excel export functionality
+        toast.info('Chức năng xuất Excel đang được phát triển');
+    };
+
     // Chỉ fetch khi đã hasSearched và có thay đổi phân trang
     useEffect(() => {
         if (hasSearched && selectedClass) {
@@ -133,14 +126,14 @@ function MyPage() {
 
 
     const COLUMN_MAPPING = [
-        { key: 'cot', header: '', dataField: 'collapseControl', styleClass: STYLE_CLASSES.COLLAPSE },
-        { key: 'cot2', header: 'STT', dataField: 'subjectIndex', styleClass: STYLE_CLASSES.DATE },
-        { key: 'cot3', header: 'Ngày học', dataField: 'DateAir', styleClass: STYLE_CLASSES.DATE },
-        { key: 'cot4', header: 'Buổi học', dataField: 'Period', styleClass: STYLE_CLASSES.PERIOD },
-        { key: 'cot5', header: 'Bài giảng', dataField: 'LessonName', styleClass: STYLE_CLASSES.LESSON },
-        { key: 'cot6', header: 'Giảng viên', dataField: 'TeacherName', styleClass: STYLE_CLASSES.TEACHER },
-        { key: 'cot7', header: 'Số tiết', dataField: 'NumberCaculator', styleClass: STYLE_CLASSES.NUMBER_CALCULATOR },
-        { key: 'cot8', header: 'Phòng học', dataField: 'RoomID', styleClass: STYLE_CLASSES.ROOM },
+        { key: 'cot', header: '', dataField: 'collapseControl' },
+        { key: 'cot2', header: 'STT', dataField: 'subjectIndex'},
+        { key: 'cot3', header: 'Ngày học', dataField: 'DateAir' },
+        { key: 'cot4', header: 'Buổi học', dataField: 'Period' },
+        { key: 'cot5', header: 'Bài giảng', dataField: 'LessonName'},
+        { key: 'cot6', header: 'Giảng viên', dataField: 'TeacherName' },
+        { key: 'cot7', header: 'Số tiết', dataField: 'NumberCaculator'},
+        { key: 'cot8', header: 'Phòng học', dataField: 'RoomID'},
     ];
 
     // nhóm data 
@@ -164,7 +157,7 @@ function MyPage() {
     return (
         <div className="p-4 sm:p-8 bg-gray-50 min-h-screen">
             <div className="max-w-[1400px] mx-auto">
-                <h1 className="text-xl md:text-3xl font-bold text-gray-800 mb-6">Bảng Điểm Học Viên (Lịch Học Demo)</h1>
+                <h1 className="text-xl md:text-3xl font-bold text-gray-800 mb-6">Danh sách bài giảng (Demo table)</h1>
 
                 {/* Filter Section */}
                 <div className="bg-white rounded-lg shadow-sm p-4 md:p-6 mb-6">
@@ -191,13 +184,23 @@ function MyPage() {
                             />
                         </div>
 
-                        <button
-                            className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-2 rounded flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed flex-1 md:flex-none"
-                            onClick={handleSearch}
-                        >
-                            <Search size={16} />
-                            <span className='whitespace-nowrap'>Tìm kiếm</span>
-                        </button>
+                        <div className='flex gap-4'>
+                            <button
+                                className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-2 rounded flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed flex-1 md:flex-none"
+                                onClick={handleSearch}
+                            >
+                                <Search size={16} />
+                                <span className='whitespace-nowrap'>Tìm kiếm</span>
+                            </button>
+                            <button
+                                // Responsive: w-full trên mobile, md:w-auto trên desktop
+                                className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-2 rounded flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed flex-1"
+                                onClick={handleExportExcel}
+                            >
+                                <FileDown size={16} />
+                                <span className='whitespace-nowrap'>Export Excel</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 

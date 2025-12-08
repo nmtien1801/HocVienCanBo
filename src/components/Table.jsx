@@ -11,7 +11,7 @@ import React, { useState } from 'react';
 import { Plus, Minus } from 'lucide-react';
 import { Pagination } from './Pagination';
 
-const StudentGrades = ({
+const Table = ({
   data,
   COLUMN_MAPPING,
   defaultPageSize = 10,
@@ -55,7 +55,6 @@ const StudentGrades = ({
               w-6 h-6 flex items-center justify-center 
               bg-white 
               rounded-sm 
-              border border-gray-400 
               shadow-sm 
               hover:bg-gray-100 
               transition duration-150 ease-in-out
@@ -95,14 +94,14 @@ const StudentGrades = ({
   return (
     <div className="w-full">
       <div className="w-full overflow-x-auto bg-white rounded-lg shadow-sm">
-        <table className="w-full border-collapse">
+        <table className="w-full">
           <thead>
-            <tr className="bg-gray-100 border-b">
+            <tr className="bg-gray-100 ">
               {COLUMN_MAPPING.map(col => (
                 <th
                   key={col.key}
                   className={`
-                    px-4 py-2 text-left text-sm font-medium text-gray-700 border
+                    px-4 py-2 text-left text-sm font-medium text-gray-700
                     ${col.dataField === 'collapseControl' ? 'w-10' : ''}
                   `}
                 >
@@ -116,14 +115,14 @@ const StudentGrades = ({
               <React.Fragment key={client.id}>
                 {/* Header row for client */}
                 <tr
-                  className="bg-gray-50 hover:bg-gray-100 cursor-pointer border-b"
+                  className="bg-gray-50 hover:bg-gray-100 cursor-pointer "
                   onClick={() => toggleRow(client.id)}
                 >
                   {COLUMN_MAPPING.map(col => (
                     <td
                       key={col.key}
                       className={`
-                        ${col.styleClass || ''} 
+                        ${'px-4 py-2 text-sm text-gray-700 text-center border-r border-gray-300'} 
                         ${col.dataField === 'studentName' ? 'text-gray-900 font-medium' : 'text-gray-700'}
                         ${col.dataField === 'collapseControl' ? 'text-center' : ''}
                       `}
@@ -135,9 +134,9 @@ const StudentGrades = ({
 
                 {/* Subject rows */}
                 {expandedRows[client.id] && client.subjects && client.subjects.map((subject, subjectIndex) => (
-                  <tr key={`${client.id}-${subjectIndex}`} className="hover:bg-gray-50 border-b">
+                  <tr key={`${client.id}-${subjectIndex}`} className="hover:bg-gray-50 ">
                     {COLUMN_MAPPING.map(col => (
-                      <td key={col.key} className={col.styleClass}>
+                      <td key={col.key} className="px-4 py-2 text-sm text-gray-700 text-center border-r border-gray-300">
                         {getCellValue(subject, col.dataField, client, subjectIndex)}
                       </td>
                     ))}
@@ -164,4 +163,4 @@ const StudentGrades = ({
   );
 };
 
-export default StudentGrades;
+export default Table;
