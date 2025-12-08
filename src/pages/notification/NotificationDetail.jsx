@@ -64,22 +64,29 @@ export default function NotificationDetail() {
                             <h2 className="text-lg font-normal text-gray-600">Thông báo khác</h2>
                         </div>
                         <div className="p-6 space-y-4">
-                            {newsListOther && newsListOther.map((item, index) => (
-                                <div key={index} className="flex gap-4">
-                                    <div className={`flex-shrink-0 w-24 h-14 flex items-center justify-center text-white text-[11px] font-bold rounded`}>
-                                        <ImageLoader
-                                            imagePath={item.ImagesPath || ''}
-                                            alt="Thông báo"
-                                            className="w-full h-full object-cover rounded cursor-pointer"
-                                            onClick={() => navigate(`/notification-detail?id=${item.NewsID}`)}
-                                        />
+                            {newsListOther.map((item, index) => {
+                                const isLast = index === newsListOther.length - 1;
+
+                                return (
+                                    <div
+                                        key={index}
+                                        className={`flex gap-4 ${!isLast ? 'border-b border-dashed border-gray-400 pb-4 mb-4' : 'pb-2'} `}
+                                    >
+                                        <div className={`flex-shrink-0 w-24 h-14 flex items-center justify-center text-white text-[11px] font-bold rounded`}>
+                                            <ImageLoader
+                                                imagePath={item.ImagesPath || ''}
+                                                alt="Thông báo"
+                                                className="w-full h-full object-cover rounded cursor-pointer"
+                                                onClick={() => navigate(`/notification-detail?id=${item.NewsID}`)}
+                                            />
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className="font-semibold text-gray-800 text-sm mb-1 cursor-pointer" onClick={() => navigate(`/notification-detail?id=${item.NewsID}`)}>{item.Title}</h3>
+                                            <p className="text-xs text-gray-500 italic leading-relaxed">{item.ShortDescription}</p>
+                                        </div>
                                     </div>
-                                    <div className="flex-1">
-                                        <h3 className="font-semibold text-gray-800 text-sm mb-1 cursor-pointer" onClick={() => navigate(`/notification-detail?id=${item.NewsID}`)}>{item.Title}</h3>
-                                        <p className="text-xs text-gray-500 italic leading-relaxed">{item.ShortDescription}</p>
-                                    </div>
-                                </div>
-                            ))}
+                                )
+                            })}
                         </div>
                     </div>
                 </div>

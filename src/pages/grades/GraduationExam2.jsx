@@ -34,15 +34,15 @@ export default function GraduationExam2() {
         }
 
         // Tự động chọn lớp nếu là Học viên và chỉ có 1 lớp
-        if (IS_STUDENT && Array.isArray(res.payload.data) && res.payload.data.length === 1) {
-          const singleClass = res.payload.data[0];
-          const classID = Number(singleClass.ClassID);
+        // if (IS_STUDENT && Array.isArray(res.payload.data) && res.payload.data.length === 1) {
+        //   const singleClass = res.payload.data[0];
+        //   const classID = Number(singleClass.ClassID);
 
-          setSelectedClass(classID);
+        //   setSelectedClass(classID);
 
-        } else if (!IS_STUDENT) {
-          setSelectedClass(0);
-        }
+        // } else if (!IS_STUDENT) {
+        //   setSelectedClass(0);
+        // }
       } catch (err) {
         toast.error('Đã có lỗi xảy ra khi tải danh sách môn học');
       } finally {
@@ -73,16 +73,16 @@ export default function GraduationExam2() {
   }, [dispatch]);
 
 
-  useEffect(() => {
-    if (selectedClass) {
-      fetchListExamination();
-    }
-  }, [currentPage, pageSize]);
+  // useEffect(() => {
+  //   if (selectedClass) {
+  //     fetchListExamination();
+  //   }
+  // }, [currentPage, pageSize]);
 
   const fetchListExamination = async () => {
-    if (!selectedClass) {
-      return;
-    }
+    // if (!selectedClass) {
+    //   return;
+    // }
 
     setIsLoading(true);
     setError(null);
@@ -104,10 +104,10 @@ export default function GraduationExam2() {
   };
 
   const handleSearch = async () => {
-    if (!selectedClass) {
-      toast.warning('Vui lòng chọn môn học');
-      return;
-    }
+    // if (!selectedClass) {
+    //   toast.warning('Vui lòng chọn môn học');
+    //   return;
+    // }
     setCurrentPage(1);
     fetchListExamination();
   };
@@ -203,7 +203,8 @@ export default function GraduationExam2() {
     }
 
     // Empty State - No Subject Selected
-    if (!selectedClass && !selectedSubject) {
+    // if (!selectedClass && !selectedSubject) {
+    if ( !selectedSubject) {
       return (
         <tr>
           <td colSpan="12" className="px-4 py-12 text-center">

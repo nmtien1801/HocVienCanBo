@@ -39,7 +39,7 @@ import { GetAccount } from "../redux/authSlice.js";
 import ManagerNotify from "../pages/notification/ManagerNotify.jsx";
 import StudentRegisterTC from "../pages/auth/StudentRegisterTC.jsx"
 import StudentRegisterHBD from "../pages/auth/StudentRegisterHBD.jsx"
-import Test from "../pages/test.jsx"
+import Test from "../pages/test/Test.jsx"
 
 const ProtectedRoute = ({ children, userInfo, isLoading, hasCheckedAuth }) => {
   if (isLoading || !hasCheckedAuth) {

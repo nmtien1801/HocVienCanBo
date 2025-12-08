@@ -1,15 +1,14 @@
-// Ví dụ: file MyPage.jsx
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import { Search, Loader2, AlertCircle, FileDown } from 'lucide-react';
-import StudentGroupedTable from '../components/CustomTable/Table.jsx';
-import DropdownSearch from '../components/FormFields/DropdownSearch.jsx';
-import { getClassLearnByUserID } from '../redux/learningClassSlice.js';
-import { getSubjectLearnAll, getScheduleLesson } from '../redux/scheduleSlice.js';
-import { TypeUserIDCons } from "../utils/constants";
+import StudentGroupedTable from '../../components/CustomTable/Table.jsx';
+import DropdownSearch from '../../components/FormFields/DropdownSearch.jsx';
+import { getClassLearnByUserID } from '../../redux/learningClassSlice.js';
+import { getSubjectLearnAll, getScheduleLesson } from '../../redux/scheduleSlice.js';
+import { TypeUserIDCons } from "../../utils/constants.js";
 
-function MyPage() {
+function Test() {
     const dispatch = useDispatch();
     const { userInfo } = useSelector((state) => state.auth);
     const IS_STUDENT = userInfo?.TypeUserID === TypeUserIDCons.Student;
@@ -258,4 +257,4 @@ function MyPage() {
     );
 }
 
-export default MyPage;
+export default Test;

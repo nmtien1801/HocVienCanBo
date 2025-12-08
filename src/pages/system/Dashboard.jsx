@@ -252,7 +252,17 @@ export default function Dashboard() {
                                     return (
                                         <div key={index} className="flex gap-3 items-start">
                                             {/* Date Badge */}
-                                            <div className="flex-shrink-0 bg-teal-500 text-white px-3 py-1.5 rounded font-medium text-sm shadow-md min-w-[100px] text-center">
+                                            <div
+                                                className={`
+                                                    flex-shrink-0 
+                                                    text-white 
+                                                    px-3 py-1.5 rounded font-medium text-sm shadow-md 
+                                                    min-w-[100px] 
+                                                    text-center 
+                                                    bg-teal-500
+                                                    ${role ? 'max-w-[18px]' : ''}
+                                                `}
+                                            >
                                                 {role ? 'Room: ' + item.RoomName : displayDate}
                                             </div>
 

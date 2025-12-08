@@ -42,8 +42,13 @@ export default function Notification() {
                         </div>
                         <div className="p-6 space-y-4">
                             {notifications.map((item, index) => {
+                                const isLast = index === notifications.length - 1;
+
                                 return (
-                                    <div key={index} className="flex gap-4">
+                                    <div
+                                        key={index}
+                                        className={`flex gap-4 ${!isLast ? 'border-b border-dashed border-gray-400 pb-4 mb-4' : 'pb-2'} `}
+                                    >
                                         <div className={`flex-shrink-0 w-24 h-14 flex items-center justify-center text-white text-[11px] font-bold rounded`}>
                                             <ImageLoader
                                                 imagePath={item.image || ''}
