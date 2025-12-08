@@ -52,19 +52,19 @@ const Table = ({
     if (dataField === 'collapseControl') {
       return (
         <div className="
-              w-6 h-6 flex items-center justify-center 
-              bg-white 
-              rounded-sm 
-              shadow-sm 
-              hover:bg-gray-100 
-              transition duration-150 ease-in-out
-              transform active:scale-95
+              w-7 h-7 flex items-center justify-center 
+              bg-gradient-to-br from-gray-300 to-gray-400
+              rounded-md 
+              shadow-md 
+              hover:shadow-lg hover:from-gray-400 hover:to-gray-500
+              transition-all duration-200 ease-in-out
+              transform hover:scale-105 active:scale-95
               cursor-pointer
             ">
           {isExpanded ? (
-            <Minus className="w-4 h-4 text-gray-700" />
+            <Minus className="w-4 h-4 text-white" strokeWidth={2.5} />
           ) : (
-            <Plus className="w-4 h-4 text-gray-700" />
+            <Plus className="w-4 h-4 text-white" strokeWidth={2.5} />
           )}
         </div>
       );
@@ -93,16 +93,16 @@ const Table = ({
 
   return (
     <div className="w-full">
-      <div className="w-full overflow-x-auto bg-white rounded-lg shadow-sm">
-        <table className="w-full">
+      <div className="w-full overflow-x-auto bg-white rounded-lg shadow-md border border-gray-200">
+        <table className="w-full border-collapse">
           <thead>
-            <tr className="bg-gray-100 ">
+            <tr className="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-300">
               {COLUMN_MAPPING.map(col => (
                 <th
                   key={col.key}
                   className={`
-                    px-4 py-2 text-left text-sm font-medium text-gray-700
-                    ${col.dataField === 'collapseControl' ? 'w-10' : ''}
+                    px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider
+                    ${col.dataField === 'collapseControl' ? 'w-12' : ''}
                   `}
                 >
                   {col.header}
@@ -115,15 +115,15 @@ const Table = ({
               <React.Fragment key={client.id}>
                 {/* Header row for client */}
                 <tr
-                  className="bg-gray-50 hover:bg-gray-100 cursor-pointer "
+                  className="bg-white border-b border-gray-200 hover:bg-blue-50 cursor-pointer transition-colors duration-150"
                   onClick={() => toggleRow(client.id)}
                 >
                   {COLUMN_MAPPING.map(col => (
                     <td
                       key={col.key}
                       className={`
-                        ${'px-4 py-2 text-sm text-gray-700 text-center border-r border-gray-300'} 
-                        ${col.dataField === 'studentName' ? 'text-gray-900 font-medium' : 'text-gray-700'}
+                        px-6 py-4 text-sm border-r border-gray-200 last:border-r-0
+                        ${col.dataField === 'studentName' ? 'text-gray-900 font-semibold' : 'text-gray-700 text-center'}
                         ${col.dataField === 'collapseControl' ? 'text-center' : ''}
                       `}
                     >
@@ -134,9 +134,9 @@ const Table = ({
 
                 {/* Subject rows */}
                 {expandedRows[client.id] && client.subjects && client.subjects.map((subject, subjectIndex) => (
-                  <tr key={`${client.id}-${subjectIndex}`} className="hover:bg-gray-50 ">
+                  <tr key={`${client.id}-${subjectIndex}`} className="bg-gray-50 hover:bg-gray-100 transition-colors duration-150 border-b border-gray-100">
                     {COLUMN_MAPPING.map(col => (
-                      <td key={col.key} className="px-4 py-2 text-sm text-gray-700 text-center border-r border-gray-300">
+                      <td key={col.key} className="px-6 py-3 text-sm text-gray-600 text-center border-r border-gray-200 last:border-r-0">
                         {getCellValue(subject, col.dataField, client, subjectIndex)}
                       </td>
                     ))}
