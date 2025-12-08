@@ -40,6 +40,7 @@ import ManagerNotify from "../pages/notification/ManagerNotify.jsx";
 import StudentRegisterTC from "../pages/auth/StudentRegisterTC.jsx"
 import StudentRegisterHBD from "../pages/auth/StudentRegisterHBD.jsx"
 import Test from "../pages/test/Test.jsx"
+import SurveyManager from "../pages/test/ManagerSurvey.jsx"
 
 const ProtectedRoute = ({ children, userInfo, isLoading, hasCheckedAuth }) => {
   if (isLoading || !hasCheckedAuth) {
@@ -136,7 +137,7 @@ function RouterRoot() {
           <Route path="change-pass-tc" element={<ChangePassTC />} />
           <Route path="account" element={<Account />} />
           <Route path="test" element={<Test />} />
-
+          <Route path="a" element={<SurveyManager />} />
 
           {/* route schedule */}
           <Route path="schedule-teach-month" element={<ScheduleTeachMonth />} />
