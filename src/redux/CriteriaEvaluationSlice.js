@@ -9,10 +9,10 @@ const initialState = {
 
 export const getCriteriaEvaluation = createAsyncThunk(
   "criteriaEvaluations/getCriteriaEvaluation",
-  async ({ key, typeTemplate, statusID, page, limit }, thunkAPI) => {
+  async ({ key, TypeCriteria, statusID, page, limit }, thunkAPI) => {
     const response = await ApiCriteriaEvaluation.getCriteriaEvaluationApi(
       key,
-      typeTemplate,
+      TypeCriteria,
       statusID,
       page,
       limit

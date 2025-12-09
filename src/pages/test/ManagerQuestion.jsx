@@ -6,13 +6,23 @@ import { getCriteriaEvaluation } from '../../redux/CriteriaEvaluationSlice.js';
 import ApiCriteriaEvaluation from '../../apis/ApiCriteriaEvaluation.js'; // Không dùng trong mock
 import { useSelector, useDispatch } from "react-redux";
 
+// === 1. ĐỊNH NGHĨA MAPPING (Int) ===
+const TypeCriteriaMapping = {
+    1: 'Thang 6 mức (A-F)',
+    2: 'Ý kiến mở (Text Area)',
+};
+const TypeCriteriaInt = {
+    LIKERT: 1,
+    TEXTAREA: 2,
+}
+
 const initialBank = [
-    { CriteriaEvaluationID: 1, TypeCriteria: 'likert6', TitleCriteriaEvaluation: 'Giảng viên truyền đạt rõ ràng', StatusID: 1 },
-    { CriteriaEvaluationID: 2, TypeCriteria: 'likert6', TitleCriteriaEvaluation: 'Phòng học sạch sẽ', StatusID: 0 }, // Đổi sang 0 để test
-    { CriteriaEvaluationID: 3, TypeCriteria: 'textarea', TitleCriteriaEvaluation: 'Ý kiến cải tiến khóa học', StatusID: 1 },
+    { CriteriaEvaluationID: 1, TypeCriteria: TypeCriteriaInt.LIKERT, TitleCriteriaEvaluation: 'Giảng viên truyền đạt rõ ràng', StatusID: 1 },
+    { CriteriaEvaluationID: 2, TypeCriteria: TypeCriteriaInt.LIKERT, TitleCriteriaEvaluation: 'Phòng học sạch sẽ', StatusID: 0 },
+    { CriteriaEvaluationID: 3, TypeCriteria: TypeCriteriaInt.TEXTAREA, TitleCriteriaEvaluation: 'Ý kiến cải tiến khóa học', StatusID: 1 },
 ];
 
-const initialFormState = { CriteriaEvaluationID: '', TypeCriteria: 'likert6', TitleCriteriaEvaluation: '', StatusID: 1 };
+const initialFormState = { CriteriaEvaluationID: '', TypeCriteria: TypeCriteriaInt.LIKERT, TitleCriteriaEvaluation: '', StatusID: 1 };
 
 
 const ManagerQuestion = () => {
@@ -34,7 +44,7 @@ const ManagerQuestion = () => {
     const [filterStatus, setFilterStatus] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
-    const [totalItems, setTotalItems] = useState(initialBank.length); // Dùng length của mock data
+    const [totalItems, setTotalItems] = useState(initialBank.length);
 
     // ----------------------------- fetch list câu hỏi ---------------------------------------
     const fetchList = async () => {
@@ -43,11 +53,12 @@ const ManagerQuestion = () => {
         try {
             let res = await dispatch(getCriteriaEvaluation({
                 key: searchKey,
-                typeTemplate: filterType,
-                statusID: filterStatus || 1,
+                TypeCriteria: filterType,
+                statusID: filterStatus,
                 page: currentPage,
                 limit: pageSize
             }));
+            console.log('ssss ', res);
 
             if (!res.payload || !res.payload.data) {
                 const errorMsg = res.payload?.message || 'Không thể tải dữ liệu';
@@ -65,7 +76,7 @@ const ManagerQuestion = () => {
         }
     };
 
-    // Điều chỉnh useEffect để gọi fetchList khi filter thay đổi (không chỉ page)
+    // -------------------------- phân trang
     useEffect(() => {
         if (currentPage === 1) {
             fetchList();
@@ -82,7 +93,7 @@ const ManagerQuestion = () => {
     useEffect(() => {
         if (editing) {
             const item = bank.find(b => Number(b.CriteriaEvaluationID) === Number(editing));
-            if (item) setForm({ ...item });
+            if (item) setForm({ ...item, TypeCriteria: Number(item.TypeCriteria) }); // Đảm bảo TypeCriteria là số
         } else if (!isAdding) {
             setForm(initialFormState);
         }
@@ -103,6 +114,7 @@ const ManagerQuestion = () => {
 
         const itemToSave = {
             ...form,
+            TypeCriteria: Number(form.TypeCriteria),
             StatusID: Number(form.StatusID)
         };
 
@@ -115,7 +127,6 @@ const ManagerQuestion = () => {
             // setBank([...bank, { ...form, CriteriaEvaluationID: newId }]);
             // toast.success('Thêm câu hỏi thành công');
             let res = await ApiCriteriaEvaluation.CreateTemplateSurveyApi(form)
-            console.log('ssss ', res);
 
         }
         clearForm();
@@ -145,7 +156,7 @@ const ManagerQuestion = () => {
 
     const handleRowClick = (item) => {
         setEditing(item.CriteriaEvaluationID);
-        setForm({ ...item });
+        setForm({ ...item, TypeCriteria: Number(item.TypeCriteria) });
         setIsAdding(true);
     };
 
@@ -260,8 +271,8 @@ const ManagerQuestion = () => {
             >
                 <td className="px-4 py-3 text-gray-900 font-medium whitespace-nowrap border-r border-gray-200">{item.CriteriaEvaluationID}</td>
                 <td className="px-4 py-3 text-gray-700 whitespace-nowrap border-r border-gray-200">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${item.TypeCriteria === 'likert6' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                        {item.TypeCriteria === 'likert6' ? 'Thang đo' : 'Ý kiến'}
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${item.TypeCriteria === TypeCriteriaInt.LIKERT ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                        {TypeCriteriaMapping[item.TypeCriteria] || 'Không xác định'}
                     </span>
                 </td>
                 <td className="px-4 py-3 text-gray-800 max-w-xl truncate border-r border-gray-200">{item.TitleCriteriaEvaluation}</td>
@@ -324,11 +335,11 @@ const ManagerQuestion = () => {
                             <label className="block text-sm font-medium text-gray-700 mb-1">Loại Câu hỏi</label>
                             <select
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500 transition"
-                                value={form.TypeCriteria}
-                                onChange={(e) => setForm({ ...form, TypeCriteria: e.target.value })}
+                                value={form.TypeCriteria.toString()}
+                                onChange={(e) => setForm({ ...form, TypeCriteria: Number(e.target.value) })}
                             >
-                                <option value="likert6">Thang 6 mức (A-F)</option>
-                                <option value="textarea">Ý kiến mở (Text Area)</option>
+                                <option value={TypeCriteriaInt.LIKERT}>Thang 6 mức (A-F)</option>
+                                <option value={TypeCriteriaInt.TEXTAREA}>Ý kiến mở (Text Area)</option>
                             </select>
                         </div>
                         <div className="col-span-12 sm:col-span-7">
@@ -401,8 +412,8 @@ const ManagerQuestion = () => {
                                 onChange={(e) => setFilterType(e.target.value)}
                             >
                                 <option value="">Tất cả</option>
-                                <option value="likert6">Thang đo</option>
-                                <option value="textarea">Ý kiến</option>
+                                <option value={TypeCriteriaInt.LIKERT}>Thang đo</option>
+                                <option value={TypeCriteriaInt.TEXTAREA}>Ý kiến</option>
                             </select>
                         </div>
 
@@ -452,60 +463,13 @@ const ManagerQuestion = () => {
                     {/* Pagination */}
                     {!isLoading && !error && bank && bank.length > 0 && (
                         <div className="p-4 md:px-6 md:py-4 border-t border-gray-200 flex flex-col md:flex-row items-center justify-between gap-4">
-                            {/* Pagination Controls */}
                             <div className="flex items-center gap-2">
-                                <button
-                                    onClick={() => setCurrentPage(1)}
-                                    disabled={currentPage === 1}
-                                    className="p-2 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    title="Trang đầu"
-                                >
-                                    <ChevronsLeft size={16} />
-                                </button>
-                                <button
-                                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                                    disabled={currentPage === 1}
-                                    className="p-2 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    title="Trang trước"
-                                >
-                                    <ChevronLeft size={16} />
-                                </button>
-
+                                <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1} className="p-2 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed" title="Trang đầu"><ChevronsLeft size={16} /></button>
+                                <button onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))} disabled={currentPage === 1} className="p-2 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed" title="Trang trước"><ChevronLeft size={16} /></button>
                                 <div className="flex items-center gap-2 mx-2">
-                                    {getPageNumbers().map((pageNum, i) => (
-                                        pageNum === '...' ? (
-                                            <span key={`dots-${i}`} className="px-2 text-gray-400">...</span>
-                                        ) : (
-                                            <button
-                                                key={pageNum}
-                                                onClick={() => setCurrentPage(pageNum)}
-                                                className={`px-3 py-1 border rounded text-sm ${currentPage === pageNum
-                                                    ? 'bg-blue-500 text-white border-blue-500'
-                                                    : 'border-gray-300 hover:bg-gray-100'
-                                                    }`}
-                                            >
-                                                {pageNum}
-                                            </button>
-                                        )
-                                    ))}
                                 </div>
-
-                                <button
-                                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                                    disabled={currentPage === totalPages}
-                                    className="p-2 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    title="Trang sau"
-                                >
-                                    <ChevronRight size={16} />
-                                </button>
-                                <button
-                                    onClick={() => setCurrentPage(totalPages)}
-                                    disabled={currentPage === totalPages}
-                                    className="p-2 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    title="Trang cuối"
-                                >
-                                    <ChevronsRight size={16} />
-                                </button>
+                                <button onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))} disabled={currentPage === totalPages} className="p-2 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed" title="Trang sau"><ChevronRight size={16} /></button>
+                                <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} className="p-2 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed" title="Trang cuối"><ChevronsRight size={16} /></button>
                             </div>
 
                             <div className="flex flex-wrap items-center justify-center md:justify-end gap-4">
