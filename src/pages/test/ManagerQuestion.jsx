@@ -31,7 +31,8 @@ const ManagerQuestion = () => {
 
     const target = location.state?.pickerTarget || null;
 
-    const [bank, setBank] = useState();
+    const { CriteriaEvaluationList, CriteriaEvaluationTotal } = useSelector((state) => state.criteriaEvaluation);
+
     const [editing, setEditing] = useState(null);
     const [form, setForm] = useState(initialFormState);
     const [isAdding, setIsAdding] = useState(false);
@@ -46,22 +47,18 @@ const ManagerQuestion = () => {
 
     // State dùng để kích hoạt API call, chỉ thay đổi khi nhấn nút Tìm kiếm
     const [activeSearchKey, setActiveSearchKey] = useState('');
-    const [activeFilterType, setActiveFilterType] = useState(1);
-    const [activeFilterStatus, setActiveFilterStatus] = useState(1);
+    const [activeFilterType, setActiveFilterType] = useState('');
+    const [activeFilterStatus, setActiveFilterStatus] = useState('');
 
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
-    const { CriteriaEvaluationList, CriteriaEvaluationTotal } = useSelector((state) => state.criteriaEvaluation);
 
     // ----------------------------- fetch list câu hỏi ---------------------------------------
     const fetchList = async () => {
         setIsLoading(true);
         setError(null);
 
-        // Lấy giá trị từ Active state
         try {
-            // Giả lập API call (hoặc gọi API thật)
-
             let res = await dispatch(getCriteriaEvaluation({
                 key: activeSearchKey,
                 TypeCriteria: activeFilterType,
@@ -69,13 +66,9 @@ const ManagerQuestion = () => {
                 page: currentPage,
                 limit: pageSize
             }));
-
-            if (!res.payload || !res.payload.data) {
-                const errorMsg = res.payload?.message || 'Không thể tải dữ liệu';
-                setError(errorMsg);
-            }
+           
         } catch (err) {
-            const errorMsg = 'Đã có lỗi xảy ra khi tải dữ liệu';
+            const errorMsg = 'Đã có lỗi xảy ra khi tải dữ liệu.';
             setError(errorMsg);
             toast.error(errorMsg);
         } finally {
@@ -84,20 +77,20 @@ const ManagerQuestion = () => {
     };
 
     // -------------------------- useEffect để gọi API khi Active Filters hoặc Pagination thay đổi --------------------------
-    // CHỈ CÓ CÁC STATE NÀY MỚI KÍCH HOẠT API CALL
     useEffect(() => {
         fetchList();
-    }, [currentPage, pageSize, activeSearchKey, activeFilterType, activeFilterStatus]);
+    }, [currentPage, pageSize, activeSearchKey, activeFilterType, activeFilterStatus, dispatch]);
 
     // -------------------------- Logic Đồng bộ Form --------------------------
     useEffect(() => {
-        if (editing) {
-            const item = bank.find(b => Number(b.CriteriaEvaluationID) === Number(editing));
+        if (editing && CriteriaEvaluationList) {
+            const item = CriteriaEvaluationList.find(b => Number(b.CriteriaEvaluationID) === Number(editing));
             if (item) setForm({ ...item, TypeCriteria: Number(item.TypeCriteria) });
         } else if (!isAdding) {
             setForm(initialFormState);
         }
-    }, [editing, bank, isAdding]);
+    }, [editing, CriteriaEvaluationList, isAdding]);
+
 
     // -------------------------------- action button + action row -------------------------------------------
     const clearForm = () => {
@@ -119,12 +112,10 @@ const ManagerQuestion = () => {
         };
 
         if (editing) {
-            // Giả lập cập nhật và fetch lại danh sách sau khi lưu
-            setBank(bank.map(b => (Number(b.CriteriaEvaluationID) === Number(editing) ? itemToSave : b)));
+
             toast.success('Cập nhật câu hỏi thành công');
+
         } else {
-            // const newId = bank.length ? Math.max(...bank.map(b => Number(b.CriteriaEvaluationID))) + 1 : 1;
-            // setBank([...bank, { ...form, CriteriaEvaluationID: newId }]);
             // toast.success('Thêm câu hỏi thành công');
             let res = await ApiCriteriaEvaluation.CreateTemplateSurveyApi(form)
 
@@ -139,7 +130,6 @@ const ManagerQuestion = () => {
 
     const handleDelete = (id) => {
         if (!window.confirm('Bạn có chắc muốn xóa câu hỏi này?')) return;
-        setBank(bank.filter(b => Number(b.CriteriaEvaluationID) !== Number(id)));
         if (Number(editing) === Number(id)) clearForm();
         toast.success('Xóa câu hỏi thành công');
     };
@@ -250,7 +240,7 @@ const ManagerQuestion = () => {
             );
         }
 
-        if (!bank || bank.length === 0) {
+        if (!CriteriaEvaluationList || CriteriaEvaluationList.length === 0) {
             return (
                 <tr>
                     <td colSpan="5" className="px-4 py-12 text-center">
@@ -265,7 +255,6 @@ const ManagerQuestion = () => {
                 </tr>
             );
         }
-        console.log('aaaaaaaa ', bank);
 
         return CriteriaEvaluationList.map(item => (
             <tr
@@ -443,12 +432,13 @@ const ManagerQuestion = () => {
                     </div>
                 </div>
 
+                {/* Bảng Câu hỏi */}
                 <div className="bg-white rounded-lg shadow-sm">
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead className="bg-gray-100 border-b-2 border-gray-300">
                                 <tr>
-                                    <th className="px-4 py-3 text-left text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">ID</th>
+                                    <th className="px-4 py-3 text-left text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">STT</th>
                                     <th className="px-4 py-3 text-left text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">Loại</th>
                                     <th className="px-4 py-3 text-left text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">Nội dung</th>
                                     <th className="px-4 py-3 text-left text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">Trạng thái</th>
@@ -462,7 +452,7 @@ const ManagerQuestion = () => {
                     </div>
 
                     {/* Pagination */}
-                    {!isLoading && !error && bank && bank.length > 0 && (
+                    {!isLoading && !error && CriteriaEvaluationList && CriteriaEvaluationList.length > 0 && (
                         <div className="p-4 md:px-6 md:py-4 border-t border-gray-200 flex flex-col md:flex-row items-center justify-between gap-4">
                             <div className="flex items-center gap-2">
                                 <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1} className="p-2 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed" title="Trang đầu"><ChevronsLeft size={16} /></button>

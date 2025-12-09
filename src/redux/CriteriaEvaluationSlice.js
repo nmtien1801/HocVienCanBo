@@ -17,7 +17,7 @@ export const getCriteriaEvaluation = createAsyncThunk(
       page,
       limit
     );
-    return response;
+    return response.data;
   }
 );
 
