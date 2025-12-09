@@ -15,14 +15,7 @@ const TypeCriteriaInt = {
     TEXTAREA: 2,
 }
 
-// const initialBank = [
-//     { CriteriaEvaluationID: 1, TypeCriteria: TypeCriteriaInt.LIKERT, TitleCriteriaEvaluation: 'Giảng viên truyền đạt rõ ràng', StatusID: 1 },
-//     { CriteriaEvaluationID: 2, TypeCriteria: TypeCriteriaInt.LIKERT, TitleCriteriaEvaluation: 'Phòng học sạch sẽ', StatusID: 0 },
-//     { CriteriaEvaluationID: 3, TypeCriteria: TypeCriteriaInt.TEXTAREA, TitleCriteriaEvaluation: 'Ý kiến cải tiến khóa học', StatusID: 1 },
-// ];
-
 const initialFormState = { CriteriaEvaluationID: '', TypeCriteria: TypeCriteriaInt.LIKERT, TitleCriteriaEvaluation: '', StatusID: true };
-
 
 const ManagerQuestion = () => {
     const navigate = useNavigate();
@@ -42,7 +35,7 @@ const ManagerQuestion = () => {
 
     // State lưu giá trị đang được nhập/chọn trong filter
     const [searchKey, setSearchKey] = useState('');
-    const [filterType, setFilterType] = useState('');
+    const [filterType, setFilterType] = useState(TypeCriteriaInt.LIKERT.toString());
     const [filterStatus, setFilterStatus] = useState(true);
 
     // State dùng để kích hoạt API call, chỉ thay đổi khi nhấn nút Tìm kiếm
@@ -105,32 +98,31 @@ const ManagerQuestion = () => {
             return;
         }
 
-        const itemToSave = {
-            ...form,
-            TypeCriteria: Number(form.TypeCriteria),
-            StatusID: Number(form.StatusID)
-        };
-
         if (editing) {
-            toast.success('Cập nhật câu hỏi thành công');
+            let res = await ApiCriteriaEvaluation.UpdateTemplateSurveyApi(form)
+            
+            if (!res.message) {
+                toast.success("cập nhật câu hỏi thành công")
+                fetchList();
+            } else {
+                toast.error("cập nhật câu hỏi thất bại")
+            }
         } else {
-            // toast.success('Thêm câu hỏi thành công');
-            let res = await ApiCriteriaEvaluation.CreateTemplateSurveyApi(form)            
-            fetchList();
+            let res = await ApiCriteriaEvaluation.CreateTemplateSurveyApi(form)
+            if (res) {
+                toast.success("thêm mới câu hỏi thành công")
+                fetchList();
+            } else {
+                toast.error("thêm mới câu hỏi thất bại")
+            }
         }
         clearForm();
-    };
-
-    const handleEdit = (id) => {
-        setEditing(id);
-        setIsAdding(true);
     };
 
     const handleDelete = async (id) => {
         if (!window.confirm('Bạn có chắc muốn xóa câu hỏi này?')) return;
         try {
             let res = await ApiCriteriaEvaluation.DeleteTemplateSurveyApi(form);
-            console.log('sssss ', res);
             if (res) {
                 fetchList();
                 // 2. Xóa trắng Form
@@ -335,8 +327,8 @@ const ManagerQuestion = () => {
                                 value={form.StatusID.toString()}
                                 onChange={(e) => setForm({ ...form, StatusID: form.StatusID })}
                             >
-                                <option value={1}>Hoạt động</option>
-                                <option value={0}>Tạm dừng</option>
+                                <option value={true}>Hoạt động</option>
+                                <option value={false}>Tạm dừng</option>
                             </select>
                         </div>
                     </div>
@@ -396,8 +388,8 @@ const ManagerQuestion = () => {
                             <label className="text-gray-600 text-sm whitespace-nowrap">Trạng thái</label>
                             <select
                                 className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500 transition"
-                                value={filterStatus ? true : false}
-                                onChange={(e) => setFilterStatus(e.target.value === true)}
+                                value={filterStatus ? "true" : "false"}
+                                onChange={(e) => setFilterStatus(e.target.value === "true")}
                             >
                                 <option value="true">Hoạt động</option>
                                 <option value="false">Tạm dừng</option>
