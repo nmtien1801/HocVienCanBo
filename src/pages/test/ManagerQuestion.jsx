@@ -9,86 +9,79 @@ const initialBank = [
     { CriteriaEvaluationID: 3, TypeCriteria: 'textarea', TitleCriteriaEvaluation: 'Ý kiến cải tiến khóa học', StatusID: 1 },
 ];
 
-const initialFormState = { CriteriaEvaluationID: '', TypeCriteria: 'likert6', TitleCriteriaEvaluation: '', StatusID: 1 };
-
 const ManagerQuestion = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const { state } = location;
-    const target = state?.pickerTarget || null;
+    const target = location.state?.pickerTarget || null; // optional target from survey
 
     const [bank, setBank] = useState(initialBank);
-    // editing sẽ lưu ID của câu hỏi đang được chỉnh sửa. null nếu đang thêm mới/xóa trắng.
     const [editing, setEditing] = useState(null);
-    const [form, setForm] = useState(initialFormState);
-
-    // Form luôn hiển thị, không cần state isAdding. Chúng ta dùng editing (ID hoặc null) để quản lý trạng thái.
+    const [form, setForm] = useState({ CriteriaEvaluationID: '', TypeCriteria: 'likert6', TitleCriteriaEvaluation: '', StatusID: 1 });
+    const [isAdding, setIsAdding] = useState(false);
 
     useEffect(() => {
-        // Load dữ liệu lên form khi state 'editing' thay đổi
-        if (editing !== null) {
+        if (editing) {
             const item = bank.find(b => Number(b.CriteriaEvaluationID) === Number(editing));
-            if (item) {
-                // Cập nhật form với dữ liệu của câu hỏi đang chỉnh sửa
-                setForm({ ...item });
-            } else {
-                // Nếu ID không hợp lệ, chuyển sang trạng thái thêm mới/xóa trắng
-                setEditing(null);
-                setForm(initialFormState);
-            }
-        } else {
-            // Khi editing là null, form về trạng thái trống (Thêm mới)
-            // Lưu ý: Chúng ta không reset form ở đây để giữ lại giá trị người dùng đang nhập
-            // nếu họ đang ở trạng thái 'Thêm mới' (editing: null)
+            if (item) setForm({ ...item });
+        } else if (!isAdding) {
+            setForm({ CriteriaEvaluationID: '', TypeCriteria: 'likert6', TitleCriteriaEvaluation: '', StatusID: 1 });
         }
-    }, [editing, bank]);
+    }, [editing, bank, isAdding]);
 
-    // Hàm Xóa trắng form, chuẩn bị cho việc Thêm mới
-    const clearForm = () => {
-        setForm(initialFormState);
-        setEditing(null); // Đặt editing về null
+    const handleAddQuestion = () => {
+        setEditing(null);
+        setIsAdding(true);
+        setForm({ CriteriaEvaluationID: '', TypeCriteria: 'likert6', TitleCriteriaEvaluation: '', StatusID: 1 });
     };
 
-    // Hàm được gọi khi nhấn vào một hàng (row)
-    const handleRowClick = (item) => {
-        // Ping dữ liệu lên form
-        setForm({ ...item });
-        // Đặt ID để chuyển sang chế độ Chỉnh sửa
-        setEditing(item.CriteriaEvaluationID);
+    const clearForm = () => {
+        setForm({ CriteriaEvaluationID: '', TypeCriteria: 'likert6', TitleCriteriaEvaluation: '', StatusID: 1 });
+        setEditing(null);
+        setIsAdding(false);
+    };
+
+    const handleCancel = () => {
+        clearForm();
     };
 
     const handleSave = () => {
         if (!form.TitleCriteriaEvaluation.trim()) return;
-
         if (editing) {
-            // Chế độ chỉnh sửa
             setBank(bank.map(b => (Number(b.CriteriaEvaluationID) === Number(editing) ? { ...form } : b)));
         } else {
-            // Chế độ thêm mới
             const newId = bank.length ? Math.max(...bank.map(b => Number(b.CriteriaEvaluationID))) + 1 : 1;
             setBank([...bank, { ...form, CriteriaEvaluationID: newId }]);
         }
+        clearForm();
+    };
 
-        clearForm(); // Xóa trắng form sau khi lưu thành công
+    const handleEdit = (id) => {
+        setEditing(id);
+        setIsAdding(true);
     };
 
     const handleDelete = (id) => {
         if (!window.confirm('Bạn có chắc muốn xóa câu hỏi này?')) return;
         setBank(bank.filter(b => Number(b.CriteriaEvaluationID) !== Number(id)));
-        if (Number(editing) === Number(id)) {
-            clearForm(); // Xóa trắng form nếu câu hỏi đang được chỉnh sửa bị xóa
-        }
+        if (Number(editing) === Number(id)) clearForm();
     };
 
     const handleDeleteCurrent = () => {
         const idToDelete = editing || form.CriteriaEvaluationID;
-        if (!idToDelete || !editing) return; // Chỉ xóa nếu đang chỉnh sửa một câu hỏi hiện có
+        if (!idToDelete) return;
         handleDelete(idToDelete);
     };
 
     const handleUseAndBack = (item) => {
         navigate(-1, { state: { pickedQuestion: item, pickerTarget: target } });
+    };
+
+    const handleRowClick = (item) => {
+        // populate form for edit when row clicked
+        setEditing(item.CriteriaEvaluationID);
+        setForm({ ...item });
+        setIsAdding(true);
     };
 
     return (
@@ -102,14 +95,14 @@ const ManagerQuestion = () => {
                         </button>
                         <h1 className="text-3xl font-extrabold text-gray-800">Quản lý Ngân hàng Câu hỏi</h1>
                     </div>
-
+                    <button onClick={handleAddQuestion} className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition duration-150">
+                        <Plus className="w-5 h-5" /> Thêm câu hỏi mới
+                    </button>
                 </div>
 
                 {/* Form Thêm/Sửa/Xóa - LUÔN HIỂN THỊ */}
                 <div className="bg-white rounded-xl shadow-lg p-6 mb-8 border-2 border-blue-300">
-                    <h2 className="text-xl font-semibold text-blue-700 mb-4">
-                        {editing ? `Chỉnh sửa Câu hỏi ID: ${editing}` : 'Thêm Câu hỏi mới'}
-                    </h2>
+                    <h2 className="text-xl font-semibold text-blue-700 mb-4">{editing ? `Chỉnh sửa Câu hỏi ID: ${editing}` : 'Thêm Câu hỏi mới'}</h2>
                     <div className="grid grid-cols-12 gap-4 items-end">
                         <div className="col-span-12 sm:col-span-3">
                             <label className="block text-sm font-medium text-gray-700 mb-1">Loại Câu hỏi</label>
@@ -155,7 +148,7 @@ const ManagerQuestion = () => {
                         <button
                             onClick={handleDeleteCurrent}
                             className="inline-flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600 transition duration-150 disabled:opacity-50"
-                            disabled={!editing} // Chỉ cho phép xóa khi đang chỉnh sửa một item hiện có
+                            disabled={!editing}
                         >
                             <Trash2 className="w-4 h-4" /> Xóa
                         </button>
@@ -169,51 +162,63 @@ const ManagerQuestion = () => {
                     </div>
                 </div>
 
-                {/* Bảng Câu hỏi */}
-                <div className="bg-white rounded-xl shadow-lg p-6">
+                {/* Bảng Câu hỏi - Lesson style */}
+                <div className="bg-white rounded-lg shadow-sm p-6">
                     <h2 className="text-xl font-semibold text-gray-700 mb-4">Danh sách Câu hỏi Hiện có</h2>
                     <div className="overflow-x-auto">
-                        <table className="w-full text-sm divide-y divide-gray-200">
-                            <thead className="bg-blue-50">
+                        <table className="w-full text-sm">
+                            <thead className="bg-gray-100 border-b-2 border-gray-300">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loại</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nội dung</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
-                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Hành động</th>
+                                    <th className="px-4 py-3 text-left text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">ID</th>
+                                    <th className="px-4 py-3 text-left text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">Loại</th>
+                                    <th className="px-4 py-3 text-left text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">Nội dung</th>
+                                    <th className="px-4 py-3 text-left text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">Trạng thái</th>
+                                    <th className="px-4 py-3 text-right text-gray-700 font-semibold whitespace-nowrap">Hành động</th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
+                            <tbody>
                                 {bank.map(item => (
-                                    // Bổ sung sự kiện onClick vào hàng (row) để ping dữ liệu lên form
                                     <tr
                                         key={item.CriteriaEvaluationID}
-                                        onClick={() => handleRowClick(item)} // Xử lý click row
-                                        className={`cursor-pointer transition ${Number(editing) === Number(item.CriteriaEvaluationID) ? 'bg-blue-200/50' : 'hover:bg-blue-50'}`}
+                                        onClick={() => handleRowClick(item)}
+                                        className={`cursor-pointer transition ${Number(editing) === Number(item.CriteriaEvaluationID) ? 'bg-gray-50' : 'hover:bg-gray-50'}`}
                                     >
-                                        <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{item.CriteriaEvaluationID}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-gray-600">
+                                        <td className="px-4 py-3 text-gray-900 font-medium whitespace-nowrap">{item.CriteriaEvaluationID}</td>
+                                        <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
                                             <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${item.TypeCriteria === 'likert6' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800'}`}>
                                                 {item.TypeCriteria === 'likert6' ? 'Thang đo' : 'Ý kiến'}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 max-w-sm text-gray-800">{item.TitleCriteriaEvaluation}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
+                                        <td className="px-4 py-3 text-gray-800 max-w-xl truncate">{item.TitleCriteriaEvaluation}</td>
+                                        <td className="px-4 py-3 whitespace-nowrap">
                                             <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${item.StatusID === 1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                                                 {item.StatusID === 1 ? 'Hoạt động' : 'Tạm dừng'}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <div className="inline-flex gap-2 items-center">
+                                        <td className="px-4 py-3 text-right text-sm font-medium whitespace-nowrap">
+                                            <div className="inline-flex gap-2 items-center justify-end">
                                                 {target && (
                                                     <button
-                                                        onClick={(e) => { e.stopPropagation(); handleUseAndBack(item); }} // Ngăn chặn nổi bọt khi click
-                                                        className="px-3 py-1 bg-blue-500 text-white rounded-lg text-xs font-semibold hover:bg-blue-600 transition"
+                                                        onClick={(e) => { e.stopPropagation(); handleUseAndBack(item); }}
+                                                        className="px-3 py-1 bg-teal-500 text-white rounded-lg text-xs font-semibold hover:bg-teal-600 transition"
                                                     >
                                                         Sử dụng
                                                     </button>
                                                 )}
-                                                {/* Xóa nút Sửa và Xóa ở đây vì hành động đó được xử lý qua Row Click */}
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); handleEdit(item.CriteriaEvaluationID); }}
+                                                    className="p-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
+                                                    title="Sửa"
+                                                >
+                                                    <Edit className="w-4 h-4" />
+                                                </button>
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); handleDelete(item.CriteriaEvaluationID); }}
+                                                    className="p-2 border border-gray-300 rounded-lg text-red-600 hover:bg-red-50 transition"
+                                                    title="Xóa"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>

@@ -6,6 +6,7 @@ import learningClassReducer from "./learningClassSlice";
 import newReducer from "./newSlice";
 import pointReducer from "./pointSlice";
 import studentReducer from "./studentSlice";
+import CriteriaEvaluationReducer from "./CriteriaEvaluationSlice";
 
 export const store = configureStore({
   reducer: {
@@ -15,6 +16,7 @@ export const store = configureStore({
     learningClass: learningClassReducer,
     news: newReducer,
     point: pointReducer,
-    student: studentReducer
+    student: studentReducer,
+    criteriaEvaluation: CriteriaEvaluationReducer,
   },
 });
