@@ -48,10 +48,11 @@ const QuestionManager = () => {
     const [pickerTarget, setPickerTarget] = useState(null); // { catId, grpId }
     const [categories, setCategories] = useState(initialCategories);
     const [expandedCategories, setExpandedCategories] = useState(new Set(['cat1']));
-    const [expandedGroups, setExpandedGroups] = useState(new Set(['grp1']));
+    const [expandedGroups, setExpandedGroups] = useState(new Set(['']));
     const [editMode, setEditMode] = useState(null);
     const [showTemplateModal, setShowTemplateModal] = useState(false);
     const [templateForm, setTemplateForm] = useState({ TemplateSurveyID: '', TypeTemplate: 1, Title: '', ShorDescription: '', Requiments: '', StatusID: true, ImagePath: '', Permission: 0 });
+    const [templateEditingId, setTemplateEditingId] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
 
     const filteredCategories = categories.filter(category => {
@@ -113,24 +114,56 @@ const QuestionManager = () => {
         setEditMode({ type: 'category', id: newCat.id });
     };
 
-    const openTemplateModal = () => {
-        setTemplateForm({ TemplateSurveyID: '', TypeTemplate: 1, Title: '', ShorDescription: '', Requiments: '', StatusID: true, ImagePath: '', Permission: 0 });
+    const openTemplateModal = (category = null) => {
+        if (category) {
+            setTemplateForm({
+                TemplateSurveyID: category.templateMeta?.TemplateSurveyID ?? '',
+                TypeTemplate: category.templateMeta?.TypeTemplate ?? 1,
+                Title: category.templateMeta?.Title ?? category.name ?? '',
+                ShorDescription: category.templateMeta?.ShorDescription ?? category.description ?? '',
+                Requiments: category.templateMeta?.Requiments ?? '',
+                StatusID: category.templateMeta?.StatusID ?? true,
+                ImagePath: category.templateMeta?.ImagePath ?? '',
+                Permission: category.templateMeta?.Permission ?? 0
+            });
+            setTemplateEditingId(category.id);
+        } else {
+            setTemplateForm({ TemplateSurveyID: '', TypeTemplate: 1, Title: '', ShorDescription: '', Requiments: '', StatusID: true, ImagePath: '', Permission: 0 });
+            setTemplateEditingId(null);
+        }
         setShowTemplateModal(true);
     };
 
     const handleSaveTemplate = () => {
-        const newCat = {
-            id: `cat${Date.now()}`,
-            name: templateForm.Title || 'Danh mục mới',
-            description: templateForm.ShorDescription || '',
-            groups: []
-        };
-        // Optionally store template meta on the category for later use
-        newCat.templateMeta = { ...templateForm };
-        setCategories([...categories, newCat]);
-        setExpandedCategories(new Set([...expandedCategories, newCat.id]));
-        setEditMode({ type: 'category', id: newCat.id });
-        setShowTemplateModal(false);
+        if (templateEditingId) {
+            // Update existing category
+            setCategories(categories.map(cat => {
+                if (cat.id === templateEditingId) {
+                    return {
+                        ...cat,
+                        name: templateForm.Title || cat.name,
+                        description: templateForm.ShorDescription || cat.description,
+                        templateMeta: { ...templateForm }
+                    };
+                }
+                return cat;
+            }));
+            setShowTemplateModal(false);
+            setTemplateEditingId(null);
+        } else {
+            const newCat = {
+                id: `cat${Date.now()}`,
+                name: templateForm.Title || 'Danh mục mới',
+                description: templateForm.ShorDescription || '',
+                groups: []
+            };
+            // Optionally store template meta on the category for later use
+            newCat.templateMeta = { ...templateForm };
+            setCategories([...categories, newCat]);
+            setExpandedCategories(new Set([...expandedCategories, newCat.id]));
+            setEditMode({ type: 'category', id: newCat.id });
+            setShowTemplateModal(false);
+        }
     };
 
     const addGroup = (catId) => {
@@ -563,7 +596,7 @@ const QuestionManager = () => {
                                     <Plus className="w-4 h-4" />
                                 </button>
                                 <button
-                                    onClick={() => setEditMode({ type: 'category', id: category.id })}
+                                    onClick={() => openTemplateModal(category)}
                                     className="p-1 text-blue-600 hover:bg-blue-50 rounded"
                                     title="Sửa aaa"
                                 >
