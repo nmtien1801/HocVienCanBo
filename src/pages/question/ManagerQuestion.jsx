@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import { getCriteriaEvaluation } from '../../redux/CriteriaEvaluationSlice.js';
 import ApiCriteriaEvaluation from '../../apis/ApiCriteriaEvaluation.js';
 import { useSelector, useDispatch } from "react-redux";
+import QuestionModal from './QuestionModal.jsx'
 
 const TypeCriteriaMapping = {
     1: 'Thang 6 mức (A-F)',
@@ -23,7 +24,7 @@ const ManagerQuestion = () => {
     const dispatch = useDispatch();
 
     const target = location.state?.pickerTarget || null;
-
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const { CriteriaEvaluationList, CriteriaEvaluationTotal } = useSelector((state) => state.criteriaEvaluation);
 
     const [editing, setEditing] = useState(null);
@@ -100,7 +101,7 @@ const ManagerQuestion = () => {
 
         if (editing) {
             let res = await ApiCriteriaEvaluation.UpdateTemplateSurveyApi(form)
-            
+
             if (!res.message) {
                 toast.success("cập nhật câu hỏi thành công")
                 fetchList();
@@ -149,7 +150,7 @@ const ManagerQuestion = () => {
     const handleRowClick = (item) => {
         setEditing(item.CriteriaEvaluationID);
         setForm({ ...item, TypeCriteria: Number(item.TypeCriteria) });
-        setIsAdding(true);
+        setIsModalOpen(true);
     };
 
     // -------------------------- HÀM TÌM KIẾM CHỈ ĐƯỢC GỌI KHI BẤM NÚT --------------------------
@@ -291,70 +292,18 @@ const ManagerQuestion = () => {
                         <button onClick={() => navigate(-1)} className="p-2 rounded bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 transition">
                             <ArrowLeft className="w-5 h-5" />
                         </button>
-                        <h1 className="text-2xl md:text-3xl font-extrabold text-gray-800">Quản lý Ngân hàng Câu hỏi</h1>
+                        <h1 className="text-2xl md:text-3xl font-xl text-gray-700">Quản lý Ngân hàng Câu hỏi</h1>
                     </div>
-                </div>
-
-                {/* Form Thêm/Sửa/Xóa */}
-                <div className="bg-white rounded-xl shadow-lg p-4 md:p-6 mb-8 border-2 border-blue-300">
-                    <h2 className="text-xl font-semibold text-blue-700 mb-4">{editing ? `Chỉnh sửa Câu hỏi ID: ${editing}` : 'Thêm Câu hỏi mới'}</h2>
-                    <div className="grid grid-cols-12 gap-4 items-end">
-                        <div className="col-span-12 sm:col-span-3">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Loại Câu hỏi</label>
-                            <select
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500 transition"
-                                value={form.TypeCriteria.toString()}
-                                onChange={(e) => setForm({ ...form, TypeCriteria: Number(e.target.value) })}
-                            >
-                                <option value={TypeCriteriaInt.LIKERT}>Thang 6 mức (A-F)</option>
-                                <option value={TypeCriteriaInt.TEXTAREA}>Ý kiến mở (Text Area)</option>
-                            </select>
-                        </div>
-                        <div className="col-span-12 sm:col-span-7">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Nội dung Câu hỏi</label>
-                            <input
-                                type="text"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500 transition"
-                                value={form.TitleCriteriaEvaluation}
-                                onChange={(e) => setForm({ ...form, TitleCriteriaEvaluation: e.target.value })}
-                                placeholder="Nhập nội dung câu hỏi..."
-                            />
-                        </div>
-                        <div className="col-span-12 sm:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
-                            <select
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500 transition"
-                                value={form.StatusID.toString()}
-                                onChange={(e) => setForm({ ...form, StatusID: e.target.value === "true" })}
-                            >
-                                <option value={true}>Hoạt động</option>
-                                <option value={false}>Tạm dừng</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div className="col-span-12 text-right mt-5 flex flex-wrap justify-end items-center gap-3">
-                        <button
-                            onClick={clearForm}
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
-                        >
-                            <X className="w-4 h-4" /> Xóa trắng
-                        </button>
-
-                        <button
-                            onClick={handleDeleteCurrent}
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600 transition duration-150 disabled:opacity-50"
-                            disabled={!editing}
-                        >
-                            <Trash2 className="w-4 h-4" /> Xóa
-                        </button>
-
-                        <button
-                            onClick={handleSave}
-                            className="inline-flex items-center gap-2 px-5 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition duration-150"
-                        >
-                            <Save className="w-4 h-4" /> {editing ? 'Cập nhật' : 'Thêm mới'}
-                        </button>
-                    </div>
+                    <button
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+                        onClick={() => {
+                            setEditing(null);
+                            setForm(initialFormState);
+                            setIsModalOpen(true);
+                        }}
+                    >
+                        + Thêm câu hỏi
+                    </button>
                 </div>
 
                 {/* Filter Section */}
@@ -477,6 +426,16 @@ const ManagerQuestion = () => {
                             </div>
                         </div>
                     )}
+                    <QuestionModal
+                        open={isModalOpen}
+                        onClose={() => setIsModalOpen(false)}
+                        form={form}
+                        setForm={setForm}
+                        editing={editing}
+                        handleSave={() => { handleSave(); setIsModalOpen(false); }}
+                        handleDeleteCurrent={() => { handleDeleteCurrent(); setIsModalOpen(false); }}
+                        TypeCriteriaInt={TypeCriteriaInt}
+                    />
                 </div>
 
                 {/* Footer */}
