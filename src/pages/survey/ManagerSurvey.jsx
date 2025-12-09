@@ -5,6 +5,7 @@ import {
     FolderOpen, Folder, FileText, Save, X, Search
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import FormTemplateSurvey from './FormTemplateSurvey';
 
 // Cấu trúc dữ liệu mẫu
 const initialCategories = [
@@ -49,6 +50,8 @@ const QuestionManager = () => {
     const [expandedCategories, setExpandedCategories] = useState(new Set(['cat1']));
     const [expandedGroups, setExpandedGroups] = useState(new Set(['grp1']));
     const [editMode, setEditMode] = useState(null);
+    const [showTemplateModal, setShowTemplateModal] = useState(false);
+    const [templateForm, setTemplateForm] = useState({ TemplateSurveyID: '', TypeTemplate: 1, Title: '', ShorDescription: '', Requiments: '', StatusID: true, ImagePath: '', Permission: 0 });
     const [searchTerm, setSearchTerm] = useState('');
 
     const filteredCategories = categories.filter(category => {
@@ -108,6 +111,26 @@ const QuestionManager = () => {
         };
         setCategories([...categories, newCat]);
         setEditMode({ type: 'category', id: newCat.id });
+    };
+
+    const openTemplateModal = () => {
+        setTemplateForm({ TemplateSurveyID: '', TypeTemplate: 1, Title: '', ShorDescription: '', Requiments: '', StatusID: true, ImagePath: '', Permission: 0 });
+        setShowTemplateModal(true);
+    };
+
+    const handleSaveTemplate = () => {
+        const newCat = {
+            id: `cat${Date.now()}`,
+            name: templateForm.Title || 'Danh mục mới',
+            description: templateForm.ShorDescription || '',
+            groups: []
+        };
+        // Optionally store template meta on the category for later use
+        newCat.templateMeta = { ...templateForm };
+        setCategories([...categories, newCat]);
+        setExpandedCategories(new Set([...expandedCategories, newCat.id]));
+        setEditMode({ type: 'category', id: newCat.id });
+        setShowTemplateModal(false);
     };
 
     const addGroup = (catId) => {
@@ -542,7 +565,7 @@ const QuestionManager = () => {
                                 <button
                                     onClick={() => setEditMode({ type: 'category', id: category.id })}
                                     className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-                                    title="Sửa"
+                                    title="Sửa aaa"
                                 >
                                     <Edit className="w-4 h-4" />
                                 </button>
@@ -599,7 +622,7 @@ const QuestionManager = () => {
 
                     {/* Nút Thêm Danh mục - Màu xanh đậm */}
                     <button
-                        onClick={addCategory}
+                        onClick={openTemplateModal}
                         className="flex items-center gap-2 bg-teal-500 text-white px-4 py-2 rounded-lg hover:bg-teal-600 transition shadow-md"
                     >
                         <Plus className="w-5 h-5" />
@@ -646,6 +669,13 @@ const QuestionManager = () => {
                     onClose={() => { setShowQuestionPicker(false); setPickerTarget(null); }}
                 />
             )}
+            <FormTemplateSurvey
+                visible={showTemplateModal}
+                onClose={() => setShowTemplateModal(false)}
+                form={templateForm}
+                setForm={setTemplateForm}
+                onSave={handleSaveTemplate}
+            />
         </div>
     );
 };
