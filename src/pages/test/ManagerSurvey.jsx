@@ -4,6 +4,7 @@ import {
     Plus, Edit, Trash2, ChevronRight, ChevronDown,
     FolderOpen, Folder, FileText, Save, X, Search
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 // Cấu trúc dữ liệu mẫu
 const initialCategories = [
@@ -80,6 +81,7 @@ const questionBank = [
 ];
 
 const QuestionManager = () => {
+    const navigate = useNavigate();
     const [showQuestionPicker, setShowQuestionPicker] = useState(false);
     const [pickerTarget, setPickerTarget] = useState(null); // { catId, grpId }
     const [categories, setCategories] = useState(initialCategories);
@@ -643,7 +645,7 @@ const QuestionManager = () => {
                         Thêm chủ đề
                     </button>
                     <button
-                        onClick={addCategory}
+                        onClick={() => navigate('/manager-question')}
                         className="flex items-center gap-2 bg-teal-500 text-white px-4 py-2 rounded-lg hover:bg-teal-600 transition shadow-md"
                     >
                         <Plus className="w-5 h-5" />

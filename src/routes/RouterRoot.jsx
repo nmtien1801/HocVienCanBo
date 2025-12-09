@@ -41,6 +41,7 @@ import StudentRegisterTC from "../pages/auth/StudentRegisterTC.jsx"
 import StudentRegisterHBD from "../pages/auth/StudentRegisterHBD.jsx"
 import Test from "../pages/test/Test.jsx"
 import SurveyManager from "../pages/test/ManagerSurvey.jsx"
+import ManagerQuestion from "../pages/test/ManagerQuestion.jsx"
 
 const ProtectedRoute = ({ children, userInfo, isLoading, hasCheckedAuth }) => {
   if (isLoading || !hasCheckedAuth) {
@@ -138,6 +139,7 @@ function RouterRoot() {
           <Route path="account" element={<Account />} />
           <Route path="test" element={<Test />} />
           <Route path="a" element={<SurveyManager />} />
+          <Route path="manager-question" element={<ManagerQuestion />} />
 
           {/* route schedule */}
           <Route path="schedule-teach-month" element={<ScheduleTeachMonth />} />
