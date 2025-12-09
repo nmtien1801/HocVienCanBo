@@ -18,9 +18,9 @@ const initialCategories = [
                 name: 'I. Thông tin về học phần',
                 description: 'Đánh giá giảng viên giảng dạy phần lý thuyết',
                 questions: [
-                    { id: 'q1', text: 'Giảng viên cung cấp đầy đủ và giải thích rõ ràng về: Chuẩn đầu ra học phần', type: 'likert6' },
-                    { id: 'q2', text: 'Giảng viên nhiệt tình, tận tâm trong giảng dạy', type: 'likert6' },
-                    { id: 'q3', text: 'Giảng viên sử dụng phương pháp giảng dạy phù hợp', type: 'likert6' }
+                    { id: 'q1', text: 'Giảng viên cung cấp đầy đủ và giải thích rõ ràng về: Chuẩn đầu ra học phần', type: 1 },
+                    { id: 'q2', text: 'Giảng viên nhiệt tình, tận tâm trong giảng dạy', type: 1 },
+                    { id: 'q3', text: 'Giảng viên sử dụng phương pháp giảng dạy phù hợp', type: 1 }
                 ]
             },
             {
@@ -28,39 +28,8 @@ const initialCategories = [
                 name: 'Giảng viên Thực hành',
                 description: 'Đánh giá giảng viên hướng dẫn thực hành',
                 questions: [
-                    { id: 'q4', text: 'Giảng viên hướng dẫn thực hành chi tiết', type: 'likert6' },
-                    { id: 'q5', text: 'Giảng viên giải đáp thắc mắc kịp thời', type: 'likert6' }
-                ]
-            }
-        ]
-    },
-    {
-        id: 'cat2',
-        name: 'Cơ sở Vật chất',
-        description: 'Đánh giá về phòng học, trang thiết bị',
-        groups: [
-            {
-                id: 'grp3',
-                name: 'Phòng học',
-                description: 'Đánh giá điều kiện phòng học',
-                questions: [
-                    { id: 'q6', text: 'Phòng học sạch sẽ, thoáng mát', type: 'likert6' },
-                    { id: 'q7', text: 'Trang thiết bị phòng học đầy đủ', type: 'likert6' }
-                ]
-            }
-        ]
-    },
-    {
-        id: 'cat3',
-        name: 'Ý kiến Khác',
-        description: 'Góp ý và đề xuất',
-        groups: [
-            {
-                id: 'grp4',
-                name: 'Ý kiến mở',
-                description: 'Câu hỏi mở cho sinh viên góp ý',
-                questions: [
-                    { id: 'q8', text: 'Ý kiến đóng góp khác của bạn', type: 'textarea' }
+                    { id: 'q4', text: 'Giảng viên hướng dẫn thực hành chi tiết', type: 1 },
+                    { id: 'q5', text: 'Giảng viên giải đáp thắc mắc kịp thời', type: 1 }
                 ]
             }
         ]
@@ -68,8 +37,8 @@ const initialCategories = [
 ];
 
 const QuestionTypeLabels = {
-    likert6: 'Thang đo 6 mức (A-F)',
-    ykien: 'Ý kiến',
+    1: 'Thang đo 6 mức (A-F)',
+    2: 'Ý kiến',
 };
 
 const QuestionManager = () => {
@@ -158,7 +127,6 @@ const QuestionManager = () => {
     };
 
     const addQuestion = (catId, grpId) => {
-        // Open the question picker instead of inserting a blank question
         setPickerTarget({ catId, grpId });
         setShowQuestionPicker(true);
     };
@@ -261,6 +229,7 @@ const QuestionManager = () => {
                                 <select
                                     value={question.type}
                                     onChange={(e) => {
+                                        const newType = parseInt(e.target.value);
                                         setCategories(categories.map(cat =>
                                             cat.id === catId
                                                 ? {
@@ -270,7 +239,7 @@ const QuestionManager = () => {
                                                             ? {
                                                                 ...grp,
                                                                 questions: grp.questions.map(q =>
-                                                                    q.id === question.id ? { ...q, type: e.target.value } : q
+                                                                    q.id === question.id ? { ...q, type: newType } : q
                                                                 )
                                                             }
                                                             : grp
