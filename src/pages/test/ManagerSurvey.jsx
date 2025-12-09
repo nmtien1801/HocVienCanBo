@@ -77,7 +77,7 @@ const QuestionManager = () => {
     const [searchTerm, setSearchTerm] = useState('');
 
     const filteredCategories = categories.filter(category => {
-        if (!searchTerm) return true; // Hiển thị tất cả nếu không có từ khóa
+        if (!searchTerm) return true;
 
         const lowerCaseSearch = searchTerm.toLowerCase();
 
@@ -86,20 +86,19 @@ const QuestionManager = () => {
             return true;
         }
 
-        // 2. Tìm kiếm cấp Nhóm
+        // 2. Tìm kiếm cấp Nhóm và Câu hỏi bên trong
         const filteredGroups = category.groups.filter(group => {
             if (group.name.toLowerCase().includes(lowerCaseSearch) || group.description.toLowerCase().includes(lowerCaseSearch)) {
                 return true;
             }
 
-            // 3. Tìm kiếm cấp Câu hỏi
             const foundQuestion = group.questions.some(question =>
                 question.text.toLowerCase().includes(lowerCaseSearch)
             );
             return foundQuestion;
         });
 
-        // Nếu tìm thấy nhóm nào hợp lệ hoặc danh mục hợp lệ, thì hiển thị danh mục này
+        // Nếu tìm thấy nhóm nào hợp lệ thì hiển thị danh mục này
         return filteredGroups.length > 0;
     });
 
@@ -210,7 +209,8 @@ const QuestionManager = () => {
         return (
             <div key={question.id} className="ml-12 mb-2">
 
-                <div className="flex items-start gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-indigo-300 transition group">
+                <div className="flex items-start gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition group">
+                    {/* Icon Câu hỏi */}
                     <FileText className="w-4 h-4 text-blue-500 mt-1 flex-shrink-0" />
 
                     <div className="flex-1 min-w-0">
@@ -238,7 +238,7 @@ const QuestionManager = () => {
                                                 : cat
                                         ));
                                     }}
-                                    className="w-full px-3 py-2 border border-indigo-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     placeholder="Nội dung câu hỏi..."
                                 />
                                 <select
@@ -262,7 +262,7 @@ const QuestionManager = () => {
                                                 : cat
                                         ));
                                     }}
-                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                                 >
                                     {Object.entries(QuestionTypeLabels).map(([key, label]) => (
                                         <option key={key} value={key}>{label}</option>
@@ -272,7 +272,8 @@ const QuestionManager = () => {
                         ) : (
                             <>
                                 <p className="text-sm text-gray-800 font-medium">
-                                    <span className="text-indigo-600 font-semibold">Q{index + 1}.</span> {question.text}
+                                    {/* Tiêu đề câu hỏi - Màu xanh */}
+                                    <span className="text-blue-600 font-semibold">Q{index + 1}.</span> {question.text}
                                 </p>
                                 <span className="inline-block mt-1 px-2 py-0.5 text-xs bg-blue-50 text-blue-700 rounded-full">
                                     {QuestionTypeLabels[question.type]}
@@ -284,6 +285,7 @@ const QuestionManager = () => {
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
                         {isEditing ? (
                             <>
+                                {/* Nút Lưu/Hủy */}
                                 <button
                                     onClick={() => setEditMode(null)}
                                     className="p-1 text-green-600 hover:bg-green-50 rounded"
@@ -301,13 +303,15 @@ const QuestionManager = () => {
                             </>
                         ) : (
                             <>
+                                {/* Nút Sửa - Màu xanh */}
                                 <button
                                     onClick={() => setEditMode({ type: 'question', id: question.id, catId, grpId })}
-                                    className="p-1 text-indigo-600 hover:bg-indigo-50 rounded"
+                                    className="p-1 text-blue-600 hover:bg-blue-50 rounded"
                                     title="Sửa"
                                 >
                                     <Edit className="w-4 h-4" />
                                 </button>
+                                {/* Nút Xóa */}
                                 <button
                                     onClick={() => deleteItem('question', question.id, { catId, grpId })}
                                     className="p-1 text-red-600 hover:bg-red-50 rounded"
@@ -330,15 +334,17 @@ const QuestionManager = () => {
         return (
             <div key={group.id} className="ml-6 mb-3">
 
-                <div className="flex items-start gap-3 p-3 bg-indigo-50 rounded-lg border border-indigo-200 hover:border-indigo-400 transition group">
+                {/* Nền Nhóm - Màu Sky nhạt */}
+                <div className="flex items-start gap-3 p-3 bg-sky-50 rounded-lg border border-sky-200 hover:border-sky-400 transition group">
                     <button
                         onClick={() => toggleGroup(group.id)}
-                        className="flex-shrink-0 p-1 hover:bg-indigo-100 rounded transition"
+                        className="flex-shrink-0 p-1 hover:bg-sky-100 rounded transition"
                     >
                         {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                     </button>
 
-                    {isExpanded ? <FolderOpen className="w-5 h-5 text-indigo-600 flex-shrink-0" /> : <Folder className="w-5 h-5 text-indigo-600 flex-shrink-0" />}
+                    {/* Icon Nhóm - Màu xanh */}
+                    {isExpanded ? <FolderOpen className="w-5 h-5 text-blue-600 flex-shrink-0" /> : <Folder className="w-5 h-5 text-blue-600 flex-shrink-0" />}
 
                     <div className="flex-1 min-w-0">
                         {isEditing ? (
@@ -358,7 +364,7 @@ const QuestionManager = () => {
                                                 : cat
                                         ));
                                     }}
-                                    className="w-full px-3 py-2 border border-indigo-300 rounded-lg focus:ring-2 focus:ring-indigo-500 font-semibold"
+                                    className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-semibold"
                                     placeholder="Tên nhóm câu hỏi..."
                                 />
                                 <textarea
@@ -375,7 +381,7 @@ const QuestionManager = () => {
                                                 : cat
                                         ));
                                     }}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
                                     placeholder="Mô tả nhóm..."
                                     rows="2"
                                 />
@@ -396,6 +402,7 @@ const QuestionManager = () => {
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
                         {isEditing ? (
                             <>
+                                {/* Nút Lưu/Hủy */}
                                 <button
                                     onClick={() => setEditMode(null)}
                                     className="p-1 text-green-600 hover:bg-green-50 rounded"
@@ -413,6 +420,7 @@ const QuestionManager = () => {
                             </>
                         ) : (
                             <>
+                                {/* Nút Thêm/Sửa - Màu xanh */}
                                 <button
                                     onClick={() => addQuestion(catId, group.id)}
                                     className="p-1 text-blue-600 hover:bg-blue-50 rounded"
@@ -422,11 +430,12 @@ const QuestionManager = () => {
                                 </button>
                                 <button
                                     onClick={() => setEditMode({ type: 'group', id: group.id, catId })}
-                                    className="p-1 text-indigo-600 hover:bg-indigo-50 rounded"
+                                    className="p-1 text-blue-600 hover:bg-blue-50 rounded"
                                     title="Sửa"
                                 >
                                     <Edit className="w-4 h-4" />
                                 </button>
+                                {/* Nút Xóa */}
                                 <button
                                     onClick={() => deleteItem('group', group.id, { catId })}
                                     className="p-1 text-red-600 hover:bg-red-50 rounded"
@@ -462,7 +471,8 @@ const QuestionManager = () => {
         return (
             <div key={category.id} className="mb-4">
 
-                <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-indigo-100 to-purple-100 rounded-lg border-2 border-indigo-300 hover:border-indigo-500 transition group">
+                {/* Nền Danh mục - Gradient Xanh */}
+                <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-sky-100 to-blue-100 rounded-lg border-2 border-blue-300 hover:border-blue-500 transition group">
                     <button
                         onClick={() => toggleCategory(category.id)}
                         className="flex-shrink-0 p-1 hover:bg-white/50 rounded transition"
@@ -470,7 +480,8 @@ const QuestionManager = () => {
                         {isExpanded ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
                     </button>
 
-                    {isExpanded ? <FolderOpen className="w-6 h-6 text-indigo-700 flex-shrink-0" /> : <Folder className="w-6 h-6 text-indigo-700 flex-shrink-0" />}
+                    {/* Icon Danh mục - Màu xanh đậm */}
+                    {isExpanded ? <FolderOpen className="w-6 h-6 text-blue-700 flex-shrink-0" /> : <Folder className="w-6 h-6 text-blue-700 flex-shrink-0" />}
 
                     <div className="flex-1 min-w-0">
                         {isEditing ? (
@@ -483,7 +494,7 @@ const QuestionManager = () => {
                                             cat.id === category.id ? { ...cat, name: e.target.value } : cat
                                         ));
                                     }}
-                                    className="w-full px-3 py-2 border border-indigo-300 rounded-lg focus:ring-2 focus:ring-indigo-500 font-bold text-lg"
+                                    className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-bold text-lg"
                                     placeholder="Tên danh mục..."
                                 />
                                 <textarea
@@ -493,7 +504,7 @@ const QuestionManager = () => {
                                             cat.id === category.id ? { ...cat, description: e.target.value } : cat
                                         ));
                                     }}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                                     placeholder="Mô tả danh mục..."
                                     rows="2"
                                 />
@@ -516,6 +527,7 @@ const QuestionManager = () => {
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
                         {isEditing ? (
                             <>
+                                {/* Nút Lưu/Hủy */}
                                 <button
                                     onClick={() => setEditMode(null)}
                                     className="p-1 text-green-600 hover:bg-green-50 rounded"
@@ -533,6 +545,7 @@ const QuestionManager = () => {
                             </>
                         ) : (
                             <>
+                                {/* Nút Thêm/Sửa - Màu xanh */}
                                 <button
                                     onClick={() => addGroup(category.id)}
                                     className="p-1 text-blue-600 hover:bg-blue-50 rounded"
@@ -542,11 +555,12 @@ const QuestionManager = () => {
                                 </button>
                                 <button
                                     onClick={() => setEditMode({ type: 'category', id: category.id })}
-                                    className="p-1 text-indigo-600 hover:bg-indigo-50 rounded"
+                                    className="p-1 text-blue-600 hover:bg-blue-50 rounded"
                                     title="Sửa"
                                 >
                                     <Edit className="w-4 h-4" />
                                 </button>
+                                {/* Nút Xóa */}
                                 <button
                                     onClick={() => deleteItem('category', category.id)}
                                     className="p-1 text-red-600 hover:bg-red-50 rounded"
@@ -574,7 +588,8 @@ const QuestionManager = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-indigo-50 p-6">
+        // Nền chung của trang - Gradient Xanh Nhạt
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-6">
 
 
             <div className="max-w-7xl mx-auto">
@@ -592,13 +607,14 @@ const QuestionManager = () => {
                             placeholder="Tìm kiếm danh mục, nhóm, câu hỏi..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                     </div>
 
+                    {/* Nút Thêm Danh mục - Màu xanh đậm */}
                     <button
                         onClick={addCategory}
-                        className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition shadow-md"
+                        className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition shadow-md"
                     >
                         <Plus className="w-5 h-5" />
                         Thêm Danh mục
@@ -608,10 +624,9 @@ const QuestionManager = () => {
                 {/* Question Tree */}
                 <div className="bg-white rounded-xl shadow-xl p-6">
                     <div className="space-y-4">
-                        {/* Thay thế categories.map bằng filteredCategories.map */}
                         {filteredCategories.map(category => renderCategory(category))}
 
-                        {/* Nếu không có kết quả lọc, hiển thị thông báo */}
+                        {/* Thông báo khi không có kết quả */}
                         {filteredCategories.length === 0 && searchTerm !== '' && (
                             <div className="text-center py-12 text-gray-400">
                                 <Search className="w-16 h-16 mx-auto mb-4 opacity-50" />
@@ -619,7 +634,7 @@ const QuestionManager = () => {
                             </div>
                         )}
 
-                        {/* Nếu không có danh mục và không tìm kiếm */}
+                        {/* Thông báo khi không có danh mục */}
                         {categories.length === 0 && searchTerm === '' && (
                             <div className="text-center py-12 text-gray-400">
                                 <Folder className="w-16 h-16 mx-auto mb-4 opacity-50" />
