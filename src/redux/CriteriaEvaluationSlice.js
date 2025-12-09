@@ -5,6 +5,7 @@ import ApiCriteriaEvaluation from "../apis/ApiCriteriaEvaluation.js";
 const initialState = {
   CriteriaEvaluationList: [],
   CriteriaEvaluationTotal: 0,
+  CriteriaEvaluationActive: []
 };
 
 export const getCriteriaEvaluation = createAsyncThunk(
@@ -18,6 +19,15 @@ export const getCriteriaEvaluation = createAsyncThunk(
       limit
     );
     return response.data;
+  }
+);
+
+export const getCriteriaEvaluationActive = createAsyncThunk(
+  "criteriaEvaluations/getCriteriaEvaluationActive",
+  async (thunkAPI) => {
+    const response =
+      await ApiCriteriaEvaluation.getCriteriaEvaluationActiveApi();
+    return response;
   }
 );
 
@@ -40,6 +50,14 @@ const CriteriaEvaluationSlice = createSlice({
         state.CriteriaEvaluationTotal = action.payload.totals || 0;
       })
       .addCase(getCriteriaEvaluation.rejected, (state, action) => {});
+
+    // getCriteriaEvaluationActive
+    builder
+      .addCase(getCriteriaEvaluationActive.pending, (state) => {})
+      .addCase(getCriteriaEvaluationActive.fulfilled, (state, action) => {
+        state.CriteriaEvaluationActive = action.payload.data || [];
+      })
+      .addCase(getCriteriaEvaluationActive.rejected, (state, action) => {});
   },
 });
 

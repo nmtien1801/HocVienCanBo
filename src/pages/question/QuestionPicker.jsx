@@ -1,19 +1,40 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useSelector, useDispatch } from "react-redux";
+import { getCriteriaEvaluationActive } from '../../redux/CriteriaEvaluationSlice.js';
+import { toast } from 'react-toastify';
 
-export default function QuestionPicker({ questions = [], onSelect, onClose }) {
+export default function QuestionPicker({ onSelect, onClose }) {
+  const dispatch = useDispatch();
+  const { CriteriaEvaluationActive } = useSelector((state) => state.criteriaEvaluation);
+
   const [query, setQuery] = useState('');
 
+  // ----------------------------- fetch list câu hỏi ---------------------------------------
+  useEffect(() => {
+    const fetchList = async () => {
+      let res = await dispatch(getCriteriaEvaluationActive());
+      if (res.message) {
+        toast.error('lấy câu hỏi thất bại')
+      }
+    };
+
+    fetchList();
+  }, [dispatch]);
+
+  // ------------------------------------- action modal ------------------------------
   const filtered = useMemo(() => {
-    if (!query) return questions;
-    return questions.filter(q => q.text.toLowerCase().includes(query.toLowerCase()));
-  }, [questions, query]);
+    if (!query) return CriteriaEvaluationActive;
+
+    return CriteriaEvaluationActive.filter(q =>
+      (q.TitleCriteriaEvaluation || "").toLowerCase().includes(query.toLowerCase())
+    );
+  }, [CriteriaEvaluationActive, query]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
       <div className="w-full max-w-2xl bg-white rounded-lg shadow-lg p-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-lg font-semibold">Chọn câu hỏi từ ngân hàng</h3>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">Đóng</button>
         </div>
 
         <div className="mb-3">
@@ -31,10 +52,10 @@ export default function QuestionPicker({ questions = [], onSelect, onClose }) {
           ) : (
             <ul className="space-y-2">
               {filtered.map(q => (
-                <li key={q.id} className="flex items-center justify-between p-2 rounded hover:bg-gray-50">
+                <li key={q.CriteriaEvaluationID} className="flex items-center justify-between p-2 rounded hover:bg-gray-50">
                   <div>
-                    <div className="text-sm text-gray-800">{q.text}</div>
-                    <div className="text-xs text-gray-500">{q.type}</div>
+                    <div className="text-sm text-gray-800">{q.TitleCriteriaEvaluation}</div>
+                    <div className="text-xs text-gray-500">{q.TypeCriteria}</div>
                   </div>
                   <div>
                     <button
@@ -51,7 +72,7 @@ export default function QuestionPicker({ questions = [], onSelect, onClose }) {
         </div>
 
         <div className="mt-4 text-right">
-          <button onClick={onClose} className="px-3 py-2 bg-gray-100 rounded hover:bg-gray-200">Hủy</button>
+          <button onClick={onClose} className="px-3 py-2 bg-red-400 rounded hover:bg-red-500">Hủy</button>
         </div>
       </div>
     </div>

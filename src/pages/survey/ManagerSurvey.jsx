@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import QuestionPicker from './QuestionPicker';
+import QuestionPicker from '../question/QuestionPicker';
 import {
     Plus, Edit, Trash2, ChevronRight, ChevronDown,
     FolderOpen, Folder, FileText, Save, X, Search
@@ -67,18 +67,17 @@ const initialCategories = [
     }
 ];
 
+// const questionBank = [
+//     { id: 'qb1', text: 'Giảng viên truyền đạt kiến thức rõ ràng, dễ hiểu', type: 'likert6' },
+//     { id: 'qb2', text: 'Giảng viên nhiệt tình, tận tâm trong giảng dạy', type: 'likert6' },
+//     { id: 'qb3', text: 'Phòng học sạch sẽ, thoáng mát', type: 'likert6' },
+//     { id: 'qb4', text: 'Trang thiết bị phòng học đầy đủ và hoạt động tốt', type: 'likert6' },
+//     { id: 'qb5', text: 'Bạn có đề xuất gì để cải thiện khóa học?', type: 'textarea' },
+// ];
+
 const QuestionTypeLabels = {
     likert6: 'Thang đo 6 mức (A-F)',
 };
-
-// A small bank of reusable questions that can be picked when adding
-const questionBank = [
-    { id: 'qb1', text: 'Giảng viên truyền đạt kiến thức rõ ràng, dễ hiểu', type: 'likert6' },
-    { id: 'qb2', text: 'Giảng viên nhiệt tình, tận tâm trong giảng dạy', type: 'likert6' },
-    { id: 'qb3', text: 'Phòng học sạch sẽ, thoáng mát', type: 'likert6' },
-    { id: 'qb4', text: 'Trang thiết bị phòng học đầy đủ và hoạt động tốt', type: 'likert6' },
-    { id: 'qb5', text: 'Bạn có đề xuất gì để cải thiện khóa học?', type: 'textarea' },
-];
 
 const QuestionManager = () => {
     const navigate = useNavigate();
@@ -681,7 +680,6 @@ const QuestionManager = () => {
             </div>
             {showQuestionPicker && (
                 <QuestionPicker
-                    questions={questionBank}
                     onSelect={handlePickQuestion}
                     onClose={() => { setShowQuestionPicker(false); setPickerTarget(null); }}
                 />

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Edit, Trash2, ArrowLeft, Save, X, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Loader2, AlertCircle } from 'lucide-react';
+import {  ArrowLeft, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Loader2, AlertCircle } from 'lucide-react';
 import { toast } from "react-toastify";
 import { getCriteriaEvaluation } from '../../redux/CriteriaEvaluationSlice.js';
 import ApiCriteriaEvaluation from '../../apis/ApiCriteriaEvaluation.js';
