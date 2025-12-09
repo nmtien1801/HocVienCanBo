@@ -3,14 +3,17 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Edit, Trash2, ArrowLeft, Save, X, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Loader2, AlertCircle } from 'lucide-react';
 import { toast } from "react-toastify";
 import { getCriteriaEvaluation } from '../../redux/CriteriaEvaluationSlice.js';
-import ApiCriteriaEvaluation from '../../apis/ApiCriteriaEvaluation.js';
+import ApiCriteriaEvaluation from '../../apis/ApiCriteriaEvaluation.js'; // Không dùng trong mock
 import { useSelector, useDispatch } from "react-redux";
 
 const initialBank = [
     { CriteriaEvaluationID: 1, TypeCriteria: 'likert6', TitleCriteriaEvaluation: 'Giảng viên truyền đạt rõ ràng', StatusID: 1 },
-    { CriteriaEvaluationID: 2, TypeCriteria: 'likert6', TitleCriteriaEvaluation: 'Phòng học sạch sẽ', StatusID: 1 },
+    { CriteriaEvaluationID: 2, TypeCriteria: 'likert6', TitleCriteriaEvaluation: 'Phòng học sạch sẽ', StatusID: 0 }, // Đổi sang 0 để test
     { CriteriaEvaluationID: 3, TypeCriteria: 'textarea', TitleCriteriaEvaluation: 'Ý kiến cải tiến khóa học', StatusID: 1 },
 ];
+
+const initialFormState = { CriteriaEvaluationID: '', TypeCriteria: 'likert6', TitleCriteriaEvaluation: '', StatusID: 1 };
+
 
 const ManagerQuestion = () => {
     const navigate = useNavigate();
@@ -21,10 +24,9 @@ const ManagerQuestion = () => {
 
     const [bank, setBank] = useState(initialBank);
     const [editing, setEditing] = useState(null);
-    const [form, setForm] = useState({ CriteriaEvaluationID: '', TypeCriteria: 'likert6', TitleCriteriaEvaluation: '', StatusID: 1 });
+    const [form, setForm] = useState(initialFormState);
     const [isAdding, setIsAdding] = useState(false);
 
-    // Thêm các state mới
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const [searchKey, setSearchKey] = useState('');
@@ -32,7 +34,7 @@ const ManagerQuestion = () => {
     const [filterStatus, setFilterStatus] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
-    const [totalItems, setTotalItems] = useState(0);
+    const [totalItems, setTotalItems] = useState(initialBank.length); // Dùng length của mock data
 
     // ----------------------------- fetch list câu hỏi ---------------------------------------
     const fetchList = async () => {
@@ -63,23 +65,32 @@ const ManagerQuestion = () => {
         }
     };
 
+    // Điều chỉnh useEffect để gọi fetchList khi filter thay đổi (không chỉ page)
+    useEffect(() => {
+        if (currentPage === 1) {
+            fetchList();
+        } else {
+            setCurrentPage(1);
+        }
+
+    }, [searchKey, filterType, filterStatus, pageSize]);
+
     useEffect(() => {
         fetchList();
-    }, [currentPage, pageSize]);
+    }, [currentPage]);
 
-    // action 
     useEffect(() => {
         if (editing) {
             const item = bank.find(b => Number(b.CriteriaEvaluationID) === Number(editing));
             if (item) setForm({ ...item });
         } else if (!isAdding) {
-            setForm({ CriteriaEvaluationID: '', TypeCriteria: 'likert6', TitleCriteriaEvaluation: '', StatusID: 1 });
+            setForm(initialFormState);
         }
     }, [editing, bank, isAdding]);
 
     // -------------------------------- action button + action row -------------------------------------------
     const clearForm = () => {
-        setForm({ CriteriaEvaluationID: '', TypeCriteria: 'likert6', TitleCriteriaEvaluation: '', StatusID: 1 });
+        setForm(initialFormState);
         setEditing(null);
         setIsAdding(false);
     };
@@ -89,16 +100,23 @@ const ManagerQuestion = () => {
             toast.warning('Vui lòng nhập nội dung câu hỏi');
             return;
         }
+
+        const itemToSave = {
+            ...form,
+            StatusID: Number(form.StatusID)
+        };
+
         if (editing) {
-            setBank(bank.map(b => (Number(b.CriteriaEvaluationID) === Number(editing) ? { ...form } : b)));
+            // Giả lập cập nhật
+            setBank(bank.map(b => (Number(b.CriteriaEvaluationID) === Number(editing) ? itemToSave : b)));
             toast.success('Cập nhật câu hỏi thành công');
         } else {
             // const newId = bank.length ? Math.max(...bank.map(b => Number(b.CriteriaEvaluationID))) + 1 : 1;
             // setBank([...bank, { ...form, CriteriaEvaluationID: newId }]);
             // toast.success('Thêm câu hỏi thành công');
-            let res = await ApiCriteriaEvaluation()
+            let res = await ApiCriteriaEvaluation.CreateTemplateSurveyApi(form)
             console.log('ssss ', res);
-            
+
         }
         clearForm();
     };
@@ -227,7 +245,7 @@ const ManagerQuestion = () => {
                                 <Search size={32} className="text-gray-400" />
                             </div>
                             <p className="text-gray-700 font-medium">Không tìm thấy dữ liệu</p>
-                            <p className="text-gray-500 text-sm">Không có câu hỏi nào trong hệ thống</p>
+                            <p className="text-gray-500 text-sm">Vui lòng thay đổi tiêu chí tìm kiếm hoặc thêm câu hỏi mới.</p>
                         </div>
                     </td>
                 </tr>
@@ -258,6 +276,7 @@ const ManagerQuestion = () => {
                             <button
                                 onClick={(e) => { e.stopPropagation(); handleUseAndBack(item); }}
                                 className="px-3 py-1 bg-teal-500 text-white rounded-lg text-xs font-semibold hover:bg-teal-600 transition"
+                                title="Sử dụng"
                             >
                                 Sử dụng
                             </button>
@@ -326,7 +345,7 @@ const ManagerQuestion = () => {
                             <label className="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
                             <select
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500 transition"
-                                value={form.StatusID}
+                                value={form.StatusID.toString()}
                                 onChange={(e) => setForm({ ...form, StatusID: Number(e.target.value) })}
                             >
                                 <option value={1}>Hoạt động</option>
