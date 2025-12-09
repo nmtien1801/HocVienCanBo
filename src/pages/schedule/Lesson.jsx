@@ -23,6 +23,7 @@ export default function TimetableClass() {
   const [isLoadingSubjects, setIsLoadingSubjects] = useState(false);
   const [error, setError] = useState(null);
 
+  // -------------------------------------- list data table -------------------------------------
   useEffect(() => {
     const fetchClassLearn = async () => {
       setIsLoadingClassLearn(true);
@@ -71,13 +72,6 @@ export default function TimetableClass() {
     }
   }, [dispatch]);
 
-
-  useEffect(() => {
-    if (selectedClass) {
-      fetchScheduleClass();
-    }
-  }, [currentPage, pageSize]);
-
   const fetchScheduleClass = async () => {
     if (!selectedClass) {
       return;
@@ -102,6 +96,7 @@ export default function TimetableClass() {
     }
   };
 
+  // ---------------------------------------------- action -------------------------------------
   const handleSearch = async () => {
     if (!selectedClass) {
       toast.warning('Vui lòng chọn môn học');
@@ -116,9 +111,15 @@ export default function TimetableClass() {
     toast.info('Chức năng xuất Excel đang được phát triển');
   };
 
+  // --------------------------------------------- phân trang ----------------------------------
+  useEffect(() => {
+    if (selectedClass) {
+      fetchScheduleClass();
+    }
+  }, [currentPage, pageSize]);
+
   const totalPages = Math.ceil(totalScheduleLesson / pageSize);
 
-  // Smart pagination - only show a range of pages
   const getPageNumbers = () => {
     const delta = 2;
     const range = [];
@@ -166,6 +167,8 @@ export default function TimetableClass() {
     );
   };
 
+
+  // ---------------------------------------------- table ---------------------------------------------------
   const renderTableBody = () => {
     // Loading State
     if (isLoading) {
