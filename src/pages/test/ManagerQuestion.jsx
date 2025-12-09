@@ -3,10 +3,9 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Edit, Trash2, ArrowLeft, Save, X, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Loader2, AlertCircle } from 'lucide-react';
 import { toast } from "react-toastify";
 import { getCriteriaEvaluation } from '../../redux/CriteriaEvaluationSlice.js';
-import ApiCriteriaEvaluation from '../../apis/ApiCriteriaEvaluation.js'; // Không dùng trong mock
+import ApiCriteriaEvaluation from '../../apis/ApiCriteriaEvaluation.js';
 import { useSelector, useDispatch } from "react-redux";
 
-// === 1. ĐỊNH NGHĨA MAPPING (Int) ===
 const TypeCriteriaMapping = {
     1: 'Thang 6 mức (A-F)',
     2: 'Ý kiến mở (Text Area)',
@@ -16,11 +15,11 @@ const TypeCriteriaInt = {
     TEXTAREA: 2,
 }
 
-const initialBank = [
-    { CriteriaEvaluationID: 1, TypeCriteria: TypeCriteriaInt.LIKERT, TitleCriteriaEvaluation: 'Giảng viên truyền đạt rõ ràng', StatusID: 1 },
-    { CriteriaEvaluationID: 2, TypeCriteria: TypeCriteriaInt.LIKERT, TitleCriteriaEvaluation: 'Phòng học sạch sẽ', StatusID: 0 },
-    { CriteriaEvaluationID: 3, TypeCriteria: TypeCriteriaInt.TEXTAREA, TitleCriteriaEvaluation: 'Ý kiến cải tiến khóa học', StatusID: 1 },
-];
+// const initialBank = [
+//     { CriteriaEvaluationID: 1, TypeCriteria: TypeCriteriaInt.LIKERT, TitleCriteriaEvaluation: 'Giảng viên truyền đạt rõ ràng', StatusID: 1 },
+//     { CriteriaEvaluationID: 2, TypeCriteria: TypeCriteriaInt.LIKERT, TitleCriteriaEvaluation: 'Phòng học sạch sẽ', StatusID: 0 },
+//     { CriteriaEvaluationID: 3, TypeCriteria: TypeCriteriaInt.TEXTAREA, TitleCriteriaEvaluation: 'Ý kiến cải tiến khóa học', StatusID: 1 },
+// ];
 
 const initialFormState = { CriteriaEvaluationID: '', TypeCriteria: TypeCriteriaInt.LIKERT, TitleCriteriaEvaluation: '', StatusID: 1 };
 
@@ -32,40 +31,48 @@ const ManagerQuestion = () => {
 
     const target = location.state?.pickerTarget || null;
 
-    const [bank, setBank] = useState(initialBank);
+    const [bank, setBank] = useState();
     const [editing, setEditing] = useState(null);
     const [form, setForm] = useState(initialFormState);
     const [isAdding, setIsAdding] = useState(false);
 
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
+
+    // State lưu giá trị đang được nhập/chọn trong filter
     const [searchKey, setSearchKey] = useState('');
     const [filterType, setFilterType] = useState('');
     const [filterStatus, setFilterStatus] = useState('');
+
+    // State dùng để kích hoạt API call, chỉ thay đổi khi nhấn nút Tìm kiếm
+    const [activeSearchKey, setActiveSearchKey] = useState('');
+    const [activeFilterType, setActiveFilterType] = useState(1);
+    const [activeFilterStatus, setActiveFilterStatus] = useState(1);
+
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
-    const [totalItems, setTotalItems] = useState(initialBank.length);
+    const { CriteriaEvaluationList, CriteriaEvaluationTotal } = useSelector((state) => state.criteriaEvaluation);
 
     // ----------------------------- fetch list câu hỏi ---------------------------------------
     const fetchList = async () => {
         setIsLoading(true);
         setError(null);
+
+        // Lấy giá trị từ Active state
         try {
+            // Giả lập API call (hoặc gọi API thật)
+
             let res = await dispatch(getCriteriaEvaluation({
-                key: searchKey,
-                TypeCriteria: filterType,
-                statusID: filterStatus,
+                key: activeSearchKey,
+                TypeCriteria: activeFilterType,
+                statusID: activeFilterStatus,
                 page: currentPage,
                 limit: pageSize
             }));
-            console.log('ssss ', res);
 
             if (!res.payload || !res.payload.data) {
                 const errorMsg = res.payload?.message || 'Không thể tải dữ liệu';
                 setError(errorMsg);
-            } else {
-                setBank(res.payload.data);
-                setTotalItems(res.payload.total || res.payload.data.length);
             }
         } catch (err) {
             const errorMsg = 'Đã có lỗi xảy ra khi tải dữ liệu';
@@ -76,24 +83,17 @@ const ManagerQuestion = () => {
         }
     };
 
-    // -------------------------- phân trang
-    useEffect(() => {
-        if (currentPage === 1) {
-            fetchList();
-        } else {
-            setCurrentPage(1);
-        }
-
-    }, [searchKey, filterType, filterStatus, pageSize]);
-
+    // -------------------------- useEffect để gọi API khi Active Filters hoặc Pagination thay đổi --------------------------
+    // CHỈ CÓ CÁC STATE NÀY MỚI KÍCH HOẠT API CALL
     useEffect(() => {
         fetchList();
-    }, [currentPage]);
+    }, [currentPage, pageSize, activeSearchKey, activeFilterType, activeFilterStatus]);
 
+    // -------------------------- Logic Đồng bộ Form --------------------------
     useEffect(() => {
         if (editing) {
             const item = bank.find(b => Number(b.CriteriaEvaluationID) === Number(editing));
-            if (item) setForm({ ...item, TypeCriteria: Number(item.TypeCriteria) }); // Đảm bảo TypeCriteria là số
+            if (item) setForm({ ...item, TypeCriteria: Number(item.TypeCriteria) });
         } else if (!isAdding) {
             setForm(initialFormState);
         }
@@ -119,7 +119,7 @@ const ManagerQuestion = () => {
         };
 
         if (editing) {
-            // Giả lập cập nhật
+            // Giả lập cập nhật và fetch lại danh sách sau khi lưu
             setBank(bank.map(b => (Number(b.CriteriaEvaluationID) === Number(editing) ? itemToSave : b)));
             toast.success('Cập nhật câu hỏi thành công');
         } else {
@@ -160,13 +160,16 @@ const ManagerQuestion = () => {
         setIsAdding(true);
     };
 
+    // -------------------------- HÀM TÌM KIẾM CHỈ ĐƯỢC GỌI KHI BẤM NÚT --------------------------
     const handleSearch = () => {
+        setActiveSearchKey(searchKey);
+        setActiveFilterType(filterType);
+        setActiveFilterStatus(filterStatus);
         setCurrentPage(1);
-        fetchList();
     };
 
     // --------------------------------------------- phân trang ----------------------------------
-    const totalPages = Math.ceil(totalItems / pageSize);
+    const totalPages = Math.ceil(CriteriaEvaluationTotal / pageSize);
 
     const getPageNumbers = () => {
         const delta = 2;
@@ -262,8 +265,9 @@ const ManagerQuestion = () => {
                 </tr>
             );
         }
+        console.log('aaaaaaaa ', bank);
 
-        return bank.map(item => (
+        return CriteriaEvaluationList.map(item => (
             <tr
                 key={item.CriteriaEvaluationID}
                 onClick={() => handleRowClick(item)}
@@ -411,7 +415,6 @@ const ManagerQuestion = () => {
                                 value={filterType}
                                 onChange={(e) => setFilterType(e.target.value)}
                             >
-                                <option value="">Tất cả</option>
                                 <option value={TypeCriteriaInt.LIKERT}>Thang đo</option>
                                 <option value={TypeCriteriaInt.TEXTAREA}>Ý kiến</option>
                             </select>
@@ -424,7 +427,6 @@ const ManagerQuestion = () => {
                                 value={filterStatus}
                                 onChange={(e) => setFilterStatus(e.target.value)}
                             >
-                                <option value="">Tất cả</option>
                                 <option value="1">Hoạt động</option>
                                 <option value="0">Tạm dừng</option>
                             </select>
@@ -441,7 +443,6 @@ const ManagerQuestion = () => {
                     </div>
                 </div>
 
-                {/* Bảng Câu hỏi */}
                 <div className="bg-white rounded-lg shadow-sm">
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
@@ -467,6 +468,22 @@ const ManagerQuestion = () => {
                                 <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1} className="p-2 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed" title="Trang đầu"><ChevronsLeft size={16} /></button>
                                 <button onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))} disabled={currentPage === 1} className="p-2 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed" title="Trang trước"><ChevronLeft size={16} /></button>
                                 <div className="flex items-center gap-2 mx-2">
+                                    {getPageNumbers().map((pageNum, i) => (
+                                        pageNum === '...' ? (
+                                            <span key={`dots-${i}`} className="px-2 text-gray-400">...</span>
+                                        ) : (
+                                            <button
+                                                key={pageNum}
+                                                onClick={() => setCurrentPage(pageNum)}
+                                                className={`px-3 py-1 border rounded text-sm ${currentPage === pageNum
+                                                    ? 'bg-blue-500 text-white border-blue-500'
+                                                    : 'border-gray-300 hover:bg-gray-100'
+                                                    }`}
+                                            >
+                                                {pageNum}
+                                            </button>
+                                        )
+                                    ))}
                                 </div>
                                 <button onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))} disabled={currentPage === totalPages} className="p-2 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed" title="Trang sau"><ChevronRight size={16} /></button>
                                 <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} className="p-2 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed" title="Trang cuối"><ChevronsRight size={16} /></button>
@@ -474,7 +491,7 @@ const ManagerQuestion = () => {
 
                             <div className="flex flex-wrap items-center justify-center md:justify-end gap-4">
                                 <span className="text-sm text-gray-600 whitespace-nowrap">
-                                    Hiển thị {((currentPage - 1) * pageSize) + 1} - {Math.min(currentPage * pageSize, totalItems)} / {totalItems} kết quả
+                                    Hiển thị {((currentPage - 1) * pageSize) + 1} - {Math.min(currentPage * pageSize, CriteriaEvaluationTotal)} / {CriteriaEvaluationTotal} kết quả
                                 </span>
                                 <div className="flex items-center gap-2">
                                     <span className="text-sm text-gray-600 whitespace-nowrap">Số dòng:</span>
