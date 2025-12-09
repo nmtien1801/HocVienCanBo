@@ -4,6 +4,7 @@ import { Edit, Trash2, ArrowLeft, Save, X, Search, ChevronLeft, ChevronRight, Ch
 import { toast } from "react-toastify";
 import { getCriteriaEvaluation } from '../../redux/CriteriaEvaluationSlice.js';
 import ApiCriteriaEvaluation from '../../apis/ApiCriteriaEvaluation.js';
+import FormQuestion from '../../components/FormQuestion';
 import { useSelector, useDispatch } from "react-redux";
 
 const TypeCriteriaMapping = {
@@ -29,6 +30,7 @@ const ManagerQuestion = () => {
     const [editing, setEditing] = useState(null);
     const [form, setForm] = useState(initialFormState);
     const [isAdding, setIsAdding] = useState(false);
+    const [showFormModal, setShowFormModal] = useState(false);
 
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -100,7 +102,7 @@ const ManagerQuestion = () => {
 
         if (editing) {
             let res = await ApiCriteriaEvaluation.UpdateTemplateSurveyApi(form)
-            
+
             if (!res.message) {
                 toast.success("cập nhật câu hỏi thành công")
                 fetchList();
@@ -109,6 +111,7 @@ const ManagerQuestion = () => {
             }
         } else {
             let res = await ApiCriteriaEvaluation.CreateTemplateSurveyApi(form)
+
             if (res) {
                 toast.success("thêm mới câu hỏi thành công")
                 fetchList();
@@ -150,6 +153,14 @@ const ManagerQuestion = () => {
         setEditing(item.CriteriaEvaluationID);
         setForm({ ...item, TypeCriteria: Number(item.TypeCriteria) });
         setIsAdding(true);
+        setShowFormModal(true);
+    };
+
+    const openAddModal = () => {
+        setEditing(null);
+        setForm(initialFormState);
+        setIsAdding(true);
+        setShowFormModal(true);
     };
 
     // -------------------------- HÀM TÌM KIẾM CHỈ ĐƯỢC GỌI KHI BẤM NÚT --------------------------
@@ -295,7 +306,8 @@ const ManagerQuestion = () => {
                     </div>
                 </div>
 
-                {/* Form Thêm/Sửa/Xóa */}
+                {/* Form Thêm/Sửa/Xóa (hidden when modal open) */}
+                {!showFormModal && (
                 <div className="bg-white rounded-xl shadow-lg p-4 md:p-6 mb-8 border-2 border-blue-300">
                     <h2 className="text-xl font-semibold text-blue-700 mb-4">{editing ? `Chỉnh sửa Câu hỏi ID: ${editing}` : 'Thêm Câu hỏi mới'}</h2>
                     <div className="grid grid-cols-12 gap-4 items-end">
@@ -325,7 +337,7 @@ const ManagerQuestion = () => {
                             <select
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500 transition"
                                 value={form.StatusID.toString()}
-                                onChange={(e) => setForm({ ...form, StatusID: form.StatusID })}
+                                onChange={(e) => setForm({ ...form, StatusID: e.target.value === "true" })}
                             >
                                 <option value={true}>Hoạt động</option>
                                 <option value={false}>Tạm dừng</option>
@@ -334,12 +346,17 @@ const ManagerQuestion = () => {
                     </div>
                     <div className="col-span-12 text-right mt-5 flex flex-wrap justify-end items-center gap-3">
                         <button
+                            onClick={handleSave}
+                            className="inline-flex items-center gap-2 px-5 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition duration-150"
+                        >
+                            <Save className="w-4 h-4" /> {editing ? 'Cập nhật' : 'Thêm mới'}
+                        </button>
+                        <button
                             onClick={clearForm}
                             className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
                         >
                             <X className="w-4 h-4" /> Xóa trắng
                         </button>
-
                         <button
                             onClick={handleDeleteCurrent}
                             className="inline-flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600 transition duration-150 disabled:opacity-50"
@@ -348,14 +365,21 @@ const ManagerQuestion = () => {
                             <Trash2 className="w-4 h-4" /> Xóa
                         </button>
 
-                        <button
-                            onClick={handleSave}
-                            className="inline-flex items-center gap-2 px-5 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition duration-150"
-                        >
-                            <Save className="w-4 h-4" /> {editing ? 'Cập nhật' : 'Thêm mới'}
-                        </button>
+
                     </div>
                 </div>
+                )}
+
+                {/* Modal Form */}
+                <FormQuestion
+                    visible={showFormModal}
+                    onClose={() => setShowFormModal(false)}
+                    form={form}
+                    setForm={setForm}
+                    onSave={async () => { await handleSave(); setShowFormModal(false); }}
+                    onDeleteCurrent={() => { handleDeleteCurrent(); setShowFormModal(false); }}
+                    editing={editing}
+                />
 
                 {/* Filter Section */}
                 <div className="bg-white rounded-lg shadow-sm p-4 md:p-6 mb-6">

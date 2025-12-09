@@ -41,7 +41,7 @@ import StudentRegisterTC from "../pages/auth/StudentRegisterTC.jsx"
 import StudentRegisterHBD from "../pages/auth/StudentRegisterHBD.jsx"
 import Test from "../pages/test/Test.jsx"
 import SurveyManager from "../pages/test/ManagerSurvey.jsx"
-import ManagerQuestion from "../pages/test/ManagerQuestion.jsx"
+import ManagerQuestion from "../pages/question/ManagerQuestion.jsx"
 
 const ProtectedRoute = ({ children, userInfo, isLoading, hasCheckedAuth }) => {
   if (isLoading || !hasCheckedAuth) {
