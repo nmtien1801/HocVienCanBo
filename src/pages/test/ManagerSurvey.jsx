@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import QuestionPicker from './QuestionPicker';
 import {
     Plus, Edit, Trash2, ChevronRight, ChevronDown,
     FolderOpen, Folder, FileText, Save, X, Search
@@ -8,15 +9,15 @@ import {
 const initialCategories = [
     {
         id: 'cat1',
-        name: 'Hoạt động Giảng dạy',
-        description: 'Đánh giá về giảng viên và phương pháp giảng dạy',
+        name: 'PHIẾU KHẢO SÁT SINH VIÊN VỀ HỌC PHẦN LÝ THUYẾT',
+        description: 'Nhằm nâng cao chất lượng dạy và học, Nhà trường rất mong nhận được ý kiến của các bạn sinh viên về học phần lý thuyết. Ý kiến của các bạn sinh viên sẽ giúp Nhà trường đưa ra được các giải pháp nâng cao chất lượng dạy và học. Thông tin trả lời của các bạn sẽ được giữ kín, vì vậy các bạn vui lòng trả lời thẳng thắn và khách quan các câu hỏi. Nếu các bạn có thắc mắc hoặc trao đổi, vui lòng liên hệ theo địa chỉ ở cuối bảng hỏi này.',
         groups: [
             {
                 id: 'grp1',
-                name: 'Giảng viên Lý thuyết',
+                name: 'I. Thông tin về học phần',
                 description: 'Đánh giá giảng viên giảng dạy phần lý thuyết',
                 questions: [
-                    { id: 'q1', text: 'Giảng viên truyền đạt kiến thức rõ ràng, dễ hiểu', type: 'likert6' },
+                    { id: 'q1', text: 'Giảng viên cung cấp đầy đủ và giải thích rõ ràng về: Chuẩn đầu ra học phần', type: 'likert6' },
                     { id: 'q2', text: 'Giảng viên nhiệt tình, tận tâm trong giảng dạy', type: 'likert6' },
                     { id: 'q3', text: 'Giảng viên sử dụng phương pháp giảng dạy phù hợp', type: 'likert6' }
                 ]
@@ -69,7 +70,18 @@ const QuestionTypeLabels = {
     likert6: 'Thang đo 6 mức (A-F)',
 };
 
+// A small bank of reusable questions that can be picked when adding
+const questionBank = [
+    { id: 'qb1', text: 'Giảng viên truyền đạt kiến thức rõ ràng, dễ hiểu', type: 'likert6' },
+    { id: 'qb2', text: 'Giảng viên nhiệt tình, tận tâm trong giảng dạy', type: 'likert6' },
+    { id: 'qb3', text: 'Phòng học sạch sẽ, thoáng mát', type: 'likert6' },
+    { id: 'qb4', text: 'Trang thiết bị phòng học đầy đủ và hoạt động tốt', type: 'likert6' },
+    { id: 'qb5', text: 'Bạn có đề xuất gì để cải thiện khóa học?', type: 'textarea' },
+];
+
 const QuestionManager = () => {
+    const [showQuestionPicker, setShowQuestionPicker] = useState(false);
+    const [pickerTarget, setPickerTarget] = useState(null); // { catId, grpId }
     const [categories, setCategories] = useState(initialCategories);
     const [expandedCategories, setExpandedCategories] = useState(new Set(['cat1']));
     const [expandedGroups, setExpandedGroups] = useState(new Set(['grp1']));
@@ -152,11 +164,20 @@ const QuestionManager = () => {
     };
 
     const addQuestion = (catId, grpId) => {
+        // Open the question picker instead of inserting a blank question
+        setPickerTarget({ catId, grpId });
+        setShowQuestionPicker(true);
+    };
+
+    const handlePickQuestion = (question) => {
+        if (!pickerTarget) return;
+        const { catId, grpId } = pickerTarget;
         const newQuestion = {
             id: `q${Date.now()}`,
-            text: 'Câu hỏi mới',
-            type: 'likert6'
+            text: question.text,
+            type: question.type
         };
+
         setCategories(categories.map(cat =>
             cat.id === catId
                 ? {
@@ -171,6 +192,8 @@ const QuestionManager = () => {
         ));
         setExpandedGroups(new Set([...expandedGroups, grpId]));
         setEditMode({ type: 'question', id: newQuestion.id, catId, grpId });
+        setShowQuestionPicker(false);
+        setPickerTarget(null);
     };
 
     const deleteItem = (type, id, parentIds = {}) => {
@@ -607,17 +630,24 @@ const QuestionManager = () => {
                             placeholder="Tìm kiếm danh mục, nhóm, câu hỏi..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                         />
                     </div>
 
                     {/* Nút Thêm Danh mục - Màu xanh đậm */}
                     <button
                         onClick={addCategory}
-                        className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition shadow-md"
+                        className="flex items-center gap-2 bg-teal-500 text-white px-4 py-2 rounded-lg hover:bg-teal-600 transition shadow-md"
                     >
                         <Plus className="w-5 h-5" />
-                        Thêm Danh mục
+                        Thêm chủ đề
+                    </button>
+                    <button
+                        onClick={addCategory}
+                        className="flex items-center gap-2 bg-teal-500 text-white px-4 py-2 rounded-lg hover:bg-teal-600 transition shadow-md"
+                    >
+                        <Plus className="w-5 h-5" />
+                        Thêm câu hỏi
                     </button>
                 </div>
 
@@ -647,6 +677,13 @@ const QuestionManager = () => {
 
 
             </div>
+            {showQuestionPicker && (
+                <QuestionPicker
+                    questions={questionBank}
+                    onSelect={handlePickQuestion}
+                    onClose={() => { setShowQuestionPicker(false); setPickerTarget(null); }}
+                />
+            )}
         </div>
     );
 };
