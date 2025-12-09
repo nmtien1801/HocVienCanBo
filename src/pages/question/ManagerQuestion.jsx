@@ -325,7 +325,7 @@ const ManagerQuestion = () => {
                             <select
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500 transition"
                                 value={form.StatusID.toString()}
-                                onChange={(e) => setForm({ ...form, StatusID: form.StatusID })}
+                                onChange={(e) => setForm({ ...form, StatusID: e.target.value === "true" })}
                             >
                                 <option value={true}>Hoạt động</option>
                                 <option value={false}>Tạm dừng</option>
