@@ -37,6 +37,7 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
     role.canAccess ? { label: 'Đổi mật khẩu học viên', path: '/change-pass-student' } : null,
     { label: 'Đổi mật khẩu tài khoản', path: '/change-pass-tc' },
     { label: 'Thông tin tài khoản', path: '/account' },
+    { label: 'Phiếu khảo sát', path: '/manager-survey' },
     userInfo?.TypeUserID === TypeUserIDCons.Administrator
       ? { label: 'Nhập thông báo', path: '/manager-notification' }
       : null,

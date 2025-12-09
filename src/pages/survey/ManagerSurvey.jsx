@@ -67,16 +67,9 @@ const initialCategories = [
     }
 ];
 
-// const questionBank = [
-//     { id: 'qb1', text: 'Giảng viên truyền đạt kiến thức rõ ràng, dễ hiểu', type: 'likert6' },
-//     { id: 'qb2', text: 'Giảng viên nhiệt tình, tận tâm trong giảng dạy', type: 'likert6' },
-//     { id: 'qb3', text: 'Phòng học sạch sẽ, thoáng mát', type: 'likert6' },
-//     { id: 'qb4', text: 'Trang thiết bị phòng học đầy đủ và hoạt động tốt', type: 'likert6' },
-//     { id: 'qb5', text: 'Bạn có đề xuất gì để cải thiện khóa học?', type: 'textarea' },
-// ];
-
 const QuestionTypeLabels = {
     likert6: 'Thang đo 6 mức (A-F)',
+    ykien: 'Ý kiến',
 };
 
 const QuestionManager = () => {
@@ -175,8 +168,8 @@ const QuestionManager = () => {
         const { catId, grpId } = pickerTarget;
         const newQuestion = {
             id: `q${Date.now()}`,
-            text: question.text,
-            type: question.type
+            text: question.TitleCriteriaEvaluation,
+            type: question.TypeCriteria
         };
 
         setCategories(categories.map(cat =>

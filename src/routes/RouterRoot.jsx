@@ -138,7 +138,7 @@ function RouterRoot() {
           <Route path="change-pass-tc" element={<ChangePassTC />} />
           <Route path="account" element={<Account />} />
           <Route path="test" element={<Test />} />
-          <Route path="a" element={<SurveyManager />} />
+          <Route path="manager-survey" element={<SurveyManager />} />
           <Route path="manager-question" element={<ManagerQuestion />} />
 
           {/* route schedule */}
