@@ -21,7 +21,7 @@ const TypeCriteriaInt = {
 //     { CriteriaEvaluationID: 3, TypeCriteria: TypeCriteriaInt.TEXTAREA, TitleCriteriaEvaluation: 'Ý kiến cải tiến khóa học', StatusID: 1 },
 // ];
 
-const initialFormState = { CriteriaEvaluationID: '', TypeCriteria: TypeCriteriaInt.LIKERT, TitleCriteriaEvaluation: '', StatusID: 1 };
+const initialFormState = { CriteriaEvaluationID: '', TypeCriteria: TypeCriteriaInt.LIKERT, TitleCriteriaEvaluation: '', StatusID: true };
 
 
 const ManagerQuestion = () => {
@@ -43,12 +43,12 @@ const ManagerQuestion = () => {
     // State lưu giá trị đang được nhập/chọn trong filter
     const [searchKey, setSearchKey] = useState('');
     const [filterType, setFilterType] = useState('');
-    const [filterStatus, setFilterStatus] = useState('');
+    const [filterStatus, setFilterStatus] = useState(true);
 
     // State dùng để kích hoạt API call, chỉ thay đổi khi nhấn nút Tìm kiếm
-    const [activeSearchKey, setActiveSearchKey] = useState('');
-    const [activeFilterType, setActiveFilterType] = useState('');
-    const [activeFilterStatus, setActiveFilterStatus] = useState('');
+    const [activeSearchKey, setActiveSearchKey] = useState("");
+    const [activeFilterType, setActiveFilterType] = useState(1);
+    const [activeFilterStatus, setActiveFilterStatus] = useState(true);
 
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
@@ -62,11 +62,11 @@ const ManagerQuestion = () => {
             let res = await dispatch(getCriteriaEvaluation({
                 key: activeSearchKey,
                 TypeCriteria: activeFilterType,
-                statusID: activeFilterStatus,
+                statusID: activeFilterStatus ? true : false,
                 page: currentPage,
                 limit: pageSize
             }));
-           
+
         } catch (err) {
             const errorMsg = 'Đã có lỗi xảy ra khi tải dữ liệu.';
             setError(errorMsg);
@@ -112,13 +112,11 @@ const ManagerQuestion = () => {
         };
 
         if (editing) {
-
             toast.success('Cập nhật câu hỏi thành công');
-
         } else {
             // toast.success('Thêm câu hỏi thành công');
-            let res = await ApiCriteriaEvaluation.CreateTemplateSurveyApi(form)
-
+            let res = await ApiCriteriaEvaluation.CreateTemplateSurveyApi(form)            
+            fetchList();
         }
         clearForm();
     };
@@ -128,10 +126,22 @@ const ManagerQuestion = () => {
         setIsAdding(true);
     };
 
-    const handleDelete = (id) => {
+    const handleDelete = async (id) => {
         if (!window.confirm('Bạn có chắc muốn xóa câu hỏi này?')) return;
-        if (Number(editing) === Number(id)) clearForm();
-        toast.success('Xóa câu hỏi thành công');
+        try {
+            let res = await ApiCriteriaEvaluation.DeleteTemplateSurveyApi(form);
+            console.log('sssss ', res);
+            if (res) {
+                fetchList();
+                // 2. Xóa trắng Form
+                if (Number(editing) === Number(id)) clearForm();
+
+                // 3. Thông báo thành công
+                toast.success('Xóa câu hỏi thành công');
+            }
+        } catch (error) {
+            toast.error('Có lỗi xảy ra khi xóa câu hỏi.');
+        }
     };
 
     const handleDeleteCurrent = () => {
@@ -153,7 +163,7 @@ const ManagerQuestion = () => {
     // -------------------------- HÀM TÌM KIẾM CHỈ ĐƯỢC GỌI KHI BẤM NÚT --------------------------
     const handleSearch = () => {
         setActiveSearchKey(searchKey);
-        setActiveFilterType(filterType);
+        setActiveFilterType(filterType ? Number(filterType) : 1);
         setActiveFilterStatus(filterStatus);
         setCurrentPage(1);
     };
@@ -270,36 +280,9 @@ const ManagerQuestion = () => {
                 </td>
                 <td className="px-4 py-3 text-gray-800 max-w-xl truncate border-r border-gray-200">{item.TitleCriteriaEvaluation}</td>
                 <td className="px-4 py-3 whitespace-nowrap border-r border-gray-200">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${item.StatusID === 1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                        {item.StatusID === 1 ? 'Hoạt động' : 'Tạm dừng'}
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${item.StatusID === true ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        {item.StatusName}
                     </span>
-                </td>
-                <td className="px-4 py-3 text-right text-sm font-medium whitespace-nowrap">
-                    <div className="inline-flex gap-2 items-center justify-end">
-                        {target && (
-                            <button
-                                onClick={(e) => { e.stopPropagation(); handleUseAndBack(item); }}
-                                className="px-3 py-1 bg-teal-500 text-white rounded-lg text-xs font-semibold hover:bg-teal-600 transition"
-                                title="Sử dụng"
-                            >
-                                Sử dụng
-                            </button>
-                        )}
-                        <button
-                            onClick={(e) => { e.stopPropagation(); handleEdit(item.CriteriaEvaluationID); }}
-                            className="p-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
-                            title="Sửa"
-                        >
-                            <Edit className="w-4 h-4" />
-                        </button>
-                        <button
-                            onClick={(e) => { e.stopPropagation(); handleDelete(item.CriteriaEvaluationID); }}
-                            className="p-2 border border-gray-300 rounded-lg text-red-600 hover:bg-red-50 transition"
-                            title="Xóa"
-                        >
-                            <Trash2 className="w-4 h-4" />
-                        </button>
-                    </div>
                 </td>
             </tr>
         ));
@@ -350,10 +333,10 @@ const ManagerQuestion = () => {
                             <select
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500 transition"
                                 value={form.StatusID.toString()}
-                                onChange={(e) => setForm({ ...form, StatusID: Number(e.target.value) })}
+                                onChange={(e) => setForm({ ...form, StatusID: form.StatusID })}
                             >
                                 <option value={1}>Hoạt động</option>
-                                <option value={0}>Không hoạt động</option>
+                                <option value={0}>Tạm dừng</option>
                             </select>
                         </div>
                     </div>
@@ -404,8 +387,8 @@ const ManagerQuestion = () => {
                                 value={filterType}
                                 onChange={(e) => setFilterType(e.target.value)}
                             >
-                                <option value={TypeCriteriaInt.LIKERT}>Thang đo</option>
-                                <option value={TypeCriteriaInt.TEXTAREA}>Ý kiến</option>
+                                <option value={TypeCriteriaInt.LIKERT.toString()}>Thang đo</option>
+                                <option value={TypeCriteriaInt.TEXTAREA.toString()}>Ý kiến</option>
                             </select>
                         </div>
 
@@ -413,11 +396,11 @@ const ManagerQuestion = () => {
                             <label className="text-gray-600 text-sm whitespace-nowrap">Trạng thái</label>
                             <select
                                 className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500 transition"
-                                value={filterStatus}
-                                onChange={(e) => setFilterStatus(e.target.value)}
+                                value={filterStatus ? true : false}
+                                onChange={(e) => setFilterStatus(e.target.value === true)}
                             >
-                                <option value="1">Hoạt động</option>
-                                <option value="0">Tạm dừng</option>
+                                <option value="true">Hoạt động</option>
+                                <option value="false">Tạm dừng</option>
                             </select>
                         </div>
 
@@ -440,9 +423,8 @@ const ManagerQuestion = () => {
                                 <tr>
                                     <th className="px-4 py-3 text-left text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">STT</th>
                                     <th className="px-4 py-3 text-left text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">Loại</th>
-                                    <th className="px-4 py-3 text-left text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">Nội dung</th>
+                                    <th className="px-4 py-3 text-left text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">Nội dung câu hỏi</th>
                                     <th className="px-4 py-3 text-left text-gray-700 font-semibold border-r border-gray-300 whitespace-nowrap">Trạng thái</th>
-                                    <th className="px-4 py-3 text-right text-gray-700 font-semibold whitespace-nowrap">Hành động</th>
                                 </tr>
                             </thead>
                             <tbody>
