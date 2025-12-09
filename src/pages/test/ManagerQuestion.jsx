@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Plus, Edit, Trash2, ArrowLeft, Save, X } from 'lucide-react';
+import { Edit, Trash2, ArrowLeft, Save, X } from 'lucide-react';
+import { toast } from "react-toastify";
+import { getCriteriaEvaluation } from '../../redux/CriteriaEvaluationSlice.js';
+import { useSelector, useDispatch } from "react-redux";
 
-// Simple local mock data for question bank
 const initialBank = [
     { CriteriaEvaluationID: 1, TypeCriteria: 'likert6', TitleCriteriaEvaluation: 'Giảng viên truyền đạt rõ ràng', StatusID: 1 },
     { CriteriaEvaluationID: 2, TypeCriteria: 'likert6', TitleCriteriaEvaluation: 'Phòng học sạch sẽ', StatusID: 1 },
@@ -12,14 +14,30 @@ const initialBank = [
 const ManagerQuestion = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const dispatch = useDispatch();
 
-    const target = location.state?.pickerTarget || null; // optional target from survey
+    const target = location.state?.pickerTarget || null;
 
     const [bank, setBank] = useState(initialBank);
     const [editing, setEditing] = useState(null);
     const [form, setForm] = useState({ CriteriaEvaluationID: '', TypeCriteria: 'likert6', TitleCriteriaEvaluation: '', StatusID: 1 });
     const [isAdding, setIsAdding] = useState(false);
 
+    // fetch list câu hỏi
+    useEffect(() => {
+        fetchList()
+    }, []);
+
+    const fetchList = async () => {
+        let res = await dispatch(getCriteriaEvaluation({ key: "", typeTemplate: "", statusID: 1, page: 1, limit: 20 }));
+        console.log('ssss ', res);
+
+        if (!res.payload || !res.payload.data) {
+            toast.error(res.messenger);
+        }
+    };
+
+    // action 
     useEffect(() => {
         if (editing) {
             const item = bank.find(b => Number(b.CriteriaEvaluationID) === Number(editing));
@@ -29,20 +47,11 @@ const ManagerQuestion = () => {
         }
     }, [editing, bank, isAdding]);
 
-    const handleAddQuestion = () => {
-        setEditing(null);
-        setIsAdding(true);
-        setForm({ CriteriaEvaluationID: '', TypeCriteria: 'likert6', TitleCriteriaEvaluation: '', StatusID: 1 });
-    };
-
+    // -------------------------------- action button + action row -------------------------------------------
     const clearForm = () => {
         setForm({ CriteriaEvaluationID: '', TypeCriteria: 'likert6', TitleCriteriaEvaluation: '', StatusID: 1 });
         setEditing(null);
         setIsAdding(false);
-    };
-
-    const handleCancel = () => {
-        clearForm();
     };
 
     const handleSave = () => {
@@ -84,6 +93,8 @@ const ManagerQuestion = () => {
         setIsAdding(true);
     };
 
+    // ---------------------------------------------------------------------------------------
+
     return (
         <div className="p-6 bg-gray-50 min-h-screen">
             <div className="max-w-7xl mx-auto">
@@ -95,9 +106,6 @@ const ManagerQuestion = () => {
                         </button>
                         <h1 className="text-3xl font-extrabold text-gray-800">Quản lý Ngân hàng Câu hỏi</h1>
                     </div>
-                    <button onClick={handleAddQuestion} className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition duration-150">
-                        <Plus className="w-5 h-5" /> Thêm câu hỏi mới
-                    </button>
                 </div>
 
                 {/* Form Thêm/Sửa/Xóa - LUÔN HIỂN THỊ */}
