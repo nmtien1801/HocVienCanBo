@@ -1,18 +1,16 @@
-// CATEGORY: cat
-// GROUP : grp
-// QUESTION: q
-
 import React, { useState, useEffect } from 'react';
 import QuestionPicker from '../question/QuestionPicker';
 import {
-    Plus, Edit, Trash2, ChevronRight, ChevronDown,
-    FolderOpen, Folder, FileText, Save, X, Search
+    Plus, Edit, Trash2, ChevronRight, ChevronDown, ChevronLeft, 
+    FolderOpen, Folder, FileText, Save, X, Search,
+    ChevronRight as ChevronRightIcon
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import FormTemplateSurvey from './FormTemplateSurvey';
 import { getTemplateSurvey } from '../../redux/TemplateSurveysSlice.js';
 import ApiTemplateSurveys from '../../apis/ApiTemplateSurveys.js';
 import { useSelector, useDispatch } from "react-redux";
+import { toast } from "react-toastify";
 
 // Cấu trúc dữ liệu mẫu
 const initialCategories = [
@@ -49,6 +47,8 @@ const QuestionTypeLabels = {
     2: 'câu hỏi tự luận',
 };
 
+const PAGE_SIZE = 5; // Kích thước mặc định của trang
+
 const QuestionManager = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -59,15 +59,19 @@ const QuestionManager = () => {
     const [categories, setCategories] = useState(initialCategories);
     const [expandedCategories, setExpandedCategories] = useState(new Set(['cat1']));
     const [expandedGroups, setExpandedGroups] = useState(new Set(['']));
-    const [editMode, setEditMode] = useState(null);             // sau này xóa
+    const [editMode, setEditMode] = useState(null);
     const [showTemplateModal, setShowTemplateModal] = useState(false);
     const [templateForm, setTemplateForm] = useState({ TemplateSurveyID: '', TypeTemplate: 1, Title: '', ShorDescription: '', Requiments: '', StatusID: true, ImagePath: '', Permission: 0 });
     const [templateEditingId, setTemplateEditingId] = useState(null);
 
-    // filter
+    // Filter states
     const [searchTerm, setSearchTerm] = useState('');
     const [filterType, setFilterType] = useState(1);
     const [filterStatus, setFilterStatus] = useState(true);
+
+    // Pagination states
+    const [currentPage, setCurrentPage] = useState(1);
+    const [limit, setLimit] = useState(PAGE_SIZE);
 
     // ----------------------------- fetch list câu hỏi ---------------------------------------
     const fetchList = async () => {
@@ -76,10 +80,11 @@ const QuestionManager = () => {
                 key: searchTerm,
                 typeTemplate: filterType,
                 statusID: filterStatus ? true : false,
-                page: 1,
-                limit: 20
+                page: currentPage,
+                limit: limit
             }));
-            console.log('ssss ', res);
+
+            console.log('Response: ', res);
 
         } catch (err) {
             const errorMsg = 'Đã có lỗi xảy ra khi tải dữ liệu.';
@@ -89,15 +94,26 @@ const QuestionManager = () => {
 
     useEffect(() => {
         fetchList();
-    }, [dispatch]);
+    }, [dispatch, currentPage, limit]);
 
     // -------------------------- Action - HÀM TÌM KIẾM CHỈ ĐƯỢC GỌI KHI BẤM NÚT --------------------------
     const handleSearch = () => {
-
+        if (currentPage !== 1) {
+            setCurrentPage(1);
+        } else {
+            fetchList(1, limit);
+        }
     };
 
-    // ----------------------------------------------------------------------------------------
-    const filteredCategories = categories.filter(category => {
+    // Hàm xử lý chuyển trang
+    const handlePageChange = (page) => {
+        if (page > 0 && page <= Math.ceil(TemplateSurveysTotal / limit)) {
+            setCurrentPage(page);
+        }
+    };
+
+    // Để đảm bảo logic tìm kiếm cây vẫn chạy trên dữ liệu mẫu nếu API chưa trả về
+    const filteredCategories = TemplateSurveysList && TemplateSurveysList.length > 0 ? TemplateSurveysList : categories.filter(category => {
         if (!searchTerm) return true;
 
         const lowerCaseSearch = searchTerm.toLowerCase();
@@ -144,7 +160,481 @@ const QuestionManager = () => {
         setExpandedGroups(newSet);
     };
 
-    // CRUD Operations
+    // CRUD Operations 
+    
+    const renderQuestion = (question, catId, grpId, index) => {
+        const isEditing = editMode?.type === 'question' && editMode?.id === question.id;
+        // ... (JSX renderQuestion)
+        return (
+            <div key={question.id} className="ml-12 mb-2">
+
+                <div className="flex items-start gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition group">
+                    {/* Icon Câu hỏi */}
+                    <FileText className="w-4 h-4 text-blue-500 mt-1 flex-shrink-0" />
+
+                    <div className="flex-1 min-w-0">
+                        {isEditing ? (
+                            <div className="space-y-2">
+                                <input
+                                    type="text"
+                                    value={question.text}
+                                    onChange={(e) => {
+                                        setCategories(categories.map(cat =>
+                                            cat.id === catId
+                                                ? {
+                                                    ...cat,
+                                                    groups: cat.groups.map(grp =>
+                                                        grp.id === grpId
+                                                            ? {
+                                                                ...grp,
+                                                                questions: grp.questions.map(q =>
+                                                                    q.id === question.id ? { ...q, text: e.target.value } : q
+                                                                )
+                                                            }
+                                                            : grp
+                                                    )
+                                                }
+                                                : cat
+                                        ));
+                                    }}
+                                    className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    placeholder="Nội dung câu hỏi..."
+                                />
+                                <select
+                                    value={question.type}
+                                    onChange={(e) => {
+                                        const newType = parseInt(e.target.value);
+                                        setCategories(categories.map(cat =>
+                                            cat.id === catId
+                                                ? {
+                                                    ...cat,
+                                                    groups: cat.groups.map(grp =>
+                                                        grp.id === grpId
+                                                            ? {
+                                                                ...grp,
+                                                                questions: grp.questions.map(q =>
+                                                                    q.id === question.id ? { ...q, type: newType } : q
+                                                                )
+                                                            }
+                                                            : grp
+                                                    )
+                                                }
+                                                : cat
+                                        ));
+                                    }}
+                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                >
+                                    {Object.entries(QuestionTypeLabels).map(([key, label]) => (
+                                        <option key={key} value={key}>{label}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        ) : (
+                            <>
+                                <p className="text-sm text-gray-800 font-medium">
+                                    {/* Tiêu đề câu hỏi - Màu xanh */}
+                                    <span className="text-blue-600 font-semibold">Q{index + 1}.</span> {question.text}
+                                </p>
+                                <span className="inline-block mt-1 px-2 py-0.5 text-xs bg-blue-50 text-blue-700 rounded-full">
+                                    {QuestionTypeLabels[question.type]}
+                                </span>
+                            </>
+                        )}
+                    </div>
+
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+                        {isEditing ? (
+                            <>
+                                {/* Nút Lưu/Hủy */}
+                                <button
+                                    onClick={() => setEditMode(null)}
+                                    className="p-1 text-green-600 hover:bg-green-50 rounded"
+                                    title="Lưu"
+                                >
+                                    <Save className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={() => setEditMode(null)}
+                                    className="p-1 text-gray-600 hover:bg-gray-100 rounded"
+                                    title="Hủy"
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                {/* Nút Sửa - Màu xanh */}
+                                <button
+                                    onClick={() => setEditMode({ type: 'question', id: question.id, catId, grpId })}
+                                    className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                                    title="Sửa"
+                                >
+                                    <Edit className="w-4 h-4" />
+                                </button>
+                                {/* Nút Xóa */}
+                                <button
+                                    onClick={() => deleteItem('question', question.id, { catId, grpId })}
+                                    className="p-1 text-red-600 hover:bg-red-50 rounded"
+                                    title="Xóa"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
+                            </>
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    // Hàm renderGroup (Giữ nguyên)
+    const renderGroup = (group, catId) => {
+        const isExpanded = expandedGroups.has(group.id);
+        const isEditing = editMode?.type === 'group' && editMode?.id === group.id;
+        // ... (JSX renderGroup)
+        return (
+            <div key={group.id} className="ml-6 mb-3">
+
+                {/* Nền Nhóm - Màu Sky nhạt */}
+                <div className="flex items-start gap-3 p-3 bg-sky-50 rounded-lg border border-sky-200 hover:border-sky-400 transition group">
+                    <button
+                        onClick={() => toggleGroup(group.id)}
+                        className="flex-shrink-0 p-1 hover:bg-sky-100 rounded transition"
+                    >
+                        {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                    </button>
+
+                    {/* Icon Nhóm - Màu xanh */}
+                    {isExpanded ? <FolderOpen className="w-5 h-5 text-blue-600 flex-shrink-0" /> : <Folder className="w-5 h-5 text-blue-600 flex-shrink-0" />}
+
+                    <div className="flex-1 min-w-0">
+                        {isEditing ? (
+                            <div className="space-y-2">
+                                <input
+                                    type="text"
+                                    value={group.name}
+                                    onChange={(e) => {
+                                        setCategories(categories.map(cat =>
+                                            cat.id === catId
+                                                ? {
+                                                    ...cat,
+                                                    groups: cat.groups.map(grp =>
+                                                        grp.id === group.id ? { ...grp, name: e.target.value } : grp
+                                                    )
+                                                }
+                                                : cat
+                                        ));
+                                    }}
+                                    className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-semibold"
+                                    placeholder="Tên nhóm câu hỏi..."
+                                />
+                                <textarea
+                                    value={group.description}
+                                    onChange={(e) => {
+                                        setCategories(categories.map(cat =>
+                                            cat.id === catId
+                                                ? {
+                                                    ...cat,
+                                                    groups: cat.groups.map(grp =>
+                                                        grp.id === group.id ? { ...grp, description: e.target.value } : grp
+                                                    )
+                                                }
+                                                : cat
+                                        ));
+                                    }}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                                    placeholder="Mô tả nhóm..."
+                                    rows="2"
+                                />
+                            </div>
+                        ) : (
+                            <>
+                                <h4 className="font-semibold text-gray-800">{group.name}</h4>
+                                {group.description && (
+                                    <p className="text-sm text-gray-600 mt-1">{group.description}</p>
+                                )}
+                                <span className="text-xs text-gray-500 mt-1 inline-block">
+                                    {group.questions.length} câu hỏi
+                                </span>
+                            </>
+                        )}
+                    </div>
+
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+                        {isEditing ? (
+                            <>
+                                {/* Nút Lưu/Hủy */}
+                                <button
+                                    onClick={() => setEditMode(null)}
+                                    className="p-1 text-green-600 hover:bg-green-50 rounded"
+                                    title="Lưu"
+                                >
+                                    <Save className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={() => setEditMode(null)}
+                                    className="p-1 text-gray-600 hover:bg-gray-100 rounded"
+                                    title="Hủy"
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                {/* Nút Thêm/Sửa - Màu xanh */}
+                                <button
+                                    onClick={() => addQuestion(catId, group.id)}
+                                    className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                                    title="Thêm câu hỏi"
+                                >
+                                    <Plus className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={() => setEditMode({ type: 'group', id: group.id, catId })}
+                                    className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                                    title="Sửa"
+                                >
+                                    <Edit className="w-4 h-4" />
+                                </button>
+                                {/* Nút Xóa */}
+                                <button
+                                    onClick={() => deleteItem('group', group.id, { catId })}
+                                    className="p-1 text-red-600 hover:bg-red-50 rounded"
+                                    title="Xóa"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
+                            </>
+                        )}
+                    </div>
+                </div>
+
+                {isExpanded && (
+                    <div className="mt-2 space-y-2">
+                        {group.questions.map((question, index) =>
+                            renderQuestion(question, catId, group.id, index)
+                        )}
+                        {group.questions.length === 0 && (
+                            <div className="ml-12 text-sm text-gray-400 italic p-3">
+                                Chưa có câu hỏi. Nhấn nút + để thêm câu hỏi.
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+        );
+    };
+
+    // Hàm renderCategory (Giữ nguyên)
+    const renderCategory = (category) => {
+        const isExpanded = expandedCategories.has(category.id);
+        const isEditing = editMode?.type === 'category' && editMode?.id === category.id;
+
+        return (
+            <div key={category.id} className="mb-4">
+
+                {/* Nền Danh mục - Gradient Xanh */}
+                <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-sky-100 to-blue-100 rounded-lg border-2 border-blue-300 hover:border-blue-500 transition group">
+                    <button
+                        onClick={() => toggleCategory(category.id)}
+                        className="flex-shrink-0 p-1 hover:bg-white/50 rounded transition"
+                    >
+                        {isExpanded ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
+                    </button>
+
+                    {/* Icon Danh mục - Màu xanh đậm */}
+                    {isExpanded ? <FolderOpen className="w-6 h-6 text-blue-700 flex-shrink-0" /> : <Folder className="w-6 h-6 text-blue-700 flex-shrink-0" />}
+
+                    <div className="flex-1 min-w-0">
+                        {isEditing ? (
+                            <div className="space-y-2">
+                                <input
+                                    type="text"
+                                    value={category.name}
+                                    onChange={(e) => {
+                                        setCategories(categories.map(cat =>
+                                            cat.id === category.id ? { ...cat, name: e.target.value } : cat
+                                        ));
+                                    }}
+                                    className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-bold text-lg"
+                                    placeholder="Tên danh mục..."
+                                />
+                                <textarea
+                                    value={category.description}
+                                    onChange={(e) => {
+                                        setCategories(categories.map(cat =>
+                                            cat.id === category.id ? { ...cat, description: e.target.value } : cat
+                                        ));
+                                    }}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Mô tả danh mục..."
+                                    rows="2"
+                                />
+                            </div>
+                        ) : (
+                            <>
+                                <h3 className="text-lg font-bold text-gray-800">{category.name}</h3>
+                                {category.description && (
+                                    <p className="text-sm text-gray-600 mt-1">{category.description}</p>
+                                )}
+                                <div className="flex gap-3 mt-2 text-xs text-gray-500">
+                                    <span>{category.groups.length} nhóm</span>
+                                    <span>•</span>
+                                    <span>{category.groups.reduce((sum, grp) => sum + grp.questions.length, 0)} câu hỏi</span>
+                                </div>
+                            </>
+                        )}
+                    </div>
+
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+                        {isEditing ? (
+                            <>
+                                {/* Nút Lưu/Hủy */}
+                                <button
+                                    onClick={() => setEditMode(null)}
+                                    className="p-1 text-green-600 hover:bg-green-50 rounded"
+                                    title="Lưu"
+                                >
+                                    <Save className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={() => setEditMode(null)}
+                                    className="p-1 text-gray-600 hover:bg-gray-100 rounded"
+                                    title="Hủy"
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                {/* Nút Thêm/Sửa - Màu xanh */}
+                                <button
+                                    onClick={() => addGroup(category.id)}
+                                    className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                                    title="Thêm nhóm"
+                                >
+                                    <Plus className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={() => openTemplateModal(category)}
+                                    className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                                    title="Sửa"
+                                >
+                                    <Edit className="w-4 h-4" />
+                                </button>
+                                {/* Nút Xóa */}
+                                <button
+                                    onClick={() => deleteItem('category', category.id)}
+                                    className="p-1 text-red-600 hover:bg-red-50 rounded"
+                                    title="Xóa"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
+                            </>
+                        )}
+                    </div>
+                </div>
+
+                {isExpanded && (
+                    <div className="mt-3 space-y-3">
+                        {category.groups.map(group => renderGroup(group, category.id))}
+                        {category.groups.length === 0 && (
+                            <div className="ml-6 text-sm text-gray-400 italic p-4 bg-gray-50 rounded-lg">
+                                Chưa có nhóm câu hỏi. Nhấn nút + để thêm nhóm mới.
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+        );
+    };
+
+    // Component Phân trang
+    const Pagination = ({ total, limit, currentPage, onPageChange }) => {
+        const totalPages = Math.ceil(total / limit);
+        if (totalPages <= 1) return null;
+
+        const getPageNumbers = () => {
+            const maxPagesToShow = 5;
+            let startPage, endPage;
+
+            if (totalPages <= maxPagesToShow) {
+                startPage = 1;
+                endPage = totalPages;
+            } else {
+                const maxPagesBeforeCurrentPage = Math.floor(maxPagesToShow / 2);
+                const maxPagesAfterCurrentPage = Math.ceil(maxPagesToShow / 2) - 1;
+
+                if (currentPage <= maxPagesBeforeCurrentPage) {
+                    startPage = 1;
+                    endPage = maxPagesToShow;
+                } else if (currentPage + maxPagesAfterCurrentPage >= totalPages) {
+                    startPage = totalPages - maxPagesToShow + 1;
+                    endPage = totalPages;
+                } else {
+                    startPage = currentPage - maxPagesBeforeCurrentPage;
+                    endPage = currentPage + maxPagesAfterCurrentPage;
+                }
+            }
+
+            return Array.from(Array((endPage + 1) - startPage).keys()).map(i => startPage + i);
+        };
+
+        const pageNumbers = getPageNumbers();
+
+        return (
+            <div className="flex justify-center items-center space-x-2 mt-8">
+                {/* Nút Previous */}
+                <button
+                    onClick={() => onPageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="p-2 border rounded-lg bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    <ChevronLeft className="w-5 h-5" />
+                </button>
+
+                {/* Các nút trang */}
+                {pageNumbers[0] > 1 && (
+                    <>
+                        <button onClick={() => onPageChange(1)} className="px-3 py-1 border rounded-lg hover:bg-blue-50">1</button>
+                        {pageNumbers[0] > 2 && <span className="text-gray-500">...</span>}
+                    </>
+                )}
+
+                {pageNumbers.map(page => (
+                    <button
+                        key={page}
+                        onClick={() => onPageChange(page)}
+                        className={`px-3 py-1 border rounded-lg transition ${page === currentPage
+                                ? 'bg-blue-500 text-white font-bold'
+                                : 'bg-white text-gray-700 hover:bg-blue-50'
+                            }`}
+                    >
+                        {page}
+                    </button>
+                ))}
+
+                {pageNumbers[pageNumbers.length - 1] < totalPages && (
+                    <>
+                        {pageNumbers[pageNumbers.length - 1] < totalPages - 1 && <span className="text-gray-500">...</span>}
+                        <button onClick={() => onPageChange(totalPages)} className="px-3 py-1 border rounded-lg hover:bg-blue-50">{totalPages}</button>
+                    </>
+                )}
+
+
+                {/* Nút Next */}
+                <button
+                    onClick={() => onPageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="p-2 border rounded-lg bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    <ChevronRightIcon className="w-5 h-5" />
+                </button>
+            </div>
+        );
+    };
+
+    // ----------------------- CRUD functions --------------
     const addCategory = () => {
         const newCat = {
             id: `cat${Date.now()}`,
@@ -285,391 +775,6 @@ const QuestionManager = () => {
         }
     };
 
-    // Render tree structure
-    const renderQuestion = (question, catId, grpId, index) => {
-        const isEditing = editMode?.type === 'question' && editMode?.id === question.id;
-
-        return (
-            <div key={question.id} className="ml-12 mb-2">
-
-                <div className="flex items-start gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition group">
-                    {/* Icon Câu hỏi */}
-                    <FileText className="w-4 h-4 text-blue-500 mt-1 flex-shrink-0" />
-
-                    <div className="flex-1 min-w-0">
-                        {isEditing ? (
-                            <div className="space-y-2">
-                                <input
-                                    type="text"
-                                    value={question.text}
-                                    onChange={(e) => {
-                                        setCategories(categories.map(cat =>
-                                            cat.id === catId
-                                                ? {
-                                                    ...cat,
-                                                    groups: cat.groups.map(grp =>
-                                                        grp.id === grpId
-                                                            ? {
-                                                                ...grp,
-                                                                questions: grp.questions.map(q =>
-                                                                    q.id === question.id ? { ...q, text: e.target.value } : q
-                                                                )
-                                                            }
-                                                            : grp
-                                                    )
-                                                }
-                                                : cat
-                                        ));
-                                    }}
-                                    className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    placeholder="Nội dung câu hỏi..."
-                                />
-                                <select
-                                    value={question.type}
-                                    onChange={(e) => {
-                                        const newType = parseInt(e.target.value);
-                                        setCategories(categories.map(cat =>
-                                            cat.id === catId
-                                                ? {
-                                                    ...cat,
-                                                    groups: cat.groups.map(grp =>
-                                                        grp.id === grpId
-                                                            ? {
-                                                                ...grp,
-                                                                questions: grp.questions.map(q =>
-                                                                    q.id === question.id ? { ...q, type: newType } : q
-                                                                )
-                                                            }
-                                                            : grp
-                                                    )
-                                                }
-                                                : cat
-                                        ));
-                                    }}
-                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                >
-                                    {Object.entries(QuestionTypeLabels).map(([key, label]) => (
-                                        <option key={key} value={key}>{label}</option>
-                                    ))}
-                                </select>
-                            </div>
-                        ) : (
-                            <>
-                                <p className="text-sm text-gray-800 font-medium">
-                                    {/* Tiêu đề câu hỏi - Màu xanh */}
-                                    <span className="text-blue-600 font-semibold">Q{index + 1}.</span> {question.text}
-                                </p>
-                                <span className="inline-block mt-1 px-2 py-0.5 text-xs bg-blue-50 text-blue-700 rounded-full">
-                                    {QuestionTypeLabels[question.type]}
-                                </span>
-                            </>
-                        )}
-                    </div>
-
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
-                        {isEditing ? (
-                            <>
-                                {/* Nút Lưu/Hủy */}
-                                <button
-                                    onClick={() => setEditMode(null)}
-                                    className="p-1 text-green-600 hover:bg-green-50 rounded"
-                                    title="Lưu"
-                                >
-                                    <Save className="w-4 h-4" />
-                                </button>
-                                <button
-                                    onClick={() => setEditMode(null)}
-                                    className="p-1 text-gray-600 hover:bg-gray-100 rounded"
-                                    title="Hủy"
-                                >
-                                    <X className="w-4 h-4" />
-                                </button>
-                            </>
-                        ) : (
-                            <>
-                                {/* Nút Sửa - Màu xanh */}
-                                <button
-                                    onClick={() => setEditMode({ type: 'question', id: question.id, catId, grpId })}
-                                    className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-                                    title="Sửa"
-                                >
-                                    <Edit className="w-4 h-4" />
-                                </button>
-                                {/* Nút Xóa */}
-                                <button
-                                    onClick={() => deleteItem('question', question.id, { catId, grpId })}
-                                    className="p-1 text-red-600 hover:bg-red-50 rounded"
-                                    title="Xóa"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
-                            </>
-                        )}
-                    </div>
-                </div>
-            </div>
-        );
-    };
-
-    const renderGroup = (group, catId) => {
-        const isExpanded = expandedGroups.has(group.id);
-        const isEditing = editMode?.type === 'group' && editMode?.id === group.id;
-
-        return (
-            <div key={group.id} className="ml-6 mb-3">
-
-                {/* Nền Nhóm - Màu Sky nhạt */}
-                <div className="flex items-start gap-3 p-3 bg-sky-50 rounded-lg border border-sky-200 hover:border-sky-400 transition group">
-                    <button
-                        onClick={() => toggleGroup(group.id)}
-                        className="flex-shrink-0 p-1 hover:bg-sky-100 rounded transition"
-                    >
-                        {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                    </button>
-
-                    {/* Icon Nhóm - Màu xanh */}
-                    {isExpanded ? <FolderOpen className="w-5 h-5 text-blue-600 flex-shrink-0" /> : <Folder className="w-5 h-5 text-blue-600 flex-shrink-0" />}
-
-                    <div className="flex-1 min-w-0">
-                        {isEditing ? (
-                            <div className="space-y-2">
-                                <input
-                                    type="text"
-                                    value={group.name}
-                                    onChange={(e) => {
-                                        setCategories(categories.map(cat =>
-                                            cat.id === catId
-                                                ? {
-                                                    ...cat,
-                                                    groups: cat.groups.map(grp =>
-                                                        grp.id === group.id ? { ...grp, name: e.target.value } : grp
-                                                    )
-                                                }
-                                                : cat
-                                        ));
-                                    }}
-                                    className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-semibold"
-                                    placeholder="Tên nhóm câu hỏi..."
-                                />
-                                <textarea
-                                    value={group.description}
-                                    onChange={(e) => {
-                                        setCategories(categories.map(cat =>
-                                            cat.id === catId
-                                                ? {
-                                                    ...cat,
-                                                    groups: cat.groups.map(grp =>
-                                                        grp.id === group.id ? { ...grp, description: e.target.value } : grp
-                                                    )
-                                                }
-                                                : cat
-                                        ));
-                                    }}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
-                                    placeholder="Mô tả nhóm..."
-                                    rows="2"
-                                />
-                            </div>
-                        ) : (
-                            <>
-                                <h4 className="font-semibold text-gray-800">{group.name}</h4>
-                                {group.description && (
-                                    <p className="text-sm text-gray-600 mt-1">{group.description}</p>
-                                )}
-                                <span className="text-xs text-gray-500 mt-1 inline-block">
-                                    {group.questions.length} câu hỏi
-                                </span>
-                            </>
-                        )}
-                    </div>
-
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
-                        {isEditing ? (
-                            <>
-                                {/* Nút Lưu/Hủy */}
-                                <button
-                                    onClick={() => setEditMode(null)}
-                                    className="p-1 text-green-600 hover:bg-green-50 rounded"
-                                    title="Lưu"
-                                >
-                                    <Save className="w-4 h-4" />
-                                </button>
-                                <button
-                                    onClick={() => setEditMode(null)}
-                                    className="p-1 text-gray-600 hover:bg-gray-100 rounded"
-                                    title="Hủy"
-                                >
-                                    <X className="w-4 h-4" />
-                                </button>
-                            </>
-                        ) : (
-                            <>
-                                {/* Nút Thêm/Sửa - Màu xanh */}
-                                <button
-                                    onClick={() => addQuestion(catId, group.id)}
-                                    className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-                                    title="Thêm câu hỏi"
-                                >
-                                    <Plus className="w-4 h-4" />
-                                </button>
-                                <button
-                                    onClick={() => setEditMode({ type: 'group', id: group.id, catId })}
-                                    className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-                                    title="Sửa"
-                                >
-                                    <Edit className="w-4 h-4" />
-                                </button>
-                                {/* Nút Xóa */}
-                                <button
-                                    onClick={() => deleteItem('group', group.id, { catId })}
-                                    className="p-1 text-red-600 hover:bg-red-50 rounded"
-                                    title="Xóa"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
-                            </>
-                        )}
-                    </div>
-                </div>
-
-                {isExpanded && (
-                    <div className="mt-2 space-y-2">
-                        {group.questions.map((question, index) =>
-                            renderQuestion(question, catId, group.id, index)
-                        )}
-                        {group.questions.length === 0 && (
-                            <div className="ml-12 text-sm text-gray-400 italic p-3">
-                                Chưa có câu hỏi. Nhấn nút + để thêm câu hỏi.
-                            </div>
-                        )}
-                    </div>
-                )}
-            </div>
-        );
-    };
-
-    const renderCategory = (category) => {
-        const isExpanded = expandedCategories.has(category.id);
-        const isEditing = editMode?.type === 'category' && editMode?.id === category.id;
-
-        return (
-            <div key={category.id} className="mb-4">
-
-                {/* Nền Danh mục - Gradient Xanh */}
-                <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-sky-100 to-blue-100 rounded-lg border-2 border-blue-300 hover:border-blue-500 transition group">
-                    <button
-                        onClick={() => toggleCategory(category.id)}
-                        className="flex-shrink-0 p-1 hover:bg-white/50 rounded transition"
-                    >
-                        {isExpanded ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
-                    </button>
-
-                    {/* Icon Danh mục - Màu xanh đậm */}
-                    {isExpanded ? <FolderOpen className="w-6 h-6 text-blue-700 flex-shrink-0" /> : <Folder className="w-6 h-6 text-blue-700 flex-shrink-0" />}
-
-                    <div className="flex-1 min-w-0">
-                        {isEditing ? (
-                            <div className="space-y-2">
-                                <input
-                                    type="text"
-                                    value={category.name}
-                                    onChange={(e) => {
-                                        setCategories(categories.map(cat =>
-                                            cat.id === category.id ? { ...cat, name: e.target.value } : cat
-                                        ));
-                                    }}
-                                    className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-bold text-lg"
-                                    placeholder="Tên danh mục..."
-                                />
-                                <textarea
-                                    value={category.description}
-                                    onChange={(e) => {
-                                        setCategories(categories.map(cat =>
-                                            cat.id === category.id ? { ...cat, description: e.target.value } : cat
-                                        ));
-                                    }}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                    placeholder="Mô tả danh mục..."
-                                    rows="2"
-                                />
-                            </div>
-                        ) : (
-                            <>
-                                <h3 className="text-lg font-bold text-gray-800">{category.name}</h3>
-                                {category.description && (
-                                    <p className="text-sm text-gray-600 mt-1">{category.description}</p>
-                                )}
-                                <div className="flex gap-3 mt-2 text-xs text-gray-500">
-                                    <span>{category.groups.length} nhóm</span>
-                                    <span>•</span>
-                                    <span>{category.groups.reduce((sum, grp) => sum + grp.questions.length, 0)} câu hỏi</span>
-                                </div>
-                            </>
-                        )}
-                    </div>
-
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
-                        {isEditing ? (
-                            <>
-                                {/* Nút Lưu/Hủy */}
-                                <button
-                                    onClick={() => setEditMode(null)}
-                                    className="p-1 text-green-600 hover:bg-green-50 rounded"
-                                    title="Lưu"
-                                >
-                                    <Save className="w-4 h-4" />
-                                </button>
-                                <button
-                                    onClick={() => setEditMode(null)}
-                                    className="p-1 text-gray-600 hover:bg-gray-100 rounded"
-                                    title="Hủy"
-                                >
-                                    <X className="w-4 h-4" />
-                                </button>
-                            </>
-                        ) : (
-                            <>
-                                {/* Nút Thêm/Sửa - Màu xanh */}
-                                <button
-                                    onClick={() => addGroup(category.id)}
-                                    className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-                                    title="Thêm nhóm"
-                                >
-                                    <Plus className="w-4 h-4" />
-                                </button>
-                                <button
-                                    onClick={() => openTemplateModal(category)}
-                                    className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-                                    title="Sửa"
-                                >
-                                    <Edit className="w-4 h-4" />
-                                </button>
-                                {/* Nút Xóa */}
-                                <button
-                                    onClick={() => deleteItem('category', category.id)}
-                                    className="p-1 text-red-600 hover:bg-red-50 rounded"
-                                    title="Xóa"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
-                            </>
-                        )}
-                    </div>
-                </div>
-
-                {isExpanded && (
-                    <div className="mt-3 space-y-3">
-                        {category.groups.map(group => renderGroup(group, category.id))}
-                        {category.groups.length === 0 && (
-                            <div className="ml-6 text-sm text-gray-400 italic p-4 bg-gray-50 rounded-lg">
-                                Chưa có nhóm câu hỏi. Nhấn nút + để thêm nhóm mới.
-                            </div>
-                        )}
-                    </div>
-                )}
-            </div>
-        );
-    };
 
     return (
         // Nền chung của trang - Gradient Xanh Nhạt
@@ -755,15 +860,25 @@ const QuestionManager = () => {
                         )}
 
                         {/* Thông báo khi không có danh mục */}
-                        {categories.length === 0 && searchTerm === '' && (
+                        {TemplateSurveysList?.length === 0 && categories.length === 0 && searchTerm === '' && (
                             <div className="text-center py-12 text-gray-400">
                                 <Folder className="w-16 h-16 mx-auto mb-4 opacity-50" />
                                 <p className="text-lg">Chưa có danh mục nào</p>
-                                <p className="text-sm mt-2">Nhấn nút "Thêm Danh mục" để bắt đầu</p>
+                                <p className="text-sm mt-2">Nhấn nút "Thêm chủ đề" để bắt đầu</p>
                             </div>
                         )}
                     </div>
                 </div>
+
+                {/* Component Phân trang */}
+                {TemplateSurveysTotal > limit && (
+                    <Pagination
+                        total={TemplateSurveysTotal}
+                        limit={limit}
+                        currentPage={currentPage}
+                        onPageChange={handlePageChange}
+                    />
+                )}
 
             </div>
             {showQuestionPicker && (
