@@ -78,17 +78,44 @@ const ManagerSurvey = () => {
     }, [dispatch, currentPage, limit, filterType, filterStatus]);
 
     // START: MAPPING DATA TỪ REDUX SANG STATE CỦA COMPONENT
-    useEffect(() => {
+    const mapDataWithDetails = async (TemplateSurveysList) => {
         if (TemplateSurveysList && Array.isArray(TemplateSurveysList)) {
-            const mappedData = TemplateSurveysList.map(item => ({
-                id: item.TemplateSurveyID,
-                name: item.Title,
-                description: item.ShorDescription,
-                groups: [],
-                templateMeta: { ...item }
-            }));
+            const mappedData = await Promise.all(
+                TemplateSurveysList.map(async (item, index) => {
+                    // lấy nhóm câu hỏi
+                    let res = await ApiTemplateSurveyCate.getTemplateSurveyCateByTemplateSurveyIDApi(
+                        item.TemplateSurveyID
+                    );
+
+                    return {
+                        id: item.TemplateSurveyID,
+                        name: item.Title,
+                        description: item.ShorDescription,
+                        groups: res.data ? [
+                            {
+                                id: res.data[index]?.TemplateSurveyCateID,
+                                name: res.data[index]?.TitleCate,
+                                description: '',
+                                questions: [
+                                    {
+                                        id: 'q1',
+                                        text: 'Giảng viên cung cấp đầy đủ và giải thích rõ ràng về: Chuẩn đầu ra học phần',
+                                        type: 1
+                                    },
+                                ]
+                            }
+                        ] : [],
+                        templateMeta: { ...item }
+                    };
+                })
+            );
+
             setCategories(mappedData);
         }
+    };
+
+    useEffect(() => {
+        mapDataWithDetails(TemplateSurveysList)
     }, [TemplateSurveysList]);
 
     // -------------------------- Action - HÀM TÌM KIẾM CHỈ ĐƯỢC GỌI KHI BẤM NÚT --------------------------
@@ -150,7 +177,7 @@ const ManagerSurvey = () => {
     // 3. Lưu nhóm (Xử lý cả Thêm và Sửa)
     const handleSaveCategory = async () => {
         if (categoryForm.TemplateSurveyCateID) {
-            // let res = await ApiTemplateSurveyCate.UpdateTemplateSurveyCateApi(categoryForm);
+            let res = await ApiTemplateSurveyCate.UpdateTemplateSurveyCateApi(categoryForm);
             if (res.message) {
                 toast.error(res.message)
             } else {

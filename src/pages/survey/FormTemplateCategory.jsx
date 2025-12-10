@@ -30,7 +30,7 @@ const FormTemplateCategory = ({ visible, onClose, form, setForm, onSave }) => {
         {/* Header Modal */}
         <div className="p-4 sm:p-5 border-b border-gray-100 flex items-center justify-between">
           <h3 className="text-xl font-bold text-gray-800">
-            {isEditing ? `Chỉnh sửa Nhóm: ${form.TitleCate || 'Đang tải...'}` : 'Thêm Nhóm câu hỏi mới'}
+            {isEditing ? `Chỉnh sửa Nhóm câu hỏi: ${form.TitleCate || 'Đang tải...'}` : 'Thêm Nhóm câu hỏi mới'}
           </h3>
           <button
             onClick={onClose}
@@ -58,7 +58,7 @@ const FormTemplateCategory = ({ visible, onClose, form, setForm, onSave }) => {
 
             {/* TemplateSurveyID (Nếu đang chỉnh sửa, nên disable trường này) */}
             <div className="col-span-12 sm:col-span-6">
-              <label className="block text-sm font-medium text-gray-700 mb-1">TemplateSurveyID (Mẫu cha)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">TemplateSurveyID (Thuộc phiếu đánh giá)</label>
               <input
                 type="number"
                 value={form.TemplateSurveyID ?? ''}
@@ -99,17 +99,17 @@ const FormTemplateCategory = ({ visible, onClose, form, setForm, onSave }) => {
           {/* Footer Buttons */}
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
             <button
-              onClick={onClose}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 transition"
-            >
-              Hủy
-            </button>
-            <button
               onClick={() => onSave()}
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700 transition"
             >
               <Save className="w-4 h-4" />
               {isEditing ? 'Lưu thay đổi' : 'Thêm mới'}
+            </button>
+            <button
+              onClick={onClose}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 transition"
+            >
+              Hủy
             </button>
           </div>
         </div>

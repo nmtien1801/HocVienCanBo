@@ -64,6 +64,7 @@ const FormTemplateSurvey = ({ visible, onClose, form, setForm, onSave }) => {
                   className="w-full rounded-lg border-gray-300 border px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
                 >
                   <option value={1}>Khảo sát giảng viên</option>
+                  <option value={2}>Khảo sát khác</option>
                 </select>
               </div>
 
