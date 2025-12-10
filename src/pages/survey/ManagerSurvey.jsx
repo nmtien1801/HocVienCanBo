@@ -53,7 +53,6 @@ const ManagerSurvey = () => {
 
     // Filter states
     const [searchTerm, setSearchTerm] = useState('');
-    const [filterType, setFilterType] = useState(1);
     const [filterStatus, setFilterStatus] = useState(true);
 
     // Pagination states
@@ -65,7 +64,7 @@ const ManagerSurvey = () => {
         try {
             await dispatch(getTemplateSurvey({
                 key: searchTerm,
-                typeTemplate: filterType,
+                typeTemplate: 1, // khảo sát giảng viên
                 statusID: filterStatus ? true : false,
                 page: currentPage,
                 limit: limit
@@ -79,7 +78,7 @@ const ManagerSurvey = () => {
 
     useEffect(() => {
         fetchList();
-    }, [dispatch, currentPage, limit, filterType, filterStatus]);
+    }, [dispatch, currentPage, limit, filterStatus]);
 
     // START: MAPPING DATA TỪ REDUX SANG STATE CỦA COMPONENT
     const mapDataWithDetails = async (TemplateSurveysList) => {
@@ -221,7 +220,7 @@ const ManagerSurvey = () => {
         if (category) {
             setTemplateForm({
                 TemplateSurveyID: category.templateMeta?.TemplateSurveyID ?? '',
-                TypeTemplate: category.templateMeta?.TypeTemplate ?? 1,
+                TypeTemplate: 1,    // khảo sát giảng viên
                 Title: category.templateMeta?.Title ?? category.name ?? '',
                 ShorDescription: category.templateMeta?.ShorDescription ?? category.description ?? '',
                 Requiments: category.templateMeta?.Requiments ?? '',
@@ -617,18 +616,6 @@ const ManagerSurvey = () => {
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                             />
-                        </div>
-
-                        <div className="flex items-center gap-3 flex-1 min-w-[150px]">
-                            <label className="text-gray-600 text-sm whitespace-nowrap">Loại</label>
-                            <select
-                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500 transition"
-                                value={filterType}
-                                onChange={(e) => setFilterType(e.target.value)}
-                            >
-                                <option value={1}>Khảo sát giảng viên</option>
-                                <option value={2}>Khảo sát khác</option>
-                            </select>
                         </div>
 
                         <div className="flex items-center gap-3 flex-1 min-w-[150px]">

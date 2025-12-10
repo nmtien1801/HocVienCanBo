@@ -3,7 +3,6 @@ import { PermissionSurvey } from '../../utils/constants'
 import { StatusID } from '../../utils/constants.js'
 
 const FormTemplateSurvey = ({ visible, onClose, form, setForm, onSave }) => {
-  // Handle ESC key to close
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === 'Escape') onClose();
@@ -53,9 +52,8 @@ const FormTemplateSurvey = ({ visible, onClose, form, setForm, onSave }) => {
           {/* Body */}
           <div className="px-6 py-6 space-y-6">
             <div className="grid grid-cols-12 gap-6">
-
               {/* Loại mẫu */}
-              <div className="col-span-12 sm:col-span-6">
+              <div className="col-span-12 hidden">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Loại mẫu</label>
                 <select
                   value={form.TypeTemplate ?? 1}
@@ -69,7 +67,7 @@ const FormTemplateSurvey = ({ visible, onClose, form, setForm, onSave }) => {
               </div>
 
               {/* Quyền */}
-              <div className="col-span-12 sm:col-span-6">
+              <div className="col-span-12">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Quyền (Permission)</label>
                 <select
                   value={form.Permission ?? 1}
