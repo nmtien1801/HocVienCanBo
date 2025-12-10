@@ -1,4 +1,8 @@
-import React, { useState } from 'react';
+// CATEGORY: cat
+// GROUP : grp
+// QUESTION: q
+
+import React, { useState, useEffect } from 'react';
 import QuestionPicker from '../question/QuestionPicker';
 import {
     Plus, Edit, Trash2, ChevronRight, ChevronDown,
@@ -6,6 +10,9 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import FormTemplateSurvey from './FormTemplateSurvey';
+import { getTemplateSurvey } from '../../redux/TemplateSurveysSlice.js';
+import ApiTemplateSurveys from '../../apis/ApiTemplateSurveys.js';
+import { useSelector, useDispatch } from "react-redux";
 
 // Cấu trúc dữ liệu mẫu
 const initialCategories = [
@@ -44,17 +51,52 @@ const QuestionTypeLabels = {
 
 const QuestionManager = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const { TemplateSurveysList, TemplateSurveysTotal } = useSelector((state) => state.criteriaEvaluation);
+
     const [showQuestionPicker, setShowQuestionPicker] = useState(false);
-    const [pickerTarget, setPickerTarget] = useState(null); // { catId, grpId }
+    const [pickerTarget, setPickerTarget] = useState(null);
     const [categories, setCategories] = useState(initialCategories);
     const [expandedCategories, setExpandedCategories] = useState(new Set(['cat1']));
     const [expandedGroups, setExpandedGroups] = useState(new Set(['']));
-    const [editMode, setEditMode] = useState(null);
+    const [editMode, setEditMode] = useState(null);             // sau này xóa
     const [showTemplateModal, setShowTemplateModal] = useState(false);
     const [templateForm, setTemplateForm] = useState({ TemplateSurveyID: '', TypeTemplate: 1, Title: '', ShorDescription: '', Requiments: '', StatusID: true, ImagePath: '', Permission: 0 });
     const [templateEditingId, setTemplateEditingId] = useState(null);
-    const [searchTerm, setSearchTerm] = useState('');
 
+    // filter
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterType, setFilterType] = useState(1);
+    const [filterStatus, setFilterStatus] = useState(true);
+
+    // ----------------------------- fetch list câu hỏi ---------------------------------------
+    const fetchList = async () => {
+        try {
+            let res = await dispatch(getTemplateSurvey({
+                key: searchTerm,
+                typeTemplate: filterType,
+                statusID: filterStatus ? true : false,
+                page: 1,
+                limit: 20
+            }));
+            console.log('ssss ', res);
+
+        } catch (err) {
+            const errorMsg = 'Đã có lỗi xảy ra khi tải dữ liệu.';
+            toast.error(errorMsg);
+        }
+    };
+
+    useEffect(() => {
+        fetchList();
+    }, [dispatch]);
+
+    // -------------------------- Action - HÀM TÌM KIẾM CHỈ ĐƯỢC GỌI KHI BẤM NÚT --------------------------
+    const handleSearch = () => {
+
+    };
+
+    // ----------------------------------------------------------------------------------------
     const filteredCategories = categories.filter(category => {
         if (!searchTerm) return true;
 
@@ -136,7 +178,7 @@ const QuestionManager = () => {
 
     const handleSaveTemplate = () => {
         if (templateEditingId) {
-            // Update existing category
+            // sửa
             setCategories(categories.map(cat => {
                 if (cat.id === templateEditingId) {
                     return {
@@ -151,17 +193,17 @@ const QuestionManager = () => {
             setShowTemplateModal(false);
             setTemplateEditingId(null);
         } else {
+            // thêm
             const newCat = {
                 id: `cat${Date.now()}`,
                 name: templateForm.Title || 'Danh mục mới',
                 description: templateForm.ShorDescription || '',
                 groups: []
             };
-            // Optionally store template meta on the category for later use
             newCat.templateMeta = { ...templateForm };
             setCategories([...categories, newCat]);
             setExpandedCategories(new Set([...expandedCategories, newCat.id]));
-            setEditMode({ type: 'category', id: newCat.id });
+            // setEditMode({ type: 'category', id: newCat.id });
             setShowTemplateModal(false);
         }
     };
@@ -636,23 +678,10 @@ const QuestionManager = () => {
 
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
-                <div className="mb-8">
-                    <h1 className="text-2xl md:text-3xl font-xl text-gray-700">Quản lý Mẫu khảo sát</h1>
-                </div>
-
-                {/* Toolbar */}
-                <div className="bg-white rounded-xl shadow-lg p-4 mb-6 flex items-center justify-between gap-4">
-                    <div className="flex-1 relative">
-                        <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                        <input
-                            type="text"
-                            placeholder="Tìm kiếm danh mục, nhóm, câu hỏi..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                        />
+                <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-4">
+                        <h1 className="text-2xl md:text-3xl font-xl text-gray-700">Quản lý Mẫu khảo sát</h1>
                     </div>
-
                     {/* Nút Thêm Danh mục - Màu xanh đậm */}
                     <button
                         onClick={openTemplateModal}
@@ -661,13 +690,55 @@ const QuestionManager = () => {
                         <Plus className="w-5 h-5" />
                         Thêm chủ đề
                     </button>
-                    <button
-                        onClick={() => navigate('/manager-question')}
-                        className="flex items-center gap-2 bg-teal-500 text-white px-4 py-2 rounded-lg hover:bg-teal-600 transition shadow-md"
-                    >
-                        <Plus className="w-5 h-5" />
-                        Thêm câu hỏi
-                    </button>
+                </div>
+
+                {/* Filter Section */}
+                <div className="bg-white rounded-lg shadow-sm p-4 md:p-6 mb-6">
+                    <div className="flex flex-col md:flex-row flex-wrap items-stretch md:items-center gap-4 md:gap-6">
+                        <div className="flex items-center gap-3 flex-1 min-w-[200px]">
+                            <label className="text-gray-600 text-sm whitespace-nowrap">Tìm kiếm</label>
+                            <input
+                                type="text"
+                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500 transition"
+                                placeholder="Tìm kiếm danh mục, nhóm, câu hỏi..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                            />
+                        </div>
+
+                        <div className="flex items-center gap-3 flex-1 min-w-[150px]">
+                            <label className="text-gray-600 text-sm whitespace-nowrap">Loại</label>
+                            <select
+                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500 transition"
+                                value={filterType}
+                                onChange={(e) => setFilterType(e.target.value)}
+                            >
+                                <option value={1}>Câu hỏi khảo sát</option>
+                                <option value={2}>câu hỏi tự luận</option>
+                            </select>
+                        </div>
+
+                        <div className="flex items-center gap-3 flex-1 min-w-[150px]">
+                            <label className="text-gray-600 text-sm whitespace-nowrap">Trạng thái</label>
+                            <select
+                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500 transition"
+                                value={filterStatus ? "true" : "false"}
+                                onChange={(e) => setFilterStatus(e.target.value === "true")}
+                            >
+                                <option value="true">Hoạt động</option>
+                                <option value="false">Tạm dừng</option>
+                            </select>
+                        </div>
+
+                        <button
+                            className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                            onClick={handleSearch}
+                        >
+                            <Search size={16} />
+                            Tìm kiếm
+                        </button>
+                    </div>
                 </div>
 
                 {/* Question Tree */}
@@ -693,7 +764,6 @@ const QuestionManager = () => {
                         )}
                     </div>
                 </div>
-
 
             </div>
             {showQuestionPicker && (

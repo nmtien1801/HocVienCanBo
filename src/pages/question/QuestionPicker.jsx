@@ -55,7 +55,7 @@ export default function QuestionPicker({ onSelect, onClose }) {
                 <li key={q.CriteriaEvaluationID} className="flex items-center justify-between p-2 rounded hover:bg-gray-50">
                   <div>
                     <div className="text-sm text-gray-800">{q.TitleCriteriaEvaluation}</div>
-                    <div className="text-xs text-gray-500">{q.TypeCriteria}</div>
+                    <div className="text-xs text-gray-500">{q.TypeCriteria === 1 ? "Câu hỏi khảo sát" : "câu hỏi tự luận"}</div>
                   </div>
                   <div>
                     <button
