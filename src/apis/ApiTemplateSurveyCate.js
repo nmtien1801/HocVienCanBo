@@ -1,4 +1,3 @@
-// câu hỏi
 import { ApiManager } from "./ApiManager";
 
 const ApiTemplateSurveyCate = {

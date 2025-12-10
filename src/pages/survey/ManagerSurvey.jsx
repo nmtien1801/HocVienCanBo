@@ -10,6 +10,7 @@ import FormTemplateCategory from './FormTemplateCategory.jsx';
 import { getTemplateSurvey } from '../../redux/TemplateSurveysSlice.js';
 import ApiTemplateSurveys from '../../apis/ApiTemplateSurveys.js';
 import ApiTemplateSurveyCate from '../../apis/ApiTemplateSurveyCate.js';
+import ApiTemplateSurveyCriterias from '../../apis/ApiTemplateSurveyCriterias.js';
 import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import { StatusID } from '../../utils/constants.js'
@@ -36,6 +37,9 @@ const ManagerSurvey = () => {
     const [showTemplateModal, setShowTemplateModal] = useState(false);
     const [templateForm, setTemplateForm] = useState({ TemplateSurveyID: '', TypeTemplate: 1, Title: '', ShorDescription: '', Requiments: '', StatusID: true, ImagePath: '', Permission: 0 });
     const [templateSurveyID, setTemplateSurveyID] = useState(null);
+
+    // STATE CHO TemplateSurveyCriteria (bảng quản lý câu hỏi + nhóm)
+    const [statusTemplateSurveyCriteria, setStatusTemplateSurveyCriteria] = useState()
 
     // --- STATE CHO MODAL NHÓM ---
     const [showCategoryModal, setShowCategoryModal] = useState(false);
@@ -83,18 +87,21 @@ const ManagerSurvey = () => {
             const mappedData = await Promise.all(
                 TemplateSurveysList.map(async (item, index) => {
                     // lấy nhóm câu hỏi
-                    let res = await ApiTemplateSurveyCate.getTemplateSurveyCateByTemplateSurveyIDApi(
-                        item.TemplateSurveyID
-                    );
+                    let grp = await ApiTemplateSurveyCate.getTemplateSurveyCateByTemplateSurveyIDApi(item.TemplateSurveyID);
 
+                    // lấy câu hỏi 
+                    let q = await ApiTemplateSurveyCriterias.getTemplateSurveyCriteriaByTemlateSurveyCateIDApi(grp.data[index]?.TemplateSurveyCateID);
+
+                    console.log('sssss ', q);
+                    
                     return {
                         id: item.TemplateSurveyID,
                         name: item.Title,
                         description: item.ShorDescription,
-                        groups: res.data ? [
+                        groups: grp.data ? [
                             {
-                                id: res.data[index]?.TemplateSurveyCateID,
-                                name: res.data[index]?.TitleCate,
+                                id: grp.data[index]?.TemplateSurveyCateID,
+                                name: grp.data[index]?.TitleCate,
                                 description: '',
                                 questions: [
                                     {
@@ -147,6 +154,11 @@ const ManagerSurvey = () => {
         }
         setExpandedGroups(newSet);
     };
+
+    const handleSaveQuestion_surveyCate = async (statusTemplateSurveyCriteria) => {
+        console.log('ssss ', statusTemplateSurveyCriteria);
+
+    }
 
     // ------------------- XỬ LÝ NHÓM (CATEGORY/GROUP) -------------------
 
@@ -205,6 +217,7 @@ const ManagerSurvey = () => {
         }
     };
 
+    // ----------------------------- Xử lý phiếu
     // mở modal thêm sửa phiếu
     const openTemplateModal = (category = null) => {
         if (category) {
@@ -329,12 +342,15 @@ const ManagerSurvey = () => {
                     <FileText className="w-4 h-4 text-blue-500 mt-1 flex-shrink-0" />
                     <div className="flex-1 min-w-0">
                         {isEditing ? (
-                            // Logic sửa inline
-                            <div className="space-y-2">
-                                {/* ... inputs for editing ... */}
-                                <input type="text" value={question.text} /* onChange handler */ />
-                                <select value={question.type} /* onChange handler */>
-                                    {Object.entries(QuestionTypeLabels).map(([key, label]) => (<option key={key} value={key}>{label}</option>))}
+                            <div className="flex flex-col gap-2">
+                                <input type="text" value={question.text} className="block w-full" />
+                                <select
+                                    value={statusTemplateSurveyCriteria}
+                                    onChange={(e) => setStatusTemplateSurveyCriteria(e.target.value === "true")}
+                                    className="block w-[200px] flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500 transition" >
+                                    {Object.entries(StatusID).map(([key, label]) => (
+                                        <option key={key} value={key}>{label}</option>
+                                    ))}
                                 </select>
                             </div>
                         ) : (
@@ -351,7 +367,7 @@ const ManagerSurvey = () => {
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
                         {isEditing ? (
                             <>
-                                <button onClick={() => setEditMode(null)} className="p-1 text-green-600 hover:bg-green-50 rounded" title="Lưu"><Save className="w-4 h-4" /></button>
+                                <button onClick={() => handleSaveQuestion_surveyCate(statusTemplateSurveyCriteria)} className="p-1 text-green-600 hover:bg-green-50 rounded" title="Lưu"><Save className="w-4 h-4" /></button>
                                 <button onClick={() => setEditMode(null)} className="p-1 text-gray-600 hover:bg-gray-100 rounded" title="Hủy"><X className="w-4 h-4" /></button>
                             </>
                         ) : (
@@ -574,13 +590,11 @@ const ManagerSurvey = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-6">
-
-
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-4">
-                        <h1 className="text-2xl md:text-3xl font-xl text-gray-700">Quản lý Mẫu khảo sát</h1>
+                        <h1 className="text-2xl md:text-3xl font-xl text-gray-700">Quản lý Phiếu khảo sát</h1>
                     </div>
                     <button
                         onClick={openTemplateModal}
