@@ -11,7 +11,7 @@ import { getTemplateSurvey } from '../../redux/TemplateSurveysSlice.js';
 import ApiTemplateSurveys from '../../apis/ApiTemplateSurveys.js';
 import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
-import {StatusID} from '../../utils/constants.js'
+import { StatusID } from '../../utils/constants.js'
 
 const QuestionTypeLabels = {
     1: 'Câu hỏi khảo sát',
@@ -20,7 +20,7 @@ const QuestionTypeLabels = {
 
 const PAGE_SIZE = 5; // Kích thước mặc định của trang
 
-const QuestionManager = () => {
+const ManagerSurvey = () => {
     const dispatch = useDispatch();
     const { TemplateSurveysList, TemplateSurveysTotal } = useSelector((state) => state.templateSurvey);
 
@@ -29,15 +29,23 @@ const QuestionManager = () => {
     const [categories, setCategories] = useState([]);
     const [expandedCategories, setExpandedCategories] = useState(new Set(['cat1']));
     const [expandedGroups, setExpandedGroups] = useState(new Set(['']));
-    const [editMode, setEditMode] = useState(null); // xóa đi
+
+    const [editMode, setEditMode] = useState(null); // Có thể xóa nếu không dùng sửa inline
+
     const [showTemplateModal, setShowTemplateModal] = useState(false);
     const [templateForm, setTemplateForm] = useState({ TemplateSurveyID: '', TypeTemplate: 1, Title: '', ShorDescription: '', Requiments: '', StatusID: true, ImagePath: '', Permission: 0 });
     const [templateSurveyID, setTemplateSurveyID] = useState(null);
 
-    // nhóm
+    // --- STATE CHO MODAL NHÓM ---
     const [showCategoryModal, setShowCategoryModal] = useState(false);
-    const [categoryForm, setCategoryForm] = useState({ TemplateSurveyCateID: '', ParentID: null, TemplateSurveyID: '', TitleCate: '', StatusID: true });
-    const [categoryParentId, setCategoryParentId] = useState(null);
+    const [categoryForm, setCategoryForm] = useState({
+        TemplateSurveyCateID: '',
+        ParentID: null,
+        TemplateSurveyID: '',
+        TitleCate: '',
+        StatusID: true
+    });
+    // const [categoryParentId, setCategoryParentId] = useState(null); // Không cần thiết
 
     // Filter states
     const [searchTerm, setSearchTerm] = useState('');
@@ -51,7 +59,7 @@ const QuestionManager = () => {
     // ----------------------------- fetch list câu hỏi ---------------------------------------
     const fetchList = async () => {
         try {
-            let res = await dispatch(getTemplateSurvey({
+            await dispatch(getTemplateSurvey({
                 key: searchTerm,
                 typeTemplate: filterType,
                 statusID: filterStatus ? true : false,
@@ -67,7 +75,7 @@ const QuestionManager = () => {
 
     useEffect(() => {
         fetchList();
-    }, [dispatch, currentPage, limit]);
+    }, [dispatch, currentPage, limit, filterType, filterStatus]);
 
     // START: MAPPING DATA TỪ REDUX SANG STATE CỦA COMPONENT
     useEffect(() => {
@@ -77,16 +85,7 @@ const QuestionManager = () => {
                 name: item.Title,
                 description: item.ShorDescription,
                 groups: [],
-                templateMeta: {
-                    TemplateSurveyID: item.TemplateSurveyID,
-                    TypeTemplate: item.TypeTemplate,
-                    Title: item.Title,
-                    ShorDescription: item.ShorDescription,
-                    Requiments: item.Requiments,
-                    StatusID: item.StatusID,
-                    ImagePath: item.ImagePath,
-                    Permission: item.Permission
-                }
+                templateMeta: { ...item }
             }));
             setCategories(mappedData);
         }
@@ -97,7 +96,7 @@ const QuestionManager = () => {
         if (currentPage !== 1) {
             setCurrentPage(1);
         } else {
-            fetchList(1, limit);
+            fetchList();
         }
     };
 
@@ -122,77 +121,226 @@ const QuestionManager = () => {
         setExpandedGroups(newSet);
     };
 
-    // ------------------------------ (JSX renderQuestion + renderGroup + renderCategory)
+    // ------------------- XỬ LÝ NHÓM (CATEGORY/GROUP) -------------------
+
+    // 1. Mở modal Thêm mới nhóm
+    const addGroup = (catId) => {
+        setCategoryForm({
+            TemplateSurveyCateID: '', // ID rỗng => Thêm mới
+            ParentID: null,
+            TemplateSurveyID: catId,
+            TitleCate: '',
+            StatusID: true
+        });
+        setShowCategoryModal(true);
+    };
+
+    // 2. Mở modal Sửa nhóm
+    const editGroup = (group, catId) => {
+        setCategoryForm({
+            TemplateSurveyCateID: group.id, // ID của nhóm cần sửa
+            ParentID: group.templateMeta?.ParentID || catId,
+            TemplateSurveyID: group.templateMeta?.TemplateSurveyID || catId,
+            TitleCate: group.name,
+            StatusID: group.templateMeta?.StatusID ?? true
+        });
+        setShowCategoryModal(true);
+    };
+
+    // 3. Lưu nhóm (Xử lý cả Thêm và Sửa)
+    const handleSaveCategory = async () => {
+        // Kiểm tra xem đang là Sửa hay Thêm dựa vào TemplateSurveyCateID
+        if (categoryForm.TemplateSurveyCateID) {
+            // --- LOGIC SỬA (UPDATE) ---
+
+            // Cần gọi API Update Group ở đây
+            // let res = await ApiTemplateSurveys.UpdateCategoryApi(categoryForm);
+
+            // Tạm thời cập nhật state local (Xóa phần này khi đã có API)
+            const parentId = categoryForm.TemplateSurveyID;
+            setCategories(categories.map(cat =>
+                cat.id === parentId
+                    ? {
+                        ...cat,
+                        groups: cat.groups.map(grp =>
+                            grp.id === categoryForm.TemplateSurveyCateID
+                                ? { ...grp, name: categoryForm.TitleCate, templateMeta: { ...categoryForm } }
+                                : grp
+                        )
+                    }
+                    : cat
+            ));
+            toast.success("Cập nhật nhóm thành công (Local)");
+
+        } else {
+            // --- LOGIC THÊM (CREATE) ---
+
+            // Cần gọi API Create Group ở đây
+            // let res = await ApiTemplateSurveys.CreateCategoryApi(categoryForm);
+
+            // Tạm thời thêm state local (Xóa phần này khi đã có API)
+            const newGroup = {
+                id: `grp${Date.now()}`,
+                name: categoryForm.TitleCate || 'Nhóm mới',
+                description: '',
+                questions: [],
+                templateMeta: { ...categoryForm }
+            };
+
+            setCategories(categories.map(cat =>
+                cat.id === categoryForm.TemplateSurveyID
+                    ? { ...cat, groups: [...cat.groups, newGroup] }
+                    : cat
+            ));
+            setExpandedGroups(new Set([...expandedGroups, newGroup.id]));
+            toast.success("Thêm nhóm thành công (Local)");
+        }
+
+        setShowCategoryModal(false);
+        // fetchList(); // Bỏ comment khi API đã kết nối để reload data từ server
+    };
+
+    // Hàm xử lý chuyển trang
+    const handlePageChange = (page) => {
+        if (page > 0 && page <= Math.ceil(TemplateSurveysTotal / limit)) {
+            setCurrentPage(page);
+        }
+    };
+
+    // Thêm/Sửa Template Cha
+    const openTemplateModal = (category = null) => {
+        if (category) {
+            setTemplateForm({
+                TemplateSurveyID: category.templateMeta?.TemplateSurveyID ?? '',
+                TypeTemplate: category.templateMeta?.TypeTemplate ?? 1,
+                Title: category.templateMeta?.Title ?? category.name ?? '',
+                ShorDescription: category.templateMeta?.ShorDescription ?? category.description ?? '',
+                Requiments: category.templateMeta?.Requiments ?? '',
+                StatusID: category.templateMeta?.StatusID ?? true,
+                ImagePath: category.templateMeta?.ImagePath ?? '',
+                Permission: category.templateMeta?.Permission ?? 0
+            });
+            setTemplateSurveyID(category.id);
+        } else {
+            setTemplateForm({ TemplateSurveyID: '', TypeTemplate: 1, Title: '', ShorDescription: '', Requiments: '', StatusID: true, ImagePath: '', Permission: 0 });
+            setTemplateSurveyID(null);
+        }
+        setShowTemplateModal(true);
+    };
+
+    const handleSaveTemplate = async () => {
+        if (templateSurveyID) {
+            // sửa cập nhật
+            let res = await ApiTemplateSurveys.UpdateTemplateSurveyApi(templateForm)
+            if (res.message) {
+                toast.error(res.message)
+            } else {
+                toast.success("thêm mới phiếu khảo sát thành công")
+                setShowTemplateModal(false);
+                setTemplateSurveyID(null);
+                fetchList();
+            }
+        } else {
+            // thêm mới
+            let res = await ApiTemplateSurveys.CreateTemplateSurveyApi(templateForm)
+            if (res.message) {
+                toast.error(res.message)
+            } else {
+                toast.success("thêm mới phiếu khảo sát thành công")
+                setShowTemplateModal(false);
+                fetchList();
+            }
+        }
+    };
+
+    const addQuestion = (catId, grpId) => {
+        setPickerTarget({ catId, grpId });
+        setShowQuestionPicker(true);
+    };
+
+    const handlePickQuestion = (question) => {
+        if (!pickerTarget) return;
+        const { catId, grpId } = pickerTarget;
+        const newQuestion = {
+            id: `q${Date.now()}`,
+            text: question.TitleCriteriaEvaluation,
+            type: question.TypeCriteria
+        };
+
+        setCategories(categories.map(cat =>
+            cat.id === catId
+                ? {
+                    ...cat,
+                    groups: cat.groups.map(grp =>
+                        grp.id === grpId
+                            ? { ...grp, questions: [...grp.questions, newQuestion] }
+                            : grp
+                    )
+                }
+                : cat
+        ));
+        setExpandedGroups(new Set([...expandedGroups, grpId]));
+        setShowQuestionPicker(false);
+        setPickerTarget(null);
+    };
+
+    const deleteItem = async (type, id, parentIds = {}) => {
+        if (!window.confirm(`Bạn có chắc muốn xóa ${type === 'category' ? 'danh mục' : type === 'group' ? 'nhóm' : 'câu hỏi'} này?`)) {
+            return;
+        }
+
+        if (type === 'category') {
+            let res = await ApiTemplateSurveys.DeleteTemplateSurveyApi({ TemplateSurveyID: id })
+            if (res?.message) {
+                toast.error(res.message)
+            } else {
+                toast.success("Xóa phiếu khảo sát thành công")
+                fetchList();
+            }
+        } else if (type === 'group') {
+            // Logic xóa nhóm
+            setCategories(categories.map(cat =>
+                cat.id === parentIds.catId
+                    ? { ...cat, groups: cat.groups.filter(grp => grp.id !== id) }
+                    : cat
+            ));
+        } else if (type === 'question') {
+            // Logic xóa câu hỏi
+            setCategories(categories.map(cat =>
+                cat.id === parentIds.catId
+                    ? {
+                        ...cat,
+                        groups: cat.groups.map(grp =>
+                            grp.id === parentIds.grpId
+                                ? { ...grp, questions: grp.questions.filter(q => q.id !== id) }
+                                : grp
+                        )
+                    }
+                    : cat
+            ));
+        }
+    };
+
+    // --- Render Functions ---
     const renderQuestion = (question, catId, grpId, index) => {
         const isEditing = editMode?.type === 'question' && editMode?.id === question.id;
         return (
             <div key={question.id} className="ml-12 mb-2">
-
                 <div className="flex items-start gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition group">
-                    {/* Icon Câu hỏi */}
                     <FileText className="w-4 h-4 text-blue-500 mt-1 flex-shrink-0" />
-
                     <div className="flex-1 min-w-0">
                         {isEditing ? (
+                            // Logic sửa inline
                             <div className="space-y-2">
-                                <input
-                                    type="text"
-                                    value={question.text}
-                                    onChange={(e) => {
-                                        setCategories(categories.map(cat =>
-                                            cat.id === catId
-                                                ? {
-                                                    ...cat,
-                                                    groups: cat.groups.map(grp =>
-                                                        grp.id === grpId
-                                                            ? {
-                                                                ...grp,
-                                                                questions: grp.questions.map(q =>
-                                                                    q.id === question.id ? { ...q, text: e.target.value } : q
-                                                                )
-                                                            }
-                                                            : grp
-                                                    )
-                                                }
-                                                : cat
-                                        ));
-                                    }}
-                                    className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    placeholder="Nội dung câu hỏi..."
-                                />
-                                <select
-                                    value={question.type}
-                                    onChange={(e) => {
-                                        const newType = parseInt(e.target.value);
-                                        setCategories(categories.map(cat =>
-                                            cat.id === catId
-                                                ? {
-                                                    ...cat,
-                                                    groups: cat.groups.map(grp =>
-                                                        grp.id === grpId
-                                                            ? {
-                                                                ...grp,
-                                                                questions: grp.questions.map(q =>
-                                                                    q.id === question.id ? { ...q, type: newType } : q
-                                                                )
-                                                            }
-                                                            : grp
-                                                    )
-                                                }
-                                                : cat
-                                        ));
-                                    }}
-                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                >
-                                    {Object.entries(QuestionTypeLabels).map(([key, label]) => (
-                                        <option key={key} value={key}>{label}</option>
-                                    ))}
+                                {/* ... inputs for editing ... */}
+                                <input type="text" value={question.text} /* onChange handler */ />
+                                <select value={question.type} /* onChange handler */>
+                                    {Object.entries(QuestionTypeLabels).map(([key, label]) => (<option key={key} value={key}>{label}</option>))}
                                 </select>
                             </div>
                         ) : (
                             <>
                                 <p className="text-sm text-gray-800 font-medium">
-                                    {/* Tiêu đề câu hỏi - Màu xanh */}
                                     <span className="text-blue-600 font-semibold">Q{index + 1}.</span> {question.text}
                                 </p>
                                 <span className="inline-block mt-1 px-2 py-0.5 text-xs bg-blue-50 text-blue-700 rounded-full">
@@ -201,44 +349,16 @@ const QuestionManager = () => {
                             </>
                         )}
                     </div>
-
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
                         {isEditing ? (
                             <>
-                                {/* Nút Lưu/Hủy */}
-                                <button
-                                    onClick={() => setEditMode(null)}
-                                    className="p-1 text-green-600 hover:bg-green-50 rounded"
-                                    title="Lưu"
-                                >
-                                    <Save className="w-4 h-4" />
-                                </button>
-                                <button
-                                    onClick={() => setEditMode(null)}
-                                    className="p-1 text-gray-600 hover:bg-gray-100 rounded"
-                                    title="Hủy"
-                                >
-                                    <X className="w-4 h-4" />
-                                </button>
+                                <button onClick={() => setEditMode(null)} className="p-1 text-green-600 hover:bg-green-50 rounded" title="Lưu"><Save className="w-4 h-4" /></button>
+                                <button onClick={() => setEditMode(null)} className="p-1 text-gray-600 hover:bg-gray-100 rounded" title="Hủy"><X className="w-4 h-4" /></button>
                             </>
                         ) : (
                             <>
-                                {/* Nút Sửa - Màu xanh */}
-                                <button
-                                    onClick={() => setEditMode({ type: 'question', id: question.id, catId, grpId })}
-                                    className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-                                    title="Sửa"
-                                >
-                                    <Edit className="w-4 h-4" />
-                                </button>
-                                {/* Nút Xóa */}
-                                <button
-                                    onClick={() => deleteItem('question', question.id, { catId, grpId })}
-                                    className="p-1 text-red-600 hover:bg-red-50 rounded"
-                                    title="Xóa"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
+                                <button onClick={() => setEditMode({ type: 'question', id: question.id, catId, grpId })} className="p-1 text-blue-600 hover:bg-blue-50 rounded" title="Sửa"><Edit className="w-4 h-4" /></button>
+                                <button onClick={() => deleteItem('question', question.id, { catId, grpId })} className="p-1 text-red-600 hover:bg-red-50 rounded" title="Xóa"><Trash2 className="w-4 h-4" /></button>
                             </>
                         )}
                     </div>
@@ -249,11 +369,9 @@ const QuestionManager = () => {
 
     const renderGroup = (group, catId) => {
         const isExpanded = expandedGroups.has(group.id);
-        const isEditing = editMode?.type === 'group' && editMode?.id === group.id;
+
         return (
             <div key={group.id} className="ml-6 mb-3">
-
-                {/* Nền Nhóm - Màu Sky nhạt */}
                 <div className="flex items-start gap-3 p-3 bg-sky-50 rounded-lg border border-sky-200 hover:border-sky-400 transition group">
                     <button
                         onClick={() => toggleGroup(group.id)}
@@ -262,108 +380,42 @@ const QuestionManager = () => {
                         {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                     </button>
 
-                    {/* Icon Nhóm - Màu xanh */}
                     {isExpanded ? <FolderOpen className="w-5 h-5 text-blue-600 flex-shrink-0" /> : <Folder className="w-5 h-5 text-blue-600 flex-shrink-0" />}
 
                     <div className="flex-1 min-w-0">
-                        {isEditing ? (
-                            <div className="space-y-2">
-                                <input
-                                    type="text"
-                                    value={group.name}
-                                    onChange={(e) => {
-                                        setCategories(categories.map(cat =>
-                                            cat.id === catId
-                                                ? {
-                                                    ...cat,
-                                                    groups: cat.groups.map(grp =>
-                                                        grp.id === group.id ? { ...grp, name: e.target.value } : grp
-                                                    )
-                                                }
-                                                : cat
-                                        ));
-                                    }}
-                                    className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-semibold"
-                                    placeholder="Tên nhóm câu hỏi..."
-                                />
-                                <textarea
-                                    value={group.description}
-                                    onChange={(e) => {
-                                        setCategories(categories.map(cat =>
-                                            cat.id === catId
-                                                ? {
-                                                    ...cat,
-                                                    groups: cat.groups.map(grp =>
-                                                        grp.id === group.id ? { ...grp, description: e.target.value } : grp
-                                                    )
-                                                }
-                                                : cat
-                                        ));
-                                    }}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
-                                    placeholder="Mô tả nhóm..."
-                                    rows="2"
-                                />
-                            </div>
-                        ) : (
-                            <>
-                                <h4 className="font-semibold text-gray-800">{group.name}</h4>
-                                {group.description && (
-                                    <p className="text-sm text-gray-600 mt-1">{group.description}</p>
-                                )}
-                                <span className="text-xs text-gray-500 mt-1 inline-block">
-                                    {group.questions.length} câu hỏi
-                                </span>
-                            </>
+                        <h4 className="font-semibold text-gray-800">{group.name}</h4>
+                        {group.description && (
+                            <p className="text-sm text-gray-600 mt-1">{group.description}</p>
                         )}
+                        <span className="text-xs text-gray-500 mt-1 inline-block">
+                            {group.questions.length} câu hỏi
+                        </span>
                     </div>
 
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
-                        {isEditing ? (
-                            <>
-                                {/* Nút Lưu/Hủy */}
-                                <button
-                                    onClick={() => setEditMode(null)}
-                                    className="p-1 text-green-600 hover:bg-green-50 rounded"
-                                    title="Lưu"
-                                >
-                                    <Save className="w-4 h-4" />
-                                </button>
-                                <button
-                                    onClick={() => setEditMode(null)}
-                                    className="p-1 text-gray-600 hover:bg-gray-100 rounded"
-                                    title="Hủy"
-                                >
-                                    <X className="w-4 h-4" />
-                                </button>
-                            </>
-                        ) : (
-                            <>
-                                {/* Nút Thêm/Sửa - Màu xanh */}
-                                <button
-                                    onClick={() => addQuestion(catId, group.id)}
-                                    className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-                                    title="Thêm câu hỏi"
-                                >
-                                    <Plus className="w-4 h-4" />
-                                </button>
-                                <button
-                                    onClick={() => setEditMode({ type: 'group', id: group.id, catId })}
-                                    className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-                                    title="Sửa"
-                                >
-                                    <Edit className="w-4 h-4" />
-                                </button>
-                                {/* Nút Xóa */}
-                                <button
-                                    onClick={() => deleteItem('group', group.id, { catId })}
-                                    className="p-1 text-red-600 hover:bg-red-50 rounded"
-                                    title="Xóa"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
-                            </>
-                        )}
+                        <button
+                            onClick={() => addQuestion(catId, group.id)}
+                            className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                            title="Thêm câu hỏi"
+                        >
+                            <Plus className="w-4 h-4" />
+                        </button>
+
+                        <button
+                            onClick={() => editGroup(group, catId)}
+                            className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                            title="Sửa nhóm"
+                        >
+                            <Edit className="w-4 h-4" />
+                        </button>
+
+                        <button
+                            onClick={() => deleteItem('group', group.id, { catId })}
+                            className="p-1 text-red-600 hover:bg-red-50 rounded"
+                            title="Xóa"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                        </button>
                     </div>
                 </div>
 
@@ -385,12 +437,9 @@ const QuestionManager = () => {
 
     const renderCategory = (category) => {
         const isExpanded = expandedCategories.has(category.id);
-        const isEditing = editMode?.type === 'category' && editMode?.id === category.id;
 
         return (
             <div key={category.id} className="mb-4">
-
-                {/* Nền Danh mục - Gradient Xanh */}
                 <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-sky-100 to-blue-100 rounded-lg border-2 border-blue-300 hover:border-blue-500 transition group">
                     <button
                         onClick={() => toggleCategory(category.id)}
@@ -399,96 +448,43 @@ const QuestionManager = () => {
                         {isExpanded ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
                     </button>
 
-                    {/* Icon Danh mục - Màu xanh đậm */}
                     {isExpanded ? <FolderOpen className="w-6 h-6 text-blue-700 flex-shrink-0" /> : <Folder className="w-6 h-6 text-blue-700 flex-shrink-0" />}
 
                     <div className="flex-1 min-w-0">
-                        {isEditing ? (
-                            <div className="space-y-2">
-                                <input
-                                    type="text"
-                                    value={category.name}
-                                    onChange={(e) => {
-                                        setCategories(categories.map(cat =>
-                                            cat.id === category.id ? { ...cat, name: e.target.value } : cat
-                                        ));
-                                    }}
-                                    className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-bold text-lg"
-                                    placeholder="Tên danh mục..."
-                                />
-                                <textarea
-                                    value={category.description}
-                                    onChange={(e) => {
-                                        setCategories(categories.map(cat =>
-                                            cat.id === category.id ? { ...cat, description: e.target.value } : cat
-                                        ));
-                                    }}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                    placeholder="Mô tả danh mục..."
-                                    rows="2"
-                                />
-                            </div>
-                        ) : (
-                            <>
-                                <h3 className="text-lg font-bold text-gray-800">{category.name}</h3>
-                                {category.description && (
-                                    <p className="text-sm text-gray-600 mt-1">{category.description}</p>
-                                )}
-                                <div className="flex gap-3 mt-2 text-xs text-gray-500">
-                                    <span>{category.groups.length} nhóm</span>
-                                    <span>•</span>
-                                    <span>{category.groups.reduce((sum, grp) => sum + grp.questions.length, 0)} câu hỏi</span>
-                                </div>
-                            </>
-                        )}
+                        <h3 className="text-lg font-bold text-gray-800">{category.name}</h3>
+                        {category.description && (<p className="text-sm text-gray-600 mt-1">{category.description}</p>)}
+                        <div className="flex gap-3 mt-2 text-xs text-gray-500">
+                            <span>{category.groups.length} nhóm</span>
+                            <span>•</span>
+                            <span>{category.groups.reduce((sum, grp) => sum + grp.questions.length, 0)} câu hỏi</span>
+                        </div>
                     </div>
 
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
-                        {isEditing ? (
-                            <>
-                                {/* Nút Lưu/Hủy */}
-                                <button
-                                    onClick={() => setEditMode(null)}
-                                    className="p-1 text-green-600 hover:bg-green-50 rounded"
-                                    title="Lưu"
-                                >
-                                    <Save className="w-4 h-4" />
-                                </button>
-                                <button
-                                    onClick={() => setEditMode(null)}
-                                    className="p-1 text-gray-600 hover:bg-gray-100 rounded"
-                                    title="Hủy"
-                                >
-                                    <X className="w-4 h-4" />
-                                </button>
-                            </>
-                        ) : (
-                            <>
-                                {/* Nút Thêm/Sửa - Màu xanh */}
-                                <button
-                                    onClick={() => addGroup(category.id)}
-                                    className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-                                    title="Thêm nhóm"
-                                >
-                                    <Plus className="w-4 h-4" />
-                                </button>
-                                <button
-                                    onClick={() => openTemplateModal(category)}
-                                    className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-                                    title="Sửa"
-                                >
-                                    <Edit className="w-4 h-4" />
-                                </button>
-                                {/* Nút Xóa */}
-                                <button
-                                    onClick={() => deleteItem('category', category.id)}
-                                    className="p-1 text-red-600 hover:bg-red-50 rounded"
-                                    title="Xóasssss"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
-                            </>
-                        )}
+                        {/* Nút Thêm Nhóm */}
+                        <button
+                            onClick={() => addGroup(category.id)}
+                            className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                            title="Thêm nhóm"
+                        >
+                            <Plus className="w-4 h-4" />
+                        </button>
+                        {/* Nút Sửa Template Cha */}
+                        <button
+                            onClick={() => openTemplateModal(category)}
+                            className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                            title="Sửa phiếu khảo sát"
+                        >
+                            <Edit className="w-4 h-4" />
+                        </button>
+                        {/* Nút Xóa Template Cha */}
+                        <button
+                            onClick={() => deleteItem('category', category.id)}
+                            className="p-1 text-red-600 hover:bg-red-50 rounded"
+                            title="Xóa phiếu khảo sát"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                        </button>
                     </div>
                 </div>
 
@@ -541,7 +537,6 @@ const QuestionManager = () => {
 
         return (
             <div className="flex justify-center items-center space-x-2 mt-8">
-                {/* Nút Previous */}
                 <button
                     onClick={() => onPageChange(currentPage - 1)}
                     disabled={currentPage === 1}
@@ -550,13 +545,7 @@ const QuestionManager = () => {
                     <ChevronLeft className="w-5 h-5" />
                 </button>
 
-                {/* Các nút trang */}
-                {pageNumbers[0] > 1 && (
-                    <>
-                        <button onClick={() => onPageChange(1)} className="px-3 py-1 border rounded-lg hover:bg-blue-50">1</button>
-                        {pageNumbers[0] > 2 && <span className="text-gray-500">...</span>}
-                    </>
-                )}
+                {pageNumbers[0] > 1 && (<><button onClick={() => onPageChange(1)} className="px-3 py-1 border rounded-lg hover:bg-blue-50">1</button>{pageNumbers[0] > 2 && <span className="text-gray-500">...</span>}</>)}
 
                 {pageNumbers.map(page => (
                     <button
@@ -571,15 +560,8 @@ const QuestionManager = () => {
                     </button>
                 ))}
 
-                {pageNumbers[pageNumbers.length - 1] < totalPages && (
-                    <>
-                        {pageNumbers[pageNumbers.length - 1] < totalPages - 1 && <span className="text-gray-500">...</span>}
-                        <button onClick={() => onPageChange(totalPages)} className="px-3 py-1 border rounded-lg hover:bg-blue-50">{totalPages}</button>
-                    </>
-                )}
+                {pageNumbers[pageNumbers.length - 1] < totalPages && (<>{pageNumbers[pageNumbers.length - 1] < totalPages - 1 && <span className="text-gray-500">...</span>}<button onClick={() => onPageChange(totalPages)} className="px-3 py-1 border rounded-lg hover:bg-blue-50">{totalPages}</button></>)}
 
-
-                {/* Nút Next */}
                 <button
                     onClick={() => onPageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
@@ -591,159 +573,8 @@ const QuestionManager = () => {
         );
     };
 
-    // Hàm xử lý chuyển trang
-    const handlePageChange = (page) => {
-        if (page > 0 && page <= Math.ceil(TemplateSurveysTotal / limit)) {
-            setCurrentPage(page);
-        }
-    };
-
-    // --------------------------------------------- CRUD functions --------------
-    const openTemplateModal = (category = null) => {
-        if (category) {
-            setTemplateForm({
-                TemplateSurveyID: category.templateMeta?.TemplateSurveyID ?? '',
-                TypeTemplate: category.templateMeta?.TypeTemplate ?? 1,
-                Title: category.templateMeta?.Title ?? category.name ?? '',
-                ShorDescription: category.templateMeta?.ShorDescription ?? category.description ?? '',
-                Requiments: category.templateMeta?.Requiments ?? '',
-                StatusID: category.templateMeta?.StatusID ?? true,
-                ImagePath: category.templateMeta?.ImagePath ?? '',
-                Permission: category.templateMeta?.Permission ?? 0
-            });
-            setTemplateSurveyID(category.id);
-        } else {
-            setTemplateForm({ TemplateSurveyID: '', TypeTemplate: 1, Title: '', ShorDescription: '', Requiments: '', StatusID: true, ImagePath: '', Permission: 0 });
-            setTemplateSurveyID(null);
-        }
-        setShowTemplateModal(true);
-    };
-
-    // thêm + sửa
-    const handleSaveTemplate = async () => {
-        if (templateSurveyID) {
-            // sửa cập nhật
-            let res = await ApiTemplateSurveys.UpdateTemplateSurveyApi(templateForm)
-            if (res.message) {
-                toast.error(res.message)
-            } else {
-                toast.success("thêm mới phiếu khảo sát thành công")
-                setShowTemplateModal(false);
-                setTemplateSurveyID(null);
-                fetchList();
-            }
-        } else {
-            // thêm mới
-            let res = await ApiTemplateSurveys.CreateTemplateSurveyApi(templateForm)
-            if (res.message) {
-                toast.error(res.message)
-            } else {
-                toast.success("thêm mới phiếu khảo sát thành công")
-                setShowTemplateModal(false);
-                fetchList();
-            }
-        }
-    };
-
-    const addGroup = (catId) => {
-        // open modal to create a new group under catId
-        setCategoryForm({ TemplateSurveyCateID: '', ParentID: catId, TemplateSurveyID: '', TitleCate: 'Nhóm câu hỏi mới', StatusID: true });
-        setCategoryParentId(catId);
-        setShowCategoryModal(true);
-    };
-
-    const handleSaveCategory = async () => {
-        // For now we only update local state; could call API to persist
-        const newGroup = {
-            id: `grp${Date.now()}`,
-            name: categoryForm.TitleCate || 'Nhóm câu hỏi mới',
-            description: '',
-            questions: [],
-            templateMeta: { ...categoryForm }
-        };
-        setCategories(categories.map(cat =>
-            cat.id === categoryParentId
-                ? { ...cat, groups: [...cat.groups, newGroup] }
-                : cat
-        ));
-        setExpandedCategories(new Set([...expandedCategories, categoryParentId]));
-        setExpandedGroups(new Set([...expandedGroups, newGroup.id]));
-        setEditMode({ type: 'group', id: newGroup.id, catId: categoryParentId });
-        setShowCategoryModal(false);
-        setCategoryParentId(null);
-    };
-
-    const addQuestion = (catId, grpId) => {
-        setPickerTarget({ catId, grpId });
-        setShowQuestionPicker(true);
-    };
-
-    const handlePickQuestion = (question) => {
-        if (!pickerTarget) return;
-        const { catId, grpId } = pickerTarget;
-        const newQuestion = {
-            id: `q${Date.now()}`,
-            text: question.TitleCriteriaEvaluation,
-            type: question.TypeCriteria
-        };
-
-        setCategories(categories.map(cat =>
-            cat.id === catId
-                ? {
-                    ...cat,
-                    groups: cat.groups.map(grp =>
-                        grp.id === grpId
-                            ? { ...grp, questions: [...grp.questions, newQuestion] }
-                            : grp
-                    )
-                }
-                : cat
-        ));
-        setExpandedGroups(new Set([...expandedGroups, grpId]));
-        setEditMode({ type: 'question', id: newQuestion.id, catId, grpId });
-        setShowQuestionPicker(false);
-        setPickerTarget(null);
-    };
-
-    const deleteItem = async (type, id, parentIds = {}) => {
-        if (!window.confirm(`Bạn có chắc muốn xóa ${type === 'category' ? 'danh mục' : type === 'group' ? 'nhóm' : 'câu hỏi'} này?`)) {
-            return;
-        }
-
-        if (type === 'category') {
-            setCategories(categories.filter(cat => cat.id !== id));
-            let res = await ApiTemplateSurveys.DeleteTemplateSurveyApi({ TemplateSurveyID: id })
-            if (res.message) {
-                toast.error(res.message)
-            } else {
-                toast.success("xóa phiếu khảo sát thành công")
-                fetchList();
-            }
-        } else if (type === 'group') {
-            setCategories(categories.map(cat =>
-                cat.id === parentIds.catId
-                    ? { ...cat, groups: cat.groups.filter(grp => grp.id !== id) }
-                    : cat
-            ));
-        } else if (type === 'question') {
-            setCategories(categories.map(cat =>
-                cat.id === parentIds.catId
-                    ? {
-                        ...cat,
-                        groups: cat.groups.map(grp =>
-                            grp.id === parentIds.grpId
-                                ? { ...grp, questions: grp.questions.filter(q => q.id !== id) }
-                                : grp
-                        )
-                    }
-                    : cat
-            ));
-        }
-    };
-
 
     return (
-        // Nền chung của trang - Gradient Xanh Nhạt
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-6">
 
 
@@ -753,7 +584,6 @@ const QuestionManager = () => {
                     <div className="flex items-center gap-4">
                         <h1 className="text-2xl md:text-3xl font-xl text-gray-700">Quản lý Mẫu khảo sát</h1>
                     </div>
-                    {/* Nút Thêm Danh mục - Màu xanh đậm */}
                     <button
                         onClick={openTemplateModal}
                         className="flex items-center gap-2 bg-teal-500 text-white px-4 py-2 rounded-lg hover:bg-teal-600 transition shadow-md"
@@ -819,26 +649,13 @@ const QuestionManager = () => {
                         {categories.map(category => renderCategory(category))}
 
                         {/* Thông báo khi không có kết quả */}
-                        {categories.length === 0 && searchTerm !== '' && (
-                            <div className="text-center py-12 text-gray-400">
-                                <Search className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                                <p className="text-lg">Không tìm thấy kết quả nào cho: "{searchTerm}"</p>
-                            </div>
-                        )}
-                        {/* Thông báo khi không có danh mục */}
-                        {categories.length === 0 && searchTerm === '' && (
+                        {(categories.length === 0 || TemplateSurveysList?.length === 0) && (
                             <div className="text-center py-12 text-gray-400">
                                 <Folder className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                                <p className="text-lg">Chưa có danh mục nào</p>
-                                <p className="text-sm mt-2">Nhấn nút "Thêm chủ đề" để bắt đầu</p>
-                            </div>
-                        )}
-
-                        {/* Thông báo khi search không ra kết quả (Optional) */}
-                        {categories.length === 0 && searchTerm !== '' && (
-                            <div className="text-center py-12 text-gray-400">
-                                <Search className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                                <p className="text-lg">Không tìm thấy kết quả</p>
+                                <p className="text-lg">
+                                    {searchTerm ? `Không tìm thấy kết quả nào cho: "${searchTerm}"` : 'Chưa có danh mục nào'}
+                                </p>
+                                {!searchTerm && <p className="text-sm mt-2">Nhấn nút "Thêm chủ đề" để bắt đầu</p>}
                             </div>
                         )}
                     </div>
@@ -879,4 +696,4 @@ const QuestionManager = () => {
     );
 };
 
-export default QuestionManager;
+export default ManagerSurvey;
