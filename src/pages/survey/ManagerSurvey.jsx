@@ -9,6 +9,7 @@ import FormTemplateSurvey from './FormTemplateSurvey';
 import FormTemplateCategory from './FormTemplateCategory.jsx';
 import { getTemplateSurvey } from '../../redux/TemplateSurveysSlice.js';
 import ApiTemplateSurveys from '../../apis/ApiTemplateSurveys.js';
+import ApiTemplateSurveyCate from '../../apis/ApiTemplateSurveyCate.js';
 import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import { StatusID } from '../../utils/constants.js'
@@ -45,7 +46,6 @@ const ManagerSurvey = () => {
         TitleCate: '',
         StatusID: true
     });
-    // const [categoryParentId, setCategoryParentId] = useState(null); // Không cần thiết
 
     // Filter states
     const [searchTerm, setSearchTerm] = useState('');
@@ -149,55 +149,26 @@ const ManagerSurvey = () => {
 
     // 3. Lưu nhóm (Xử lý cả Thêm và Sửa)
     const handleSaveCategory = async () => {
-        // Kiểm tra xem đang là Sửa hay Thêm dựa vào TemplateSurveyCateID
         if (categoryForm.TemplateSurveyCateID) {
-            // --- LOGIC SỬA (UPDATE) ---
-
-            // Cần gọi API Update Group ở đây
-            // let res = await ApiTemplateSurveys.UpdateCategoryApi(categoryForm);
-
-            // Tạm thời cập nhật state local (Xóa phần này khi đã có API)
-            const parentId = categoryForm.TemplateSurveyID;
-            setCategories(categories.map(cat =>
-                cat.id === parentId
-                    ? {
-                        ...cat,
-                        groups: cat.groups.map(grp =>
-                            grp.id === categoryForm.TemplateSurveyCateID
-                                ? { ...grp, name: categoryForm.TitleCate, templateMeta: { ...categoryForm } }
-                                : grp
-                        )
-                    }
-                    : cat
-            ));
-            toast.success("Cập nhật nhóm thành công (Local)");
-
+            // let res = await ApiTemplateSurveyCate.UpdateTemplateSurveyCateApi(categoryForm);
+            if (res.message) {
+                toast.error(res.message)
+            } else {
+                toast.success("sửa mục khảo sát thành công")
+                setShowTemplateModal(false);
+            }
         } else {
-            // --- LOGIC THÊM (CREATE) ---
-
-            // Cần gọi API Create Group ở đây
-            // let res = await ApiTemplateSurveys.CreateCategoryApi(categoryForm);
-
-            // Tạm thời thêm state local (Xóa phần này khi đã có API)
-            const newGroup = {
-                id: `grp${Date.now()}`,
-                name: categoryForm.TitleCate || 'Nhóm mới',
-                description: '',
-                questions: [],
-                templateMeta: { ...categoryForm }
-            };
-
-            setCategories(categories.map(cat =>
-                cat.id === categoryForm.TemplateSurveyID
-                    ? { ...cat, groups: [...cat.groups, newGroup] }
-                    : cat
-            ));
-            setExpandedGroups(new Set([...expandedGroups, newGroup.id]));
-            toast.success("Thêm nhóm thành công (Local)");
+            let res = await ApiTemplateSurveyCate.CreateTemplateSurveyCateApi(categoryForm);
+            if (res.message) {
+                toast.error(res.message)
+            } else {
+                toast.success("thêm mới mục khảo sát thành công")
+                setShowTemplateModal(false);
+            }
         }
 
         setShowCategoryModal(false);
-        // fetchList(); // Bỏ comment khi API đã kết nối để reload data từ server
+        fetchList();
     };
 
     // Hàm xử lý chuyển trang
@@ -207,7 +178,7 @@ const ManagerSurvey = () => {
         }
     };
 
-    // Thêm/Sửa Template Cha
+    // mở modal thêm sửa phiếu
     const openTemplateModal = (category = null) => {
         if (category) {
             setTemplateForm({
@@ -228,6 +199,7 @@ const ManagerSurvey = () => {
         setShowTemplateModal(true);
     };
 
+    // thêm + sửa phiếu đánh giá
     const handleSaveTemplate = async () => {
         if (templateSurveyID) {
             // sửa cập nhật
@@ -321,7 +293,7 @@ const ManagerSurvey = () => {
         }
     };
 
-    // --- Render Functions ---
+    // ---------------------------------------------------------  Render Functions ---
     const renderQuestion = (question, catId, grpId, index) => {
         const isEditing = editMode?.type === 'question' && editMode?.id === question.id;
         return (
@@ -572,7 +544,6 @@ const ManagerSurvey = () => {
             </div>
         );
     };
-
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-6">

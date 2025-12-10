@@ -73,7 +73,7 @@ const FormTemplateCategory = ({ visible, onClose, form, setForm, onSave }) => {
             <div className="col-span-12 sm:col-span-6">
               <label className="block text-sm font-medium text-gray-700 mb-1">ParentID (Nhóm cha)</label>
               <input
-                type="text"
+                type="number"
                 value={form.ParentID ?? ''}
                 onChange={(e) => handleChange('ParentID', e.target.value === '' ? null : e.target.value)}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500 transition"
