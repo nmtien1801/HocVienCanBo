@@ -8,8 +8,8 @@ import { useSelector, useDispatch } from "react-redux";
 import QuestionModal from './QuestionModal.jsx'
 
 const TypeCriteriaMapping = {
-    1: 'Thang 6 mức (A-F)',
-    2: 'Ý kiến mở (Text Area)',
+    1: 'Câu hỏi khảo sát',
+    2: 'Câu hỏi tự luận',
 };
 const TypeCriteriaInt = {
     LIKERT: 1,
@@ -328,8 +328,8 @@ const ManagerQuestion = () => {
                                 value={filterType}
                                 onChange={(e) => setFilterType(e.target.value)}
                             >
-                                <option value={TypeCriteriaInt.LIKERT.toString()}>Thang đo</option>
-                                <option value={TypeCriteriaInt.TEXTAREA.toString()}>Ý kiến</option>
+                                <option value={TypeCriteriaInt.LIKERT.toString()}>Câu hỏi khảo sát</option>
+                                <option value={TypeCriteriaInt.TEXTAREA.toString()}>câu hỏi tự luận</option>
                             </select>
                         </div>
 

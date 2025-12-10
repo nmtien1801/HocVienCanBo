@@ -38,8 +38,8 @@ const initialCategories = [
 ];
 
 const QuestionTypeLabels = {
-    1: 'Thang đo 6 mức (A-F)',
-    2: 'Ý kiến',
+    1: 'Câu hỏi khảo sát',
+    2: 'câu hỏi tự luận',
 };
 
 const QuestionManager = () => {
@@ -598,7 +598,7 @@ const QuestionManager = () => {
                                 <button
                                     onClick={() => openTemplateModal(category)}
                                     className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-                                    title="Sửa aaa"
+                                    title="Sửa"
                                 >
                                     <Edit className="w-4 h-4" />
                                 </button>
@@ -637,7 +637,7 @@ const QuestionManager = () => {
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="mb-8">
-                    <h1 className="text-4xl font-bold text-gray-800 mb-2">Quản lý Ngân hàng Câu hỏi</h1>
+                    <h1 className="text-2xl md:text-3xl font-xl text-gray-700">Quản lý Mẫu khảo sát</h1>
                 </div>
 
                 {/* Toolbar */}

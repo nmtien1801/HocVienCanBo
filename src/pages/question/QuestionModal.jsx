@@ -51,8 +51,8 @@ const QuestionModal = ({
                             value={form.TypeCriteria}
                             onChange={(e) => setForm({ ...form, TypeCriteria: Number(e.target.value) })}
                         >
-                            <option value={TypeCriteriaInt.LIKERT}>Thang 6 mức (A-F)</option>
-                            <option value={TypeCriteriaInt.TEXTAREA}>Ý kiến mở</option>
+                            <option value={TypeCriteriaInt.LIKERT}>Câu hỏi khảo sát</option>
+                            <option value={TypeCriteriaInt.TEXTAREA}>câu hỏi tự luận</option>
                         </select>
                     </div>
 
