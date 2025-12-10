@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import QuestionPicker from '../question/QuestionPicker';
 import {
-    Plus, Edit, Trash2, ChevronRight, ChevronDown, ChevronLeft, 
+    Plus, Edit, Trash2, ChevronRight, ChevronDown, ChevronLeft,
     FolderOpen, Folder, FileText, Save, X, Search,
     ChevronRight as ChevronRightIcon
 } from 'lucide-react';
@@ -52,14 +52,14 @@ const PAGE_SIZE = 5; // Kích thước mặc định của trang
 const QuestionManager = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const { TemplateSurveysList, TemplateSurveysTotal } = useSelector((state) => state.criteriaEvaluation);
+    const { TemplateSurveysList, TemplateSurveysTotal } = useSelector((state) => state.templateSurvey);
 
     const [showQuestionPicker, setShowQuestionPicker] = useState(false);
     const [pickerTarget, setPickerTarget] = useState(null);
     const [categories, setCategories] = useState(initialCategories);
     const [expandedCategories, setExpandedCategories] = useState(new Set(['cat1']));
     const [expandedGroups, setExpandedGroups] = useState(new Set(['']));
-    const [editMode, setEditMode] = useState(null);
+    const [editMode, setEditMode] = useState(null); // xóa đi
     const [showTemplateModal, setShowTemplateModal] = useState(false);
     const [templateForm, setTemplateForm] = useState({ TemplateSurveyID: '', TypeTemplate: 1, Title: '', ShorDescription: '', Requiments: '', StatusID: true, ImagePath: '', Permission: 0 });
     const [templateEditingId, setTemplateEditingId] = useState(null);
@@ -84,8 +84,6 @@ const QuestionManager = () => {
                 limit: limit
             }));
 
-            console.log('Response: ', res);
-
         } catch (err) {
             const errorMsg = 'Đã có lỗi xảy ra khi tải dữ liệu.';
             toast.error(errorMsg);
@@ -96,6 +94,29 @@ const QuestionManager = () => {
         fetchList();
     }, [dispatch, currentPage, limit]);
 
+    // START: MAPPING DATA TỪ REDUX SANG STATE CỦA COMPONENT
+    useEffect(() => {
+        if (TemplateSurveysList && Array.isArray(TemplateSurveysList)) {
+            const mappedData = TemplateSurveysList.map(item => ({
+                id: item.TemplateSurveyID, // Map ID
+                name: item.Title,          // Map Title thành name
+                description: item.ShorDescription, // Map Description
+                groups: [],
+                templateMeta: {
+                    TemplateSurveyID: item.TemplateSurveyID,
+                    TypeTemplate: item.TypeTemplate,
+                    Title: item.Title,
+                    ShorDescription: item.ShorDescription,
+                    Requiments: item.Requiments,
+                    StatusID: item.StatusID,
+                    ImagePath: item.ImagePath,
+                    Permission: item.Permission
+                }
+            }));
+            setCategories(mappedData);
+        }
+    }, [TemplateSurveysList]);
+
     // -------------------------- Action - HÀM TÌM KIẾM CHỈ ĐƯỢC GỌI KHI BẤM NÚT --------------------------
     const handleSearch = () => {
         if (currentPage !== 1) {
@@ -105,41 +126,7 @@ const QuestionManager = () => {
         }
     };
 
-    // Hàm xử lý chuyển trang
-    const handlePageChange = (page) => {
-        if (page > 0 && page <= Math.ceil(TemplateSurveysTotal / limit)) {
-            setCurrentPage(page);
-        }
-    };
-
-    // Để đảm bảo logic tìm kiếm cây vẫn chạy trên dữ liệu mẫu nếu API chưa trả về
-    const filteredCategories = TemplateSurveysList && TemplateSurveysList.length > 0 ? TemplateSurveysList : categories.filter(category => {
-        if (!searchTerm) return true;
-
-        const lowerCaseSearch = searchTerm.toLowerCase();
-
-        // 1. Tìm kiếm cấp Danh mục
-        if (category.name.toLowerCase().includes(lowerCaseSearch) || category.description.toLowerCase().includes(lowerCaseSearch)) {
-            return true;
-        }
-
-        // 2. Tìm kiếm cấp Nhóm và Câu hỏi bên trong
-        const filteredGroups = category.groups.filter(group => {
-            if (group.name.toLowerCase().includes(lowerCaseSearch) || group.description.toLowerCase().includes(lowerCaseSearch)) {
-                return true;
-            }
-
-            const foundQuestion = group.questions.some(question =>
-                question.text.toLowerCase().includes(lowerCaseSearch)
-            );
-            return foundQuestion;
-        });
-
-        // Nếu tìm thấy nhóm nào hợp lệ thì hiển thị danh mục này
-        return filteredGroups.length > 0;
-    });
-
-    // Toggle expand/collapse
+    // --------------------------------- Toggle expand/collapse
     const toggleCategory = (catId) => {
         const newSet = new Set(expandedCategories);
         if (newSet.has(catId)) {
@@ -160,11 +147,9 @@ const QuestionManager = () => {
         setExpandedGroups(newSet);
     };
 
-    // CRUD Operations 
-    
+    // ------------------------------ (JSX renderQuestion + renderGroup + renderCategory)
     const renderQuestion = (question, catId, grpId, index) => {
         const isEditing = editMode?.type === 'question' && editMode?.id === question.id;
-        // ... (JSX renderQuestion)
         return (
             <div key={question.id} className="ml-12 mb-2">
 
@@ -287,11 +272,9 @@ const QuestionManager = () => {
         );
     };
 
-    // Hàm renderGroup (Giữ nguyên)
     const renderGroup = (group, catId) => {
         const isExpanded = expandedGroups.has(group.id);
         const isEditing = editMode?.type === 'group' && editMode?.id === group.id;
-        // ... (JSX renderGroup)
         return (
             <div key={group.id} className="ml-6 mb-3">
 
@@ -425,7 +408,6 @@ const QuestionManager = () => {
         );
     };
 
-    // Hàm renderCategory (Giữ nguyên)
     const renderCategory = (category) => {
         const isExpanded = expandedCategories.has(category.id);
         const isEditing = editMode?.type === 'category' && editMode?.id === category.id;
@@ -549,7 +531,7 @@ const QuestionManager = () => {
         );
     };
 
-    // Component Phân trang
+    // --------------------------------------- Component Phân trang
     const Pagination = ({ total, limit, currentPage, onPageChange }) => {
         const totalPages = Math.ceil(total / limit);
         if (totalPages <= 1) return null;
@@ -606,8 +588,8 @@ const QuestionManager = () => {
                         key={page}
                         onClick={() => onPageChange(page)}
                         className={`px-3 py-1 border rounded-lg transition ${page === currentPage
-                                ? 'bg-blue-500 text-white font-bold'
-                                : 'bg-white text-gray-700 hover:bg-blue-50'
+                            ? 'bg-blue-500 text-white font-bold'
+                            : 'bg-white text-gray-700 hover:bg-blue-50'
                             }`}
                     >
                         {page}
@@ -634,18 +616,14 @@ const QuestionManager = () => {
         );
     };
 
-    // ----------------------- CRUD functions --------------
-    const addCategory = () => {
-        const newCat = {
-            id: `cat${Date.now()}`,
-            name: 'Danh mục mới',
-            description: '',
-            groups: []
-        };
-        setCategories([...categories, newCat]);
-        setEditMode({ type: 'category', id: newCat.id });
+    // Hàm xử lý chuyển trang
+    const handlePageChange = (page) => {
+        if (page > 0 && page <= Math.ceil(TemplateSurveysTotal / limit)) {
+            setCurrentPage(page);
+        }
     };
 
+    // --------------------------------------------- CRUD functions --------------
     const openTemplateModal = (category = null) => {
         if (category) {
             setTemplateForm({
@@ -666,7 +644,8 @@ const QuestionManager = () => {
         setShowTemplateModal(true);
     };
 
-    const handleSaveTemplate = () => {
+    // thêm + sửa
+    const handleSaveTemplate = async () => {
         if (templateEditingId) {
             // sửa
             setCategories(categories.map(cat => {
@@ -683,18 +662,28 @@ const QuestionManager = () => {
             setShowTemplateModal(false);
             setTemplateEditingId(null);
         } else {
-            // thêm
-            const newCat = {
-                id: `cat${Date.now()}`,
-                name: templateForm.Title || 'Danh mục mới',
-                description: templateForm.ShorDescription || '',
-                groups: []
-            };
-            newCat.templateMeta = { ...templateForm };
-            setCategories([...categories, newCat]);
-            setExpandedCategories(new Set([...expandedCategories, newCat.id]));
-            // setEditMode({ type: 'category', id: newCat.id });
-            setShowTemplateModal(false);
+            // thêm category (template survey)
+            // const newCat = {
+            //     id: `cat${Date.now()}`,
+            //     name: templateForm.Title || 'Danh mục mới',
+            //     description: templateForm.ShorDescription || '',
+            //     groups: []
+            // };
+            // newCat.templateMeta = { ...templateForm };
+            // setCategories([...categories, newCat]);
+            // setExpandedCategories(new Set([...expandedCategories, newCat.id]));
+            // setShowTemplateModal(false);
+
+            // gọi api
+            let res = await ApiTemplateSurveys.CreateTemplateSurveyApi(templateForm)
+            if (res) {
+                toast.success("thêm mới phiếu khảo sát thành công")
+                setShowTemplateModal(false);
+                fetchList();
+            } else {
+                toast.error("thêm mới phiếu khảo sát thất bại")
+            }
+
         }
     };
 
@@ -849,22 +838,29 @@ const QuestionManager = () => {
                 {/* Question Tree */}
                 <div className="bg-white rounded-xl shadow-xl p-6">
                     <div className="space-y-4">
-                        {filteredCategories.map(category => renderCategory(category))}
+                        {categories.map(category => renderCategory(category))}
 
                         {/* Thông báo khi không có kết quả */}
-                        {filteredCategories.length === 0 && searchTerm !== '' && (
+                        {categories.length === 0 && searchTerm !== '' && (
                             <div className="text-center py-12 text-gray-400">
                                 <Search className="w-16 h-16 mx-auto mb-4 opacity-50" />
                                 <p className="text-lg">Không tìm thấy kết quả nào cho: "{searchTerm}"</p>
                             </div>
                         )}
-
                         {/* Thông báo khi không có danh mục */}
-                        {TemplateSurveysList?.length === 0 && categories.length === 0 && searchTerm === '' && (
+                        {categories.length === 0 && searchTerm === '' && (
                             <div className="text-center py-12 text-gray-400">
                                 <Folder className="w-16 h-16 mx-auto mb-4 opacity-50" />
                                 <p className="text-lg">Chưa có danh mục nào</p>
                                 <p className="text-sm mt-2">Nhấn nút "Thêm chủ đề" để bắt đầu</p>
+                            </div>
+                        )}
+
+                        {/* Thông báo khi search không ra kết quả (Optional) */}
+                        {categories.length === 0 && searchTerm !== '' && (
+                            <div className="text-center py-12 text-gray-400">
+                                <Search className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                                <p className="text-lg">Không tìm thấy kết quả</p>
                             </div>
                         )}
                     </div>

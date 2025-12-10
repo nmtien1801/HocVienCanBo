@@ -106,7 +106,7 @@ const FormTemplateSurvey = ({ visible, onClose, form, setForm, onSave }) => {
 
               {/* Yêu cầu */}
               <div className="col-span-12">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Yêu cầu (Requirements)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Yêu cầu (Requirements)<span className="text-red-500"> *</span></label>
                 <textarea
                   value={form.Requiments ?? ''}
                   onChange={(e) => handleChange('Requiments', e.target.value)}
