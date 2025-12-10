@@ -41,6 +41,7 @@ import StudentRegisterTC from "../pages/auth/StudentRegisterTC.jsx"
 import StudentRegisterHBD from "../pages/auth/StudentRegisterHBD.jsx"
 import Test from "../pages/test/Test.jsx"
 import SurveyManager from "../pages/survey/ManagerSurvey.jsx"
+import ManagerSurveyOther from "../pages/survey/ManagerSurvey.jsx"
 import ManagerQuestion from "../pages/question/ManagerQuestion.jsx"
 
 const ProtectedRoute = ({ children, userInfo, isLoading, hasCheckedAuth }) => {
@@ -138,7 +139,8 @@ function RouterRoot() {
           <Route path="change-pass-tc" element={<ChangePassTC />} />
           <Route path="account" element={<Account />} />
           <Route path="test" element={<Test />} />
-          <Route path="manager-survey" element={<SurveyManager />} />
+          <Route path="manager-survey-teacher" element={<SurveyManager />} />
+          <Route path="manager-survey-other" element={<ManagerSurveyOther />} />
           <Route path="manager-question" element={<ManagerQuestion />} />
 
           {/* route schedule */}

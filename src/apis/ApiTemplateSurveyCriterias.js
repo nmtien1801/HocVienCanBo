@@ -1,6 +1,6 @@
 import { ApiManager } from "./ApiManager";
 
-const TemplateSurveyCriterias = {
+const ApiTemplateSurveyCriterias = {
     getTemplateSurveyCriteriaByTemlateSurveyCateIDApi: (templateSurveyCateID) => ApiManager.get(`/template-survey-criteria/get-by-templatesurveycateID?templateSurveyCateID=${templateSurveyCateID}`),
     getTemplateSurveyCriteriaByIDApi: (templateSurveyCriteriaID) => ApiManager.get(`/template-survey-criteria/get-by-id?templateSurveyCriteriaID=${templateSurveyCriteriaID}`),
     CreateTemplateSurveyCriteriaApi: (model) => ApiManager.post(`/template-survey-criteria/create`, model),
@@ -8,4 +8,4 @@ const TemplateSurveyCriterias = {
     DeleteTemplateSurveyCriteriaApi: (model) => ApiManager.post(`/template-survey-criteria/delete`, model),
 }
 
-export default TemplateSurveyCriterias;
+export default ApiTemplateSurveyCriterias;

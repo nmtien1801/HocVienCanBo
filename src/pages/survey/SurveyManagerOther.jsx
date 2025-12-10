@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import QuestionPicker from '../question/QuestionPicker';
+import QuestionPicker from '../question/QuestionPicker.jsx';
 import {
     Plus, Edit, Trash2, ChevronRight, ChevronDown, ChevronLeft,
     FolderOpen, Folder, FileText, Save, X, Search,
     ChevronRight as ChevronRightIcon
 } from 'lucide-react';
-import FormTemplateSurvey from './FormTemplateSurvey';
+import FormTemplateSurvey from './FormTemplateSurvey.jsx';
 import FormTemplateCategory from './FormTemplateCategory.jsx';
 import { getTemplateSurvey } from '../../redux/TemplateSurveysSlice.js';
 import ApiTemplateSurveys from '../../apis/ApiTemplateSurveys.js';
@@ -22,7 +22,7 @@ const QuestionTypeLabels = {
 
 const PAGE_SIZE = 5; // Kích thước mặc định của trang
 
-const ManagerSurvey = () => {
+const ManagerSurveyOther = () => {
     const dispatch = useDispatch();
     const { TemplateSurveysList, TemplateSurveysTotal } = useSelector((state) => state.templateSurvey);
 
@@ -593,7 +593,7 @@ const ManagerSurvey = () => {
                 {/* Header */}
                 <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-4">
-                        <h1 className="text-2xl md:text-3xl font-xl text-gray-700">Quản lý Phiếu khảo sát giảng viên</h1>
+                        <h1 className="text-2xl md:text-3xl font-xl text-gray-700">Quản lý Phiếu khảo sát khác</h1>
                     </div>
                     <button
                         onClick={openTemplateModal}
@@ -707,4 +707,4 @@ const ManagerSurvey = () => {
     );
 };
 
-export default ManagerSurvey;
+export default ManagerSurveyOther;
