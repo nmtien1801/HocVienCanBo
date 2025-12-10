@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import {  ArrowLeft, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Loader2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Loader2, AlertCircle } from 'lucide-react';
 import { toast } from "react-toastify";
 import { getCriteriaEvaluation } from '../../redux/CriteriaEvaluationSlice.js';
 import ApiCriteriaEvaluation from '../../apis/ApiCriteriaEvaluation.js';
 import { useSelector, useDispatch } from "react-redux";
 import QuestionModal from './QuestionModal.jsx'
+import {StatusID} from '../../utils/constants.js'
 
 const TypeCriteriaMapping = {
     1: 'Câu hỏi khảo sát',
@@ -340,8 +341,9 @@ const ManagerQuestion = () => {
                                 value={filterStatus ? "true" : "false"}
                                 onChange={(e) => setFilterStatus(e.target.value === "true")}
                             >
-                                <option value="true">Hoạt động</option>
-                                <option value="false">Tạm dừng</option>
+                                {Object.entries(StatusID).map(([key, label]) => (
+                                    <option key={key} value={key}>{label}</option>
+                                ))}
                             </select>
                         </div>
 

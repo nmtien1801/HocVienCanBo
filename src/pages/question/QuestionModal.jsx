@@ -1,5 +1,6 @@
 import React from "react";
 import { X, Save, Trash2 } from "lucide-react";
+import { StatusID } from '../../utils/constants.js'
 
 const QuestionModal = ({
     open,
@@ -64,8 +65,9 @@ const QuestionModal = ({
                             value={form.StatusID ? "true" : "false"}
                             onChange={(e) => setForm({ ...form, StatusID: e.target.value === "true" })}
                         >
-                            <option value="true">Hoạt động</option>
-                            <option value="false">Tạm dừng</option>
+                            {Object.entries(StatusID).map(([key, label]) => (
+                                <option key={key} value={key}>{label}</option>
+                            ))}
                         </select>
                     </div>
                 </div>

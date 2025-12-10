@@ -58,12 +58,10 @@ const createImageUrl = (arrayBuffer, mimeType) => {
 const loadImage = async (url) => {
   try {
     if (!url) return null;
-    
-    if (url.startsWith("~/"))
-      url = url.substring(2);
-    else if (url.startsWith("~"))
-      url = url.substring(1);
-    
+
+    if (url.startsWith("~/")) url = url.substring(2);
+    else if (url.startsWith("~")) url = url.substring(1);
+
     const arrayBuffer = await ApiUpload.GetFileApi(url);
 
     if (arrayBuffer && arrayBuffer instanceof ArrayBuffer) {
@@ -82,16 +80,21 @@ const loadImage = async (url) => {
 };
 
 const arrayBufferToUrl = (arrayBuffer) => {
-    const blob = new Blob([arrayBuffer], { type: "image/png" }); 
-    return URL.createObjectURL(blob);
+  const blob = new Blob([arrayBuffer], { type: "image/png" });
+  return URL.createObjectURL(blob);
 };
 
 const PermissionSurvey = {
-    1: 'Student',
-    2: 'Teacher',
-    3: 'user ngoài',
-    4: 'Student và Teacher',
-}
+  1: "Student",
+  2: "Teacher",
+  3: "user ngoài",
+  4: "Student và Teacher",
+};
+
+const StatusID = {
+  true: "Hoạt động",
+  false: "Tạm dừng",
+};
 
 export {
   TypeUserIDCons,
@@ -103,5 +106,6 @@ export {
   getImageLink,
   loadImage,
   arrayBufferToUrl,
-  PermissionSurvey
+  PermissionSurvey,
+  StatusID,
 };

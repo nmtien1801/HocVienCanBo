@@ -5,12 +5,13 @@ import {
     FolderOpen, Folder, FileText, Save, X, Search,
     ChevronRight as ChevronRightIcon
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import FormTemplateSurvey from './FormTemplateSurvey';
+import FormTemplateCategory from './FormTemplateCategory.jsx';
 import { getTemplateSurvey } from '../../redux/TemplateSurveysSlice.js';
 import ApiTemplateSurveys from '../../apis/ApiTemplateSurveys.js';
 import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
+import {StatusID} from '../../utils/constants.js'
 
 const QuestionTypeLabels = {
     1: 'Câu hỏi khảo sát',
@@ -20,7 +21,6 @@ const QuestionTypeLabels = {
 const PAGE_SIZE = 5; // Kích thước mặc định của trang
 
 const QuestionManager = () => {
-    const navigate = useNavigate();
     const dispatch = useDispatch();
     const { TemplateSurveysList, TemplateSurveysTotal } = useSelector((state) => state.templateSurvey);
 
@@ -32,7 +32,12 @@ const QuestionManager = () => {
     const [editMode, setEditMode] = useState(null); // xóa đi
     const [showTemplateModal, setShowTemplateModal] = useState(false);
     const [templateForm, setTemplateForm] = useState({ TemplateSurveyID: '', TypeTemplate: 1, Title: '', ShorDescription: '', Requiments: '', StatusID: true, ImagePath: '', Permission: 0 });
-    const [templateEditingId, setTemplateEditingId] = useState(null);
+    const [templateSurveyID, setTemplateSurveyID] = useState(null);
+
+    // nhóm
+    const [showCategoryModal, setShowCategoryModal] = useState(false);
+    const [categoryForm, setCategoryForm] = useState({ TemplateSurveyCateID: '', ParentID: null, TemplateSurveyID: '', TitleCate: '', StatusID: true });
+    const [categoryParentId, setCategoryParentId] = useState(null);
 
     // Filter states
     const [searchTerm, setSearchTerm] = useState('');
@@ -606,17 +611,17 @@ const QuestionManager = () => {
                 ImagePath: category.templateMeta?.ImagePath ?? '',
                 Permission: category.templateMeta?.Permission ?? 0
             });
-            setTemplateEditingId(category.id);
+            setTemplateSurveyID(category.id);
         } else {
             setTemplateForm({ TemplateSurveyID: '', TypeTemplate: 1, Title: '', ShorDescription: '', Requiments: '', StatusID: true, ImagePath: '', Permission: 0 });
-            setTemplateEditingId(null);
+            setTemplateSurveyID(null);
         }
         setShowTemplateModal(true);
     };
 
     // thêm + sửa
     const handleSaveTemplate = async () => {
-        if (templateEditingId) {
+        if (templateSurveyID) {
             // sửa cập nhật
             let res = await ApiTemplateSurveys.UpdateTemplateSurveyApi(templateForm)
             if (res.message) {
@@ -624,7 +629,7 @@ const QuestionManager = () => {
             } else {
                 toast.success("thêm mới phiếu khảo sát thành công")
                 setShowTemplateModal(false);
-                setTemplateEditingId(null);
+                setTemplateSurveyID(null);
                 fetchList();
             }
         } else {
@@ -641,19 +646,31 @@ const QuestionManager = () => {
     };
 
     const addGroup = (catId) => {
+        // open modal to create a new group under catId
+        setCategoryForm({ TemplateSurveyCateID: '', ParentID: catId, TemplateSurveyID: '', TitleCate: 'Nhóm câu hỏi mới', StatusID: true });
+        setCategoryParentId(catId);
+        setShowCategoryModal(true);
+    };
+
+    const handleSaveCategory = async () => {
+        // For now we only update local state; could call API to persist
         const newGroup = {
             id: `grp${Date.now()}`,
-            name: 'Nhóm câu hỏi mới',
+            name: categoryForm.TitleCate || 'Nhóm câu hỏi mới',
             description: '',
-            questions: []
+            questions: [],
+            templateMeta: { ...categoryForm }
         };
         setCategories(categories.map(cat =>
-            cat.id === catId
+            cat.id === categoryParentId
                 ? { ...cat, groups: [...cat.groups, newGroup] }
                 : cat
         ));
-        setExpandedCategories(new Set([...expandedCategories, catId]));
-        setEditMode({ type: 'group', id: newGroup.id, catId });
+        setExpandedCategories(new Set([...expandedCategories, categoryParentId]));
+        setExpandedGroups(new Set([...expandedGroups, newGroup.id]));
+        setEditMode({ type: 'group', id: newGroup.id, catId: categoryParentId });
+        setShowCategoryModal(false);
+        setCategoryParentId(null);
     };
 
     const addQuestion = (catId, grpId) => {
@@ -768,8 +785,8 @@ const QuestionManager = () => {
                                 value={filterType}
                                 onChange={(e) => setFilterType(e.target.value)}
                             >
-                                <option value={1}>Câu hỏi khảo sát</option>
-                                <option value={2}>câu hỏi tự luận</option>
+                                <option value={1}>Khảo sát giảng viên</option>
+                                <option value={2}>Khảo sát khác</option>
                             </select>
                         </div>
 
@@ -780,8 +797,9 @@ const QuestionManager = () => {
                                 value={filterStatus ? "true" : "false"}
                                 onChange={(e) => setFilterStatus(e.target.value === "true")}
                             >
-                                <option value="true">Hoạt động</option>
-                                <option value="false">Tạm dừng</option>
+                                {Object.entries(StatusID).map(([key, label]) => (
+                                    <option key={key} value={key}>{label}</option>
+                                ))}
                             </select>
                         </div>
 
@@ -849,6 +867,13 @@ const QuestionManager = () => {
                 form={templateForm}
                 setForm={setTemplateForm}
                 onSave={handleSaveTemplate}
+            />
+            <FormTemplateCategory
+                visible={showCategoryModal}
+                onClose={() => setShowCategoryModal(false)}
+                form={categoryForm}
+                setForm={setCategoryForm}
+                onSave={handleSaveCategory}
             />
         </div>
     );

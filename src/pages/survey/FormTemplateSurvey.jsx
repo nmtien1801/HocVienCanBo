@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { PermissionSurvey } from '../../utils/constants'
+import { StatusID } from '../../utils/constants.js'
 
 const FormTemplateSurvey = ({ visible, onClose, form, setForm, onSave }) => {
   // Handle ESC key to close
@@ -126,8 +127,9 @@ const FormTemplateSurvey = ({ visible, onClose, form, setForm, onSave }) => {
                   onChange={(e) => handleChange('StatusID', e.target.value === 'true')}
                   className="w-full rounded-lg border-gray-300 border px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm bg-white"
                 >
-                  <option value="true">Đang hoạt động</option>
-                  <option value="false">Tạm dừng</option>
+                  {Object.entries(StatusID).map(([key, label]) => (
+                    <option key={key} value={key}>{label}</option>
+                  ))}
                 </select>
               </div>
 
