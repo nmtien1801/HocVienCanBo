@@ -84,31 +84,40 @@ const ManagerSurveyOther = () => {
     const mapDataWithDetails = async (TemplateSurveysList) => {
         if (TemplateSurveysList && Array.isArray(TemplateSurveysList)) {
             const mappedData = await Promise.all(
-                TemplateSurveysList.map(async (item, index) => {
-                    // lấy nhóm câu hỏi
+                TemplateSurveysList.map(async (item) => {
+                    // 1. Lấy danh sách nhóm câu hỏi
                     let grp = await ApiTemplateSurveyCate.getTemplateSurveyCateByTemplateSurveyIDApi(item.TemplateSurveyID);
+                    const listGroups = grp.data || [];
 
-                    // lấy câu hỏi 
-                    // let q = await ApiTemplateSurveyCriterias.getTemplateSurveyCriteriaByTemlateSurveyCateIDApi(grp.data[index]?.TemplateSurveyCateID);
+                    // 2. Lặp qua từng nhóm để lấy câu hỏi 
+                    const mappedGroups = await Promise.all(listGroups.map(async (groupItem) => {
 
+                        // 3. Lấy danh sách câu hỏi (Questions) dựa trên GroupID hiện tại
+                        let q = await ApiTemplateSurveyCriterias.getTemplateSurveyCriteriaByTemlateSurveyCateIDApi(groupItem.TemplateSurveyCateID);
+                        const listQuestions = q.data || [];
+
+                        // 4. Map dữ liệu câu hỏi
+                        const mappedQuestions = listQuestions.map(questionItem => ({
+                            id: questionItem.CriteriaEvaluationID,
+                            text: questionItem.TitleCriteriaEvaluation,
+                            type: questionItem.TypeCriteria
+                        }));
+
+                        // Trả về object của Group
+                        return {
+                            id: groupItem.TemplateSurveyCateID,
+                            name: groupItem.TitleCate,
+                            description: '',
+                            questions: mappedQuestions // Mảng chứa tất cả câu hỏi của group này
+                        };
+                    }));
+
+                    // Trả về object của Survey
                     return {
                         id: item.TemplateSurveyID,
                         name: item.Title,
                         description: item.ShorDescription,
-                        groups: grp.data ? [
-                            {
-                                id: grp.data[index]?.TemplateSurveyCateID,
-                                name: grp.data[index]?.TitleCate,
-                                description: '',
-                                questions: [
-                                    {
-                                        id: 'q1',
-                                        text: 'Giảng viên cung cấp đầy đủ và giải thích rõ ràng về: Chuẩn đầu ra học phần',
-                                        type: 1
-                                    },
-                                ]
-                            }
-                        ] : [],
+                        groups: mappedGroups,
                         templateMeta: { ...item }
                     };
                 })
