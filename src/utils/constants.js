@@ -86,6 +86,13 @@ const arrayBufferToUrl = (arrayBuffer) => {
     return URL.createObjectURL(blob);
 };
 
+const PermissionSurvey = {
+    1: 'Student',
+    2: 'Teacher',
+    3: 'user ngoài',
+    4: 'Student và Teacher',
+}
+
 export {
   TypeUserIDCons,
   formatDate,
@@ -95,5 +102,6 @@ export {
   getLastDayOfMonth,
   getImageLink,
   loadImage,
-  arrayBufferToUrl
+  arrayBufferToUrl,
+  PermissionSurvey
 };

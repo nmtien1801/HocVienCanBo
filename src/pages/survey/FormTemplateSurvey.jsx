@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { PermissionSurvey } from '../../utils/constants'
 
 const FormTemplateSurvey = ({ visible, onClose, form, setForm, onSave }) => {
   // Handle ESC key to close
@@ -58,10 +59,10 @@ const FormTemplateSurvey = ({ visible, onClose, form, setForm, onSave }) => {
                 <select
                   value={form.TypeTemplate ?? 1}
                   onChange={(e) => handleChange('TypeTemplate', Number(e.target.value))}
-                  className="w-full rounded-lg border-gray-300 border px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm bg-white"
+                  disabled={!!form.TemplateSurveyID}
+                  className="w-full rounded-lg border-gray-300 border px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
                 >
-                  <option value={1}>Mẫu khảo sát 1</option>
-                  <option value={2}>Mẫu khảo sát 2</option>
+                  <option value={1}>Khảo sát giảng viên</option>
                 </select>
               </div>
 
@@ -73,8 +74,9 @@ const FormTemplateSurvey = ({ visible, onClose, form, setForm, onSave }) => {
                   onChange={(e) => handleChange('Permission', Number(e.target.value))}
                   className="w-full rounded-lg border-gray-300 border px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm bg-white"
                 >
-                  <option value={1}>Administrator</option>
-                  <option value={2}>Chủ nghiệm</option>
+                  {Object.entries(PermissionSurvey).map(([key, label]) => (
+                    <option key={key} value={key}>{label}</option>
+                  ))}
                 </select>
               </div>
 

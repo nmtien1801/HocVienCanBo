@@ -12,36 +12,6 @@ import ApiTemplateSurveys from '../../apis/ApiTemplateSurveys.js';
 import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 
-// Cấu trúc dữ liệu mẫu
-const initialCategories = [
-    {
-        id: 'cat1',
-        name: 'PHIẾU KHẢO SÁT SINH VIÊN VỀ HỌC PHẦN LÝ THUYẾT',
-        description: 'Nhằm nâng cao chất lượng dạy và học, Nhà trường rất mong nhận được ý kiến của các bạn sinh viên về học phần lý thuyết. Ý kiến của các bạn sinh viên sẽ giúp Nhà trường đưa ra được các giải pháp nâng cao chất lượng dạy và học. Thông tin trả lời của các bạn sẽ được giữ kín, vì vậy các bạn vui lòng trả lời thẳng thắn và khách quan các câu hỏi. Nếu các bạn có thắc mắc hoặc trao đổi, vui lòng liên hệ theo địa chỉ ở cuối bảng hỏi này.',
-        groups: [
-            {
-                id: 'grp1',
-                name: 'I. Thông tin về học phần',
-                description: 'Đánh giá giảng viên giảng dạy phần lý thuyết',
-                questions: [
-                    { id: 'q1', text: 'Giảng viên cung cấp đầy đủ và giải thích rõ ràng về: Chuẩn đầu ra học phần', type: 1 },
-                    { id: 'q2', text: 'Giảng viên nhiệt tình, tận tâm trong giảng dạy', type: 1 },
-                    { id: 'q3', text: 'Giảng viên sử dụng phương pháp giảng dạy phù hợp', type: 1 }
-                ]
-            },
-            {
-                id: 'grp2',
-                name: 'Giảng viên Thực hành',
-                description: 'Đánh giá giảng viên hướng dẫn thực hành',
-                questions: [
-                    { id: 'q4', text: 'Giảng viên hướng dẫn thực hành chi tiết', type: 1 },
-                    { id: 'q5', text: 'Giảng viên giải đáp thắc mắc kịp thời', type: 1 }
-                ]
-            }
-        ]
-    }
-];
-
 const QuestionTypeLabels = {
     1: 'Câu hỏi khảo sát',
     2: 'câu hỏi tự luận',
@@ -56,7 +26,7 @@ const QuestionManager = () => {
 
     const [showQuestionPicker, setShowQuestionPicker] = useState(false);
     const [pickerTarget, setPickerTarget] = useState(null);
-    const [categories, setCategories] = useState(initialCategories);
+    const [categories, setCategories] = useState([]);
     const [expandedCategories, setExpandedCategories] = useState(new Set(['cat1']));
     const [expandedGroups, setExpandedGroups] = useState(new Set(['']));
     const [editMode, setEditMode] = useState(null); // xóa đi
@@ -98,9 +68,9 @@ const QuestionManager = () => {
     useEffect(() => {
         if (TemplateSurveysList && Array.isArray(TemplateSurveysList)) {
             const mappedData = TemplateSurveysList.map(item => ({
-                id: item.TemplateSurveyID, // Map ID
-                name: item.Title,          // Map Title thành name
-                description: item.ShorDescription, // Map Description
+                id: item.TemplateSurveyID,
+                name: item.Title,
+                description: item.ShorDescription,
                 groups: [],
                 templateMeta: {
                     TemplateSurveyID: item.TemplateSurveyID,
@@ -508,7 +478,7 @@ const QuestionManager = () => {
                                 <button
                                     onClick={() => deleteItem('category', category.id)}
                                     className="p-1 text-red-600 hover:bg-red-50 rounded"
-                                    title="Xóa"
+                                    title="Xóasssss"
                                 >
                                     <Trash2 className="w-4 h-4" />
                                 </button>
@@ -647,43 +617,26 @@ const QuestionManager = () => {
     // thêm + sửa
     const handleSaveTemplate = async () => {
         if (templateEditingId) {
-            // sửa
-            setCategories(categories.map(cat => {
-                if (cat.id === templateEditingId) {
-                    return {
-                        ...cat,
-                        name: templateForm.Title || cat.name,
-                        description: templateForm.ShorDescription || cat.description,
-                        templateMeta: { ...templateForm }
-                    };
-                }
-                return cat;
-            }));
-            setShowTemplateModal(false);
-            setTemplateEditingId(null);
+            // sửa cập nhật
+            let res = await ApiTemplateSurveys.UpdateTemplateSurveyApi(templateForm)
+            if (res.message) {
+                toast.error(res.message)
+            } else {
+                toast.success("thêm mới phiếu khảo sát thành công")
+                setShowTemplateModal(false);
+                setTemplateEditingId(null);
+                fetchList();
+            }
         } else {
-            // thêm category (template survey)
-            // const newCat = {
-            //     id: `cat${Date.now()}`,
-            //     name: templateForm.Title || 'Danh mục mới',
-            //     description: templateForm.ShorDescription || '',
-            //     groups: []
-            // };
-            // newCat.templateMeta = { ...templateForm };
-            // setCategories([...categories, newCat]);
-            // setExpandedCategories(new Set([...expandedCategories, newCat.id]));
-            // setShowTemplateModal(false);
-
-            // gọi api
+            // thêm mới
             let res = await ApiTemplateSurveys.CreateTemplateSurveyApi(templateForm)
-            if (res) {
+            if (res.message) {
+                toast.error(res.message)
+            } else {
                 toast.success("thêm mới phiếu khảo sát thành công")
                 setShowTemplateModal(false);
                 fetchList();
-            } else {
-                toast.error("thêm mới phiếu khảo sát thất bại")
             }
-
         }
     };
 
@@ -735,13 +688,20 @@ const QuestionManager = () => {
         setPickerTarget(null);
     };
 
-    const deleteItem = (type, id, parentIds = {}) => {
+    const deleteItem = async (type, id, parentIds = {}) => {
         if (!window.confirm(`Bạn có chắc muốn xóa ${type === 'category' ? 'danh mục' : type === 'group' ? 'nhóm' : 'câu hỏi'} này?`)) {
             return;
         }
 
         if (type === 'category') {
             setCategories(categories.filter(cat => cat.id !== id));
+            let res = await ApiTemplateSurveys.DeleteTemplateSurveyApi({ TemplateSurveyID: id })
+            if (res.message) {
+                toast.error(res.message)
+            } else {
+                toast.success("xóa phiếu khảo sát thành công")
+                fetchList();
+            }
         } else if (type === 'group') {
             setCategories(categories.map(cat =>
                 cat.id === parentIds.catId
