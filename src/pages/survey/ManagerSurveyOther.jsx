@@ -180,7 +180,7 @@ const ManagerSurveyOther = () => {
     const editGroup = (group, catId) => {
         setCategoryForm({
             TemplateSurveyCateID: group.id, // ID của nhóm cần sửa
-            ParentID: group.templateMeta?.ParentID || catId,
+            ParentID: group.templateMeta?.ParentID || null,
             TemplateSurveyID: group.templateMeta?.TemplateSurveyID || catId,
             TitleCate: group.name,
             StatusID: group.templateMeta?.StatusID ?? true
@@ -231,7 +231,9 @@ const ManagerSurveyOther = () => {
                 Requiments: category.templateMeta?.Requiments ?? '',
                 StatusID: category.templateMeta?.StatusID ?? true,
                 ImagePath: category.templateMeta?.ImagePath ?? '',
-                Permission: category.templateMeta?.Permission ?? 0
+                Permission: category.templateMeta?.Permission ?? 0,
+                FromDate: category.templateMeta?.FromDate ?? null,
+                ToDate: category.templateMeta?.ToDate ?? null
             });
             setTemplateSurveyID(category.id);
         } else {
@@ -282,14 +284,12 @@ const ManagerSurveyOther = () => {
             CriteriaEvaluationID: question.CriteriaEvaluationID,
             StatusID: true // luôn hoạt động lúc mới thêm
         }
-        console.log('thisssss ', formTemplateSurveyCriterias);
 
         setExpandedGroups(new Set([...expandedGroups, grpId]));
         setShowQuestionPicker(false);
         setPickerTarget(null);
 
         let res = await ApiTemplateSurveyCriterias.CreateTemplateSurveyCriteriaApi(formTemplateSurveyCriterias)
-        console.log('sssss ', res);
 
         if (res?.message) {
             toast.error(res.message)

@@ -45,6 +45,14 @@ const getLastDayOfMonth = () => {
   return lastDay.toISOString().split("T")[0];
 };
 
+const formatToInputDate = (isoDate) => {
+  if (isoDate && isoDate !== "0001-01-01T00:00:00") {
+    // Cắt bỏ phần T và giờ, chỉ lấy YYYY-MM-DD
+    return isoDate.split("T")[0];
+  }
+  return "";
+};
+
 const getImageLink = (path) => {
   if (!path) return "";
   return import.meta.env.VITE_BACKEND_URL + "/api/file/" + path;
@@ -108,4 +116,5 @@ export {
   arrayBufferToUrl,
   PermissionSurvey,
   StatusID,
+  formatToInputDate,
 };

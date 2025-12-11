@@ -70,7 +70,7 @@ const FormTemplateCategory = ({ visible, onClose, form, setForm, onSave }) => {
             </div>
 
             {/* ParentID */}
-            <div className="col-span-12 sm:col-span-6">
+            <div className="col-span-12 sm:col-span-6 hidden">
               <label className="block text-sm font-medium text-gray-700 mb-1">ParentID (Nhóm cha)</label>
               <input
                 type="number"

@@ -231,7 +231,9 @@ const ManagerSurvey = () => {
                 Requiments: category.templateMeta?.Requiments ?? '',
                 StatusID: category.templateMeta?.StatusID ?? true,
                 ImagePath: category.templateMeta?.ImagePath ?? '',
-                Permission: category.templateMeta?.Permission ?? 0
+                Permission: category.templateMeta?.Permission ?? 0,
+                FromDate: null,
+                ToDate: null
             });
             setTemplateSurveyID(category.id);
         } else {
