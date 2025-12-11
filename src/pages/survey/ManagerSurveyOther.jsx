@@ -99,6 +99,7 @@ const ManagerSurveyOther = () => {
                         // 4. Map dữ liệu câu hỏi
                         const mappedQuestions = listQuestions.map(questionItem => ({
                             id: questionItem.CriteriaEvaluationID,
+                            id_templateSurveyCriteriaID: questionItem.TemplateSurveyCriteriaID, // xóa câu hỏi khỏi Criteria
                             text: questionItem.TitleCriteriaEvaluation,
                             type: questionItem.TypeCriteria
                         }));
@@ -318,25 +319,22 @@ const ManagerSurveyOther = () => {
             }
         } else if (type === 'group') {
             // Logic xóa nhóm
-            setCategories(categories.map(cat =>
-                cat.id === parentIds.catId
-                    ? { ...cat, groups: cat.groups.filter(grp => grp.id !== id) }
-                    : cat
-            ));
+            let res = await ApiTemplateSurveyCate.DeleteTemplateSurveyCateApi({ TemplateSurveyCateID: id })
+            if (res?.message) {
+                toast.error(res.message)
+            } else {
+                toast.success("Xóa tiêu chí khảo sát thành công")
+                fetchList();
+            }
         } else if (type === 'question') {
             // Logic xóa câu hỏi
-            setCategories(categories.map(cat =>
-                cat.id === parentIds.catId
-                    ? {
-                        ...cat,
-                        groups: cat.groups.map(grp =>
-                            grp.id === parentIds.grpId
-                                ? { ...grp, questions: grp.questions.filter(q => q.id !== id) }
-                                : grp
-                        )
-                    }
-                    : cat
-            ));
+            let res = await ApiTemplateSurveyCriterias.DeleteTemplateSurveyCriteriaApi({ templateSurveyCriteriaID: id })
+            if (res?.message) {
+                toast.error(res.message)
+            } else {
+                toast.success("Xóa tiêu chí khảo sát thành công")
+                fetchList();
+            }
         }
     };
 
@@ -380,7 +378,7 @@ const ManagerSurveyOther = () => {
                         ) : (
                             <>
                                 <button onClick={() => setEditMode({ type: 'question', id: question.id, catId, grpId })} className="p-1 text-blue-600 hover:bg-blue-50 rounded" title="Sửa"><Edit className="w-4 h-4" /></button>
-                                <button onClick={() => deleteItem('question', question.id, { catId, grpId })} className="p-1 text-red-600 hover:bg-red-50 rounded" title="Xóa"><Trash2 className="w-4 h-4" /></button>
+                                <button onClick={() => deleteItem('question', question.id_templateSurveyCriteriaID, { catId, grpId })} className="p-1 text-red-600 hover:bg-red-50 rounded" title="Xóa"><Trash2 className="w-4 h-4" /></button>
                             </>
                         )}
                     </div>
@@ -434,7 +432,7 @@ const ManagerSurveyOther = () => {
                         <button
                             onClick={() => deleteItem('group', group.id, { catId })}
                             className="p-1 text-red-600 hover:bg-red-50 rounded"
-                            title="Xóa"
+                            title="Xóa nhóm câu hỏi"
                         >
                             <Trash2 className="w-4 h-4" />
                         </button>
