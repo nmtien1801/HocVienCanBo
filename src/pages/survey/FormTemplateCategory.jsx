@@ -45,19 +45,19 @@ const FormTemplateCategory = ({ visible, onClose, form, setForm, onSave }) => {
         <div className="p-4 sm:p-6 space-y-6">
           <div className="grid grid-cols-12 gap-5">
             {/* Tiêu đề nhóm (TitleCate) */}
-            <div className="col-span-12 sm:col-span-6">
+            <div className="col-span-12">
               <label className="block text-sm font-medium text-gray-700 mb-1">Tiêu đề nhóm</label>
-              <input
-                type="text"
+              <textarea 
                 value={form.TitleCate ?? ''}
                 onChange={(e) => handleChange('TitleCate', e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500 transition"
-                placeholder="Nhập tiêu đề nhóm..."
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500 transition resize-y"
+                placeholder="Nhập tiêu đề nhóm (có thể chứa nhiều dòng)..."
+                rows="3"
               />
             </div>
 
-            {/* TemplateSurveyID (Nếu đang chỉnh sửa, nên disable trường này) */}
-            <div className="col-span-12 sm:col-span-6">
+            {/* TemplateSurveyID */}
+            <div className="col-span-12 sm:col-span-6 hidden">
               <label className="block text-sm font-medium text-gray-700 mb-1">TemplateSurveyID (Thuộc phiếu đánh giá)</label>
               <input
                 type="number"
