@@ -99,7 +99,7 @@ const ManagerSurvey = () => {
                         // 4. Map dữ liệu câu hỏi
                         const mappedQuestions = listQuestions.map(questionItem => ({
                             id: questionItem.CriteriaEvaluationID,
-                            id_templateSurveyCriteriaID: questionItem.TemplateSurveyCriteriaID, // xóa câu hỏi khỏi Criteria
+                            templateSurveyCriteriaID: questionItem.TemplateSurveyCriteriaID, // xóa câu hỏi khỏi Criteria
                             text: questionItem.TitleCriteriaEvaluation,
                             type: questionItem.TypeCriteria
                         }));
@@ -161,10 +161,6 @@ const ManagerSurvey = () => {
         }
         setExpandedGroups(newSet);
     };
-
-    const handleSaveQuestion_surveyCate = async (statusTemplateSurveyCriteria) => {
-
-    }
 
     // ------------------- XỬ LÝ NHÓM (CATEGORY/GROUP) -------------------
 
@@ -365,17 +361,7 @@ const ManagerSurvey = () => {
                         )}
                     </div>
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
-                        {isEditing ? (
-                            <>
-                                <button onClick={() => handleSaveQuestion_surveyCate(statusTemplateSurveyCriteria)} className="p-1 text-green-600 hover:bg-green-50 rounded" title="Lưu"><Save className="w-4 h-4" /></button>
-                                <button onClick={() => setEditMode(null)} className="p-1 text-gray-600 hover:bg-gray-100 rounded" title="Hủy"><X className="w-4 h-4" /></button>
-                            </>
-                        ) : (
-                            <>
-                                <button onClick={() => setEditMode({ type: 'question', id: question.id, catId, grpId })} className="p-1 text-blue-600 hover:bg-blue-50 rounded" title="Sửa"><Edit className="w-4 h-4" /></button>
-                                <button onClick={() => deleteItem('question', question.id_templateSurveyCriteriaID, { catId, grpId })} className="p-1 text-red-600 hover:bg-red-50 rounded" title="Xóasss"><Trash2 className="w-4 h-4" /></button>
-                            </>
-                        )}
+                        <button onClick={() => deleteItem('question', question.templateSurveyCriteriaID, { catId, grpId })} className="p-1 text-red-600 hover:bg-red-50 rounded" title="Xóa câu hỏi"><Trash2 className="w-4 h-4" /></button>
                     </div>
                 </div>
             </div>
