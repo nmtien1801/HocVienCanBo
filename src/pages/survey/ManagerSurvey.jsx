@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import QuestionPicker from '../question/QuestionPicker';
 import {
     Plus, Edit, Trash2, ChevronRight, ChevronDown, ChevronLeft,
-    FolderOpen, Folder, FileText, Save, X, Search,
+    FolderOpen, Folder, FileText, Save, X, Search, BookOpen,
     ChevronRight as ChevronRightIcon
 } from 'lucide-react';
 import FormTemplateSurvey from './FormTemplateSurvey';
@@ -14,6 +14,7 @@ import ApiTemplateSurveyCriterias from '../../apis/ApiTemplateSurveyCriterias.js
 import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import { StatusID } from '../../utils/constants.js'
+import FormSurveySubject from './FormSurveySubject.jsx'
 
 const QuestionTypeLabels = {
     1: 'Câu hỏi khảo sát',
@@ -50,6 +51,20 @@ const ManagerSurvey = () => {
         TitleCate: '',
         StatusID: true
     });
+
+     // -------------------------------- STATE CHO MODAL MÔN HỌC ---
+    const [showSubjectModal, setShowSubjectModal] = useState(false);
+
+    // Hàm mở modal
+    const openSubjectModal = (catId) => {
+        setCategoryForm({
+            ...categoryForm,
+            TemplateSurveyID: catId
+        });
+        setShowSubjectModal(true);
+    };
+
+    ////////////////////////////////////////////////////////////
 
     // Filter states
     const [searchTerm, setSearchTerm] = useState('');
@@ -464,6 +479,18 @@ const ManagerSurvey = () => {
                     </div>
 
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+                        {/* --- Nút Chọn Môn Học --- */}
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation(); // Ngăn việc bấm vào nút thì bị đóng mở accordion
+                                openSubjectModal(category.id);
+                            }}
+                            className="p-1 text-purple-600 hover:bg-purple-100 rounded"
+                            title="Chọn môn học"
+                        >
+                            <BookOpen className="w-4 h-4" />
+                        </button>
+
                         {/* Nút Thêm Nhóm */}
                         <button
                             onClick={() => addGroup(category.id)}
@@ -679,6 +706,15 @@ const ManagerSurvey = () => {
                 form={categoryForm}
                 setForm={setCategoryForm}
                 onSave={handleSaveCategory}
+            />
+
+            <FormSurveySubject
+                visible={showSubjectModal}
+                onClose={() => {
+                    setShowSubjectModal(false);
+                    fetchList();
+                }}
+                form={categoryForm}
             />
         </div>
     );

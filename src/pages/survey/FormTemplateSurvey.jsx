@@ -33,7 +33,7 @@ const FormTemplateSurvey = ({ visible, onClose, form, setForm, onSave }) => {
           <div className="bg-white px-6 py-4 border-b border-gray-100 flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold leading-6 text-gray-900">
-                {form.TemplateSurveyID ? 'Cập nhật Chủ đề' : 'Thêm Chủ đề mới'}
+                {form.TemplateSurveyID ? 'Cập nhật Phiếu khảo sát' : 'Thêm Phiếu khảo sát mới'}
               </h3>
               {form.TemplateSurveyID && (
                 <p className="mt-1 text-xs text-gray-500">ID: {form.TemplateSurveyID}</p>
