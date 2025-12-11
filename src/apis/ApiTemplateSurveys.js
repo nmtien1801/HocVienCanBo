@@ -1,4 +1,3 @@
-// câu hỏi
 import { ApiManager } from "./ApiManager";
 
 const ApiTemplateSurveys = {
@@ -8,6 +7,11 @@ const ApiTemplateSurveys = {
     CreateTemplateSurveyApi: (model) => ApiManager.post(`/template-survey/create`, model),
     UpdateTemplateSurveyApi: (model) => ApiManager.post(`/template-survey/update`, model),
     DeleteTemplateSurveyApi: (model) => ApiManager.post(`/template-survey/delete`, model),
+
+    // SurveySubject
+    getSurveySubjectByTemlateSurveyIDApi: (templateSurveyID) => ApiManager.get(`/survey-subject/get-by-templatesurveyID?templateSurveyID=${templateSurveyID}`),
+    CreateSurveySubjectApi: (model) => ApiManager.post(`/survey-subject/create`, model),
+    DeleteSurveySubjectApi: (model) => ApiManager.post(`/survey-subject/delete`, model),
 }
 
 export default ApiTemplateSurveys;

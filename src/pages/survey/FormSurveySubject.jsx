@@ -15,9 +15,8 @@ export default function FormSurveySubject({ visible, onClose, form }) {
   const [processingId, setProcessingId] = useState(null);
 
   // ---------------------------------------------- 1. FETCH DATA
-  // --- 1. LOAD DỮ LIỆU BAN ĐẦU ---
-  console.log('sssssssss ', subjectLearnAll);
   useEffect(() => {
+    // lấy ds môn học
     const fetchSubjectLearnAll = async () => {
       let res = await dispatch(getSubjectLearnAll());
 
@@ -26,9 +25,9 @@ export default function FormSurveySubject({ visible, onClose, form }) {
       }
     };
 
-    fetchSubjectLearnAll();
-    // if (subjectLearnAll.length === 0) {
-    // }
+    if (subjectLearnAll.length === 0) {
+      fetchSubjectLearnAll();
+    }
   }, [dispatch]);
 
   useEffect(() => {
@@ -37,18 +36,12 @@ export default function FormSurveySubject({ visible, onClose, form }) {
 
       setLoadingData(true);
       try {
-        const surveyID = form?.TemplateSurveyID || form?.id;
-        if (surveyID) {
-          // --- GỌI API THỰC TẾ ĐỂ LẤY MÔN ĐÃ CHỌN ---
-          // const res = await ApiTemplateSurveys.GetSubjectsBySurveyID(surveyID);
-          // setSelectedSubjects(res.data);
+        const TemplateSurveyID = form?.TemplateSurveyID || form?.id;
 
-          // Fake data
-          await new Promise(resolve => setTimeout(resolve, 300));
-          const mockSelected = [
-            { SubjectID: 1, SubjectName: 'Nội dung cơ bản của Chủ nghĩa Mác-Lênin (HPTriết học)', SubjectCode: '245' }
-          ];
-          setSelectedSubjects(mockSelected);
+        if (TemplateSurveyID) {
+          // --- LẤY MÔN ĐÃ CHỌN ---
+          const res = await ApiTemplateSurveys.getSurveySubjectByTemlateSurveyIDApi(TemplateSurveyID);
+          setSelectedSubjects(res.data);
         }
       } catch (error) {
         toast.error('Lấy dữ liệu môn đã chọn thất bại');
@@ -81,29 +74,29 @@ export default function FormSurveySubject({ visible, onClose, form }) {
     });
   }, [subjectLearnAll, query, selectedSubjects]);
 
-  // 3. ACTIONS
+  // -------------------------------------------- 3. ACTIONS
   const handleAddSubject = async (subject) => {
-    const surveyID = form?.TemplateSurveyID || form?.id;
-    if (!surveyID) return;
+    const TemplateSurveyID = form?.TemplateSurveyID || form?.id;
+    if (!TemplateSurveyID) return;
     setProcessingId(`add-${subject.SubjectID}`);
     try {
-      const payload = { TemplateSurveyID: surveyID, SubjectID: subject.SubjectID };
-      // await ApiTemplateSurveys.AddSubjectToSurvey(payload); // API THẬT
-      await new Promise(resolve => setTimeout(resolve, 200));
-      setSelectedSubjects(prev => [...prev, subject]);
+      const payload = { TemplateSurveyID: TemplateSurveyID, SubjectID: subject.SubjectID };
+      let res = await ApiTemplateSurveys.CreateSurveySubjectApi(payload);
+
+      setSelectedSubjects(prev => [...prev, res]);
       toast.success(`Đã thêm: ${subject.SubjectName}`);
     } catch (error) { toast.error('Lỗi thêm môn'); }
     finally { setProcessingId(null); }
   };
 
   const handleRemoveSubject = async (subject) => {
-    const surveyID = form?.TemplateSurveyID || form?.id;
-    if (!surveyID) return;
+    const TemplateSurveyID = form?.TemplateSurveyID || form?.id;
+    if (!TemplateSurveyID) return;
     setProcessingId(`remove-${subject.SubjectID}`);
     try {
-      const payload = { TemplateSurveyID: surveyID, SubjectID: subject.SubjectID };
-      // await ApiTemplateSurveys.RemoveSubjectFromSurvey(payload); // API THẬT
-      await new Promise(resolve => setTimeout(resolve, 200));
+      const payload = { TemplateSurveyID: TemplateSurveyID, SubjectID: subject.SubjectID, SurveySubjectID: subject.SurveySubjectID };
+      let res = await ApiTemplateSurveys.DeleteSurveySubjectApi(payload);
+
       setSelectedSubjects(prev => prev.filter(s => s.SubjectID !== subject.SubjectID));
       toast.success(`Đã xóa: ${subject.SubjectName}`);
     } catch (error) { toast.error('Lỗi xóa môn'); }
