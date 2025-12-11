@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import QuestionPicker from '../question/QuestionPicker.jsx';
 import {
     Plus, Edit, Trash2, ChevronRight, ChevronDown, ChevronLeft,
-    FolderOpen, Folder, FileText, Save, X, Search,
+    FolderOpen, Folder, FileText, Save, X, Search, ListChecks,
     ChevronRight as ChevronRightIcon
 } from 'lucide-react';
 import FormTemplateSurvey from './FormTemplateSurvey.jsx';
@@ -14,6 +14,7 @@ import ApiTemplateSurveyCriterias from '../../apis/ApiTemplateSurveyCriterias.js
 import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import { StatusID } from '../../utils/constants.js'
+import FormEvaluation from './FormEvaluation.jsx'
 
 const QuestionTypeLabels = {
     1: 'Câu hỏi khảo sát',
@@ -50,6 +51,20 @@ const ManagerSurveyOther = () => {
         TitleCate: '',
         StatusID: true
     });
+
+    // --- STATE CHO MODAL CHỌN TIÊU CHÍ (CRITERIA) ---
+    const [showEvaluation, setShowEvaluation] = useState(false);
+
+    // Hàm mở modal chọn tiêu chí
+    const openEvaluationModal = (catId) => {
+        setCategoryForm(prev => ({
+            ...prev,
+            TemplateSurveyCateID: catId
+        }));
+        setShowEvaluation(true);
+    };
+
+    // ----------------------------------------------------------------------------
 
     // Filter states
     const [searchTerm, setSearchTerm] = useState('');
@@ -466,6 +481,18 @@ const ManagerSurveyOther = () => {
                     </div>
 
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+                        {/* --- Nút Chọn Tiêu chí --- */}
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation(); // Ngăn việc đóng/mở group
+                                openEvaluationModal(category.id); // Gọi hàm mở modal tiêu chí
+                            }}
+                            className="p-1 text-teal-600 hover:bg-teal-50 rounded" // Dùng màu teal (xanh lá)
+                            title="Chọn Tiêu chí"
+                        >
+                            <ListChecks className="w-4 h-4" />
+                        </button>
+
                         {/* Nút Thêm Nhóm */}
                         <button
                             onClick={() => addGroup(category.id)}
@@ -681,6 +708,12 @@ const ManagerSurveyOther = () => {
                 form={categoryForm}
                 setForm={setCategoryForm}
                 onSave={handleSaveCategory}
+            />
+
+            <FormEvaluation
+                visible={showEvaluation}
+                onClose={() => { setShowEvaluation(false); fetchList(); }}
+                form={categoryForm} // Truyền TemplateSurveyCateID qua categoryForm
             />
         </div>
     );

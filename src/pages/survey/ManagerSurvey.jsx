@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import QuestionPicker from '../question/QuestionPicker';
 import {
     Plus, Edit, Trash2, ChevronRight, ChevronDown, ChevronLeft,
-    FolderOpen, Folder, FileText, Save, X, Search, BookOpen,
+    FolderOpen, Folder, FileText, Save, X, Search, BookOpen, ListChecks,
     ChevronRight as ChevronRightIcon
 } from 'lucide-react';
 import FormTemplateSurvey from './FormTemplateSurvey';
@@ -15,6 +15,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import { StatusID } from '../../utils/constants.js'
 import FormSurveySubject from './FormSurveySubject.jsx'
+import FormEvaluation from './FormEvaluation.jsx'
 
 const QuestionTypeLabels = {
     1: 'Câu hỏi khảo sát',
@@ -52,7 +53,7 @@ const ManagerSurvey = () => {
         StatusID: true
     });
 
-     // -------------------------------- STATE CHO MODAL MÔN HỌC ---
+    // -------------------------------- STATE CHO MODAL MÔN HỌC ---
     const [showSubjectModal, setShowSubjectModal] = useState(false);
 
     // Hàm mở modal
@@ -64,7 +65,19 @@ const ManagerSurvey = () => {
         setShowSubjectModal(true);
     };
 
-    ////////////////////////////////////////////////////////////
+    // --- STATE CHO MODAL CHỌN TIÊU CHÍ (CRITERIA) ---
+    const [showEvaluation, setShowEvaluation] = useState(false);
+
+    // Hàm mở modal chọn tiêu chí
+    const openEvaluationModal = (catId) => {
+        setCategoryForm(prev => ({
+            ...prev,
+            TemplateSurveyCateID: catId
+        }));
+        setShowEvaluation(true);
+    };
+
+    // ----------------------------------------------------------------------------
 
     // Filter states
     const [searchTerm, setSearchTerm] = useState('');
@@ -491,6 +504,18 @@ const ManagerSurvey = () => {
                             <BookOpen className="w-4 h-4" />
                         </button>
 
+                        {/* --- Nút Chọn Tiêu chí --- */}
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation(); // Ngăn việc đóng/mở group
+                                openEvaluationModal(category.id); // Gọi hàm mở modal tiêu chí
+                            }}
+                            className="p-1 text-teal-600 hover:bg-teal-50 rounded" // Dùng màu teal (xanh lá)
+                            title="Chọn Tiêu chí"
+                        >
+                            <ListChecks className="w-4 h-4" />
+                        </button>
+
                         {/* Nút Thêm Nhóm */}
                         <button
                             onClick={() => addGroup(category.id)}
@@ -715,6 +740,12 @@ const ManagerSurvey = () => {
                     fetchList();
                 }}
                 form={categoryForm}
+            />
+
+            <FormEvaluation
+                visible={showEvaluation}
+                onClose={() => { setShowEvaluation(false); fetchList(); }}
+                form={categoryForm} // Truyền TemplateSurveyCateID qua categoryForm
             />
         </div>
     );
