@@ -1,23 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { X, Search, BookOpen, Loader2, ArrowRight, Trash2, Database, CheckCircle2 } from 'lucide-react';
-import { toast } from "react-toastify";
-import ApiTemplateSurveys from '../../apis/ApiTemplateSurveys.js';
-import { getSubjectLearnAll } from '../../redux/scheduleSlice.js';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSelector, useDispatch } from "react-redux";
+import { getSubjectLearnAll } from '../../redux/scheduleSlice.js';
+import { toast } from 'react-toastify';
+import { X, Search, BookOpen, Loader2, ArrowRight, Trash2, Database } from 'lucide-react';
+import ApiTemplateSurveys from '../../apis/ApiTemplateSurveys.js';
 
-const FormSurveySubject = ({ visible, onClose, form }) => {
+export default function FormSurveySubject({ visible, onClose, form }) {
   const dispatch = useDispatch();
-  const [searchTerm, setSearchTerm] = useState('');
   const { subjectLearnAll } = useSelector((state) => state.schedule);
 
-  // State dữ liệu
-  const [availableSubjects, setAvailableSubjects] = useState([]);
+  const [query, setQuery] = useState('');
   const [selectedSubjects, setSelectedSubjects] = useState([]);
+  const [loadingData, setLoadingData] = useState(false);
+  const [processingId, setProcessingId] = useState(null);
 
-  // Loading states
-  const [loadingData, setLoadingData] = useState(false); // Loading lúc mở modal
-  const [processingId, setProcessingId] = useState(null); // ID của item đang được xử lý (thêm/xóa) để hiện xoay xoay
-
+  // ---------------------------------------------- 1. FETCH DATA
   // --- 1. LOAD DỮ LIỆU BAN ĐẦU ---
   console.log('sssssssss ', subjectLearnAll);
   useEffect(() => {
@@ -34,220 +31,187 @@ const FormSurveySubject = ({ visible, onClose, form }) => {
     // }
   }, [dispatch]);
 
-  const fetchData = async () => {
-    setLoadingData(true);
-    try {
-      // Gọi API lấy danh sách môn học & danh sách đã chọn
-      await new Promise(resolve => setTimeout(resolve, 500)); // Giả lập delay
-
-      // Giả sử môn ID 2 và 3 đã được chọn
-      const mockSelected = [
-        { SubjectID: 2, SubjectName: 'Nội dung cơ bản của Chủ nghĩa Mác-Lênin (HP CNXHKH)', SubjectCode: '245' },
-        { SubjectID: 3, SubjectName: 'Lịch sử Đảng Cộng sản Việt Nam', SubjectCode: '247' }
-      ];
-
-      setAvailableSubjects(subjectLearnAll);
-      setSelectedSubjects(mockSelected);
-
-    } catch (error) {
-      toast.error("Không thể tải dữ liệu môn học");
-    } finally {
-      setLoadingData(false);
-    }
-  };
-
   useEffect(() => {
-    if (visible) {
-      fetchData();
-      setSearchTerm('');
-      setProcessingId(null);
-    }
-  }, [visible]);
+    const fetchSelectedSubjects = async () => {
+      if (!visible) return;
 
-  // --- 2. HÀM THÊM MÔN HỌC (GỌI API LUÔN) ---
+      setLoadingData(true);
+      try {
+        const surveyID = form?.TemplateSurveyID || form?.id;
+        if (surveyID) {
+          // --- GỌI API THỰC TẾ ĐỂ LẤY MÔN ĐÃ CHỌN ---
+          // const res = await ApiTemplateSurveys.GetSubjectsBySurveyID(surveyID);
+          // setSelectedSubjects(res.data);
+
+          // Fake data
+          await new Promise(resolve => setTimeout(resolve, 300));
+          const mockSelected = [
+            { SubjectID: 1, SubjectName: 'Nội dung cơ bản của Chủ nghĩa Mác-Lênin (HPTriết học)', SubjectCode: '245' }
+          ];
+          setSelectedSubjects(mockSelected);
+        }
+      } catch (error) {
+        toast.error('Lấy dữ liệu môn đã chọn thất bại');
+      } finally {
+        setLoadingData(false);
+      }
+    };
+
+    if (visible) {
+      setQuery('');
+      fetchSelectedSubjects();
+    }
+  }, [visible, form]);
+
+  // 2. FILTER (Sử dụng useMemo để tối ưu)
+  const filteredAvailable = useMemo(() => {
+    // Đảm bảo subjectLearnAll là mảng
+    const sourceData = Array.isArray(subjectLearnAll) ? subjectLearnAll : [];
+
+    return sourceData.filter(item => {
+      const name = item.SubjectName || "";
+      const code = item.SubjectCode || "";
+
+      const matchQuery = name.toLowerCase().includes(query.toLowerCase()) ||
+        code.toLowerCase().includes(query.toLowerCase());
+
+      const notSelected = !selectedSubjects.some(sel => sel.SubjectID === item.SubjectID);
+
+      return matchQuery && notSelected;
+    });
+  }, [subjectLearnAll, query, selectedSubjects]);
+
+  // 3. ACTIONS
   const handleAddSubject = async (subject) => {
     const surveyID = form?.TemplateSurveyID || form?.id;
     if (!surveyID) return;
-
-    setProcessingId(`add-${subject.SubjectID}`); // Bật loading cho item này
-
+    setProcessingId(`add-${subject.SubjectID}`);
     try {
-      const payload = {
-        TemplateSurveyID: surveyID,
-        SubjectID: subject.SubjectID
-      };
-
-      console.log("GỌI API THÊM:", payload);
-      // await ApiTemplateSurveys.AddSubjectToSurvey(payload);
-      await new Promise(resolve => setTimeout(resolve, 500)); // Giả lập API
-
-      // API thành công -> Cập nhật State giao diện
-      setSelectedSubjects((prev) => [...prev, subject]);
+      const payload = { TemplateSurveyID: surveyID, SubjectID: subject.SubjectID };
+      // await ApiTemplateSurveys.AddSubjectToSurvey(payload); // API THẬT
+      await new Promise(resolve => setTimeout(resolve, 200));
+      setSelectedSubjects(prev => [...prev, subject]);
       toast.success(`Đã thêm: ${subject.SubjectName}`);
-
-    } catch (error) {
-      console.error(error);
-      toast.error("Lỗi khi thêm môn học");
-    } finally {
-      setProcessingId(null); // Tắt loading
-    }
+    } catch (error) { toast.error('Lỗi thêm môn'); }
+    finally { setProcessingId(null); }
   };
 
-  // --- 3. HÀM XÓA MÔN HỌC (GỌI API LUÔN) ---
   const handleRemoveSubject = async (subject) => {
     const surveyID = form?.TemplateSurveyID || form?.id;
     if (!surveyID) return;
-
     setProcessingId(`remove-${subject.SubjectID}`);
-
     try {
-      const payload = {
-        TemplateSurveyID: surveyID,
-        SubjectID: subject.SubjectID
-      };
-
-      console.log("GỌI API XÓA:", payload);
-      // await ApiTemplateSurveys.RemoveSubjectFromSurvey(payload); 
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      // API thành công -> Cập nhật State giao diện
-      setSelectedSubjects((prev) => prev.filter(item => item.SubjectID !== subject.SubjectID));
+      const payload = { TemplateSurveyID: surveyID, SubjectID: subject.SubjectID };
+      // await ApiTemplateSurveys.RemoveSubjectFromSurvey(payload); // API THẬT
+      await new Promise(resolve => setTimeout(resolve, 200));
+      setSelectedSubjects(prev => prev.filter(s => s.SubjectID !== subject.SubjectID));
       toast.success(`Đã xóa: ${subject.SubjectName}`);
-
-    } catch (error) {
-      console.error(error);
-      toast.error("Lỗi khi xóa môn học");
-    } finally {
-      setProcessingId(null);
-    }
+    } catch (error) { toast.error('Lỗi xóa môn'); }
+    finally { setProcessingId(null); }
   };
-
-  // Lọc danh sách cột trái (ẩn những môn đã có bên phải)
-  const filteredAvailable = availableSubjects.filter(sub => {
-    const matchesSearch = sub.SubjectName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      sub.SubjectCode.toLowerCase().includes(searchTerm.toLowerCase());
-    const isAlreadySelected = selectedSubjects.some(sel => sel.SubjectID === sub.SubjectID);
-    return matchesSearch && !isAlreadySelected;
-  });
 
   if (!visible) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl flex flex-col max-h-[90vh]">
+  // Class CSS cho thanh cuộn
+  const scrollbarClass = "overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-400";
 
-        {/* Header */}
-        <div className="flex justify-between items-center p-5 border-b border-gray-100">
-          <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-            <BookOpen className="w-6 h-6 text-purple-600" />
-            Cấu hình môn học áp dụng
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+      {/* FIX 1: Đặt chiều cao cố định h-[85vh] thay vì max-h. 
+         Điều này buộc các phần tử con phải tính toán chiều cao để scroll.
+      */}
+      <div className="w-full max-w-6xl bg-white rounded-lg shadow-xl flex flex-col h-[85vh]">
+
+        {/* HEADER: flex-none để không bị co lại */}
+        <div className="flex-none flex items-center justify-between p-4 border-b">
+          <h3 className="text-lg font-semibold flex items-center gap-2 text-gray-800">
+            <BookOpen className="w-5 h-5 text-teal-600" />
+            Cấu hình môn học ({subjectLearnAll?.length || 0} môn)
           </h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-red-500 transition">
+          <button onClick={onClose} className="text-gray-400 hover:text-red-500">
             <X size={24} />
           </button>
         </div>
 
-        {/* Body: 2 Cột */}
-        <div className="flex-1 overflow-hidden p-5 bg-gray-50">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
+        {/* BODY CONTAINER: flex-1 để chiếm toàn bộ phần còn lại, min-h-0 cực quan trọng */}
+        <div className="flex-1 p-4 bg-gray-50 min-h-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
 
-            {/* --- CỘT TRÁI: MÔN CÓ THỂ CHỌN --- */}
-            <div className="bg-white rounded-lg border border-gray-200 shadow-sm flex flex-col h-full">
-              <div className="p-3 border-b border-gray-100 bg-white rounded-t-lg">
-                <h4 className="font-semibold text-gray-700 mb-2">Chọn môn để thêm</h4>
+            {/* --- CỘT TRÁI --- */}
+            <div className="bg-white rounded border border-gray-200 shadow-sm flex flex-col h-full overflow-hidden">
+              {/* Search Box: flex-none */}
+              <div className="flex-none p-3 border-b bg-white">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <input
-                    type="text"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
                     placeholder="Tìm kiếm môn học..."
-                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 outline-none"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-teal-500 outline-none"
                   />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
                 </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-2 space-y-2">
-                {loadingData ? (
-                  <div className="flex justify-center items-center py-10 text-gray-400 gap-2">
-                    <Loader2 className="w-5 h-5 animate-spin" />
+              {/* LIST: flex-1 + overflow-y-auto */}
+              <div className={`flex-1 ${scrollbarClass} p-2 space-y-2`}>
+                {filteredAvailable.length === 0 ? (
+                  <div className="text-center text-gray-500 py-10 text-sm">
+                    {subjectLearnAll?.length === 0 ? "Đang tải dữ liệu..." : "Không tìm thấy kết quả"}
                   </div>
-                ) : filteredAvailable.length > 0 ? (
+                ) : (
                   filteredAvailable.map(sub => (
-                    <div key={sub.SubjectID} className="flex items-center justify-between p-3 bg-gray-50 hover:bg-purple-50 rounded-md border border-gray-100 transition group">
-                      <div className="flex-1">
-                        <div className="font-medium text-gray-800 text-sm">{sub.SubjectName}</div>
-                        <div className="text-xs text-gray-500">{sub.SubjectCode}</div>
+                    <div key={sub.SubjectID} className="flex items-center justify-between p-3 rounded hover:bg-teal-50 border border-transparent hover:border-teal-100 transition group bg-white shadow-sm mb-1">
+                      <div className="flex-1 pr-2 min-w-0">
+                        <div className="text-sm font-medium text-gray-800 truncate" title={sub.SubjectName}>
+                          {sub.SubjectName}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-0.5">{sub.SubjectCode}</div>
                       </div>
-
-                      {/* NÚT THÊM - GỌI API LUÔN */}
                       <button
                         onClick={() => handleAddSubject(sub)}
                         disabled={!!processingId}
-                        className="ml-2 p-2 bg-white text-purple-600 border border-purple-200 rounded-full hover:bg-purple-600 hover:text-white transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Thêm vào danh sách"
+                        className="flex-none px-3 py-1.5 bg-white border border-teal-200 text-teal-600 rounded-full hover:bg-teal-500 hover:text-white transition disabled:opacity-50"
                       >
-                        {processingId === `add-${sub.SubjectID}` ? (
-                          <Loader2 size={16} className="animate-spin" />
-                        ) : (
-                          <ArrowRight size={16} />
-                        )}
+                        {processingId === `add-${sub.SubjectID}` ? <Loader2 size={16} className="animate-spin" /> : <ArrowRight size={16} />}
                       </button>
                     </div>
                   ))
-                ) : (
-                  <div className="text-center text-gray-400 text-sm py-10 italic">
-                    {searchTerm ? 'Không tìm thấy kết quả' : 'Đã chọn hết các môn'}
-                  </div>
                 )}
               </div>
             </div>
 
-            {/* --- CỘT PHẢI: MÔN ĐÃ CHỌN (LOAD TỪ BE) --- */}
-            <div className="bg-white rounded-lg border border-purple-200 shadow-md flex flex-col h-full ring-1 ring-purple-100">
-              <div className="p-3 border-b border-purple-100 bg-purple-50 rounded-t-lg flex justify-between items-center">
-                <h4 className="font-bold text-purple-800 flex items-center gap-2">
-                  <Database size={16} />
-                  Môn đã lưu
-                </h4>
-                <span className="text-xs font-semibold bg-purple-200 text-purple-700 px-2 py-1 rounded-full flex items-center gap-1">
-                  {selectedSubjects.length} <CheckCircle2 size={12} />
+            {/* --- CỘT PHẢI --- */}
+            <div className="bg-white rounded border border-purple-200 shadow-sm flex flex-col h-full overflow-hidden">
+              <div className="flex-none p-3 border-b border-purple-100 bg-purple-50 flex justify-between items-center">
+                <span className="text-sm font-bold text-purple-800 flex items-center gap-2">
+                  <Database size={14} /> Môn đã lưu
+                </span>
+                <span className="text-xs bg-purple-200 text-purple-800 px-2 py-0.5 rounded-full font-bold">
+                  {selectedSubjects.length}
                 </span>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-2 space-y-2">
+              <div className={`flex-1 ${scrollbarClass} p-2 space-y-2`}>
                 {loadingData ? (
-                  <div className="flex justify-center items-center py-10 text-gray-400 gap-2">
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  </div>
-                ) : selectedSubjects.length > 0 ? (
+                  <div className="flex justify-center py-10"><Loader2 className="w-6 h-6 animate-spin text-purple-500" /></div>
+                ) : selectedSubjects.length === 0 ? (
+                  <div className="text-center text-gray-400 py-10 text-sm">Chưa có môn nào được chọn</div>
+                ) : (
                   selectedSubjects.map(sub => (
-                    <div key={sub.SubjectID} className="flex items-center justify-between p-3 bg-white border-l-4 border-l-purple-500 shadow-sm rounded-r-md border border-gray-100">
-                      <div className="flex-1">
-                        <div className="font-medium text-gray-800 text-sm">{sub.SubjectName}</div>
-                        <div className="text-xs text-gray-500">{sub.SubjectCode}</div>
+                    <div key={sub.SubjectID} className="flex items-center justify-between p-3 bg-white border-l-4 border-l-purple-500 border border-gray-100 rounded-r shadow-sm mb-1">
+                      <div className="flex-1 pr-2 min-w-0">
+                        <div className="text-sm font-medium text-gray-800 truncate" title={sub.SubjectName}>{sub.SubjectName}</div>
+                        <div className="text-xs text-gray-500 mt-0.5">{sub.SubjectCode}</div>
                       </div>
-
-                      {/* NÚT XÓA - GỌI API LUÔN */}
                       <button
                         onClick={() => handleRemoveSubject(sub)}
                         disabled={!!processingId}
-                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Xóa môn này"
+                        className="flex-none p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition disabled:opacity-50"
                       >
-                        {processingId === `remove-${sub.SubjectID}` ? (
-                          <Loader2 size={16} className="text-red-500 animate-spin" />
-                        ) : (
-                          <Trash2 size={16} />
-                        )}
+                        {processingId === `remove-${sub.SubjectID}` ? <Loader2 size={16} className="animate-spin text-red-500" /> : <Trash2 size={16} />}
                       </button>
                     </div>
                   ))
-                ) : (
-                  <div className="text-center text-gray-400 text-sm py-10 italic flex flex-col items-center">
-                    <span>Chưa có môn học nào được áp dụng.</span>
-                    <span className="text-xs mt-1">Chọn từ cột bên trái để thêm.</span>
-                  </div>
                 )}
               </div>
             </div>
@@ -255,18 +219,13 @@ const FormSurveySubject = ({ visible, onClose, form }) => {
           </div>
         </div>
 
-        {/* Footer - CHỈ CÒN NÚT ĐÓNG */}
-        <div className="p-5 border-t border-gray-100 flex justify-end bg-white rounded-b-xl">
-          <button
-            onClick={onClose}
-            className="px-6 py-2 text-white bg-gray-600 hover:bg-gray-700 rounded-lg font-medium shadow-md transition"
-          >
+        {/* FOOTER: flex-none */}
+        <div className="flex-none p-4 border-t flex justify-end bg-white">
+          <button onClick={onClose} className="px-5 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 font-medium">
             Đóng cửa sổ
           </button>
         </div>
       </div>
     </div>
   );
-};
-
-export default FormSurveySubject;
+}
