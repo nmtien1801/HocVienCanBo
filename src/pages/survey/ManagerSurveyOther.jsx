@@ -77,7 +77,7 @@ const ManagerSurveyOther = () => {
     // ----------------------------- fetch list câu hỏi ---------------------------------------
     const fetchList = async () => {
         try {
-            let res = await dispatch(getTemplateSurvey({
+            await dispatch(getTemplateSurvey({
                 key: searchTerm,
                 typeTemplate: 2, // khảo sát khác
                 statusID: filterStatus ? true : false,
@@ -480,43 +480,49 @@ const ManagerSurveyOther = () => {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
-                        {/* --- Nút Chọn Tiêu chí --- */}
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation(); // Ngăn việc đóng/mở group
-                                openEvaluationModal(category.id); // Gọi hàm mở modal tiêu chí
-                            }}
-                            className="p-1 text-teal-600 hover:bg-teal-50 rounded" // Dùng màu teal (xanh lá)
-                            title="Chọn Tiêu chí"
-                        >
-                            <ListChecks className="w-4 h-4" />
-                        </button>
+                    <div className="items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+                        <div>
+                            {/* Nút Thêm Nhóm */}
+                            <button
+                                onClick={() => addGroup(category.id)}
+                                className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                                title="Thêm nhóm"
+                            >
+                                <Plus className="w-4 h-4" />
+                            </button>
 
-                        {/* Nút Thêm Nhóm */}
-                        <button
-                            onClick={() => addGroup(category.id)}
-                            className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-                            title="Thêm nhóm"
-                        >
-                            <Plus className="w-4 h-4" />
-                        </button>
-                        {/* Nút Sửa Template Cha */}
-                        <button
-                            onClick={() => openTemplateModal(category)}
-                            className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-                            title="Sửa phiếu khảo sát"
-                        >
-                            <Edit className="w-4 h-4" />
-                        </button>
-                        {/* Nút Xóa Template Cha */}
-                        <button
-                            onClick={() => deleteItem('category', category.id)}
-                            className="p-1 text-red-600 hover:bg-red-50 rounded"
-                            title="Xóa phiếu khảo sát"
-                        >
-                            <Trash2 className="w-4 h-4" />
-                        </button>
+                            {/* Nút Sửa Template Cha */}
+                            <button
+                                onClick={() => openTemplateModal(category)}
+                                className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                                title="Sửa phiếu khảo sát"
+                            >
+                                <Edit className="w-4 h-4" />
+                            </button>
+
+                            {/* Nút Xóa Template Cha */}
+                            <button
+                                onClick={() => deleteItem('category', category.id)}
+                                className="p-1 text-red-600 hover:bg-red-50 rounded"
+                                title="Xóa phiếu khảo sát"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        <div>
+                            {/* --- Nút Chọn Tiêu chí --- */}
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    openEvaluationModal(category.id);
+                                }}
+                                className="p-1 text-teal-600 hover:bg-teal-50 rounded"
+                                title="Chọn Tiêu chí"
+                            >
+                                <ListChecks className="w-4 h-4" />
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -713,7 +719,7 @@ const ManagerSurveyOther = () => {
             <FormEvaluation
                 visible={showEvaluation}
                 onClose={() => { setShowEvaluation(false); fetchList(); }}
-                form={categoryForm} // Truyền TemplateSurveyCateID qua categoryForm
+                form={categoryForm} 
             />
         </div>
     );

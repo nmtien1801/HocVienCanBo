@@ -491,55 +491,61 @@ const ManagerSurvey = () => {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
-                        {/* --- Nút Chọn Môn Học --- */}
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation(); // Ngăn việc bấm vào nút thì bị đóng mở accordion
-                                openSubjectModal(category.id);
-                            }}
-                            className="p-1 text-purple-600 hover:bg-purple-100 rounded"
-                            title="Chọn môn học"
-                        >
-                            <BookOpen className="w-4 h-4" />
-                        </button>
+                    <div className="items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+                        <div>
+                            {/* Nút Thêm Nhóm */}
+                            <button
+                                onClick={() => addGroup(category.id)}
+                                className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                                title="Thêm nhóm"
+                            >
+                                <Plus className="w-4 h-4" />
+                            </button>
 
-                        {/* --- Nút Chọn Tiêu chí --- */}
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                openEvaluationModal(category.id);
-                            }}
-                            className="p-1 text-teal-600 hover:bg-teal-50 rounded"
-                            title="Chọn Tiêu chí"
-                        >
-                            <ListChecks className="w-4 h-4" />
-                        </button>
+                            {/* Nút Sửa Template Cha */}
+                            <button
+                                onClick={() => openTemplateModal(category)}
+                                className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                                title="Sửa phiếu khảo sát"
+                            >
+                                <Edit className="w-4 h-4" />
+                            </button>
 
-                        {/* Nút Thêm Nhóm */}
-                        <button
-                            onClick={() => addGroup(category.id)}
-                            className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-                            title="Thêm nhóm"
-                        >
-                            <Plus className="w-4 h-4" />
-                        </button>
-                        {/* Nút Sửa Template Cha */}
-                        <button
-                            onClick={() => openTemplateModal(category)}
-                            className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-                            title="Sửa phiếu khảo sát"
-                        >
-                            <Edit className="w-4 h-4" />
-                        </button>
-                        {/* Nút Xóa Template Cha */}
-                        <button
-                            onClick={() => deleteItem('category', category.id)}
-                            className="p-1 text-red-600 hover:bg-red-50 rounded"
-                            title="Xóa phiếu khảo sát"
-                        >
-                            <Trash2 className="w-4 h-4" />
-                        </button>
+                            {/* Nút Xóa Template Cha */}
+                            <button
+                                onClick={() => deleteItem('category', category.id)}
+                                className="p-1 text-red-600 hover:bg-red-50 rounded"
+                                title="Xóa phiếu khảo sát"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        <div>
+                            {/* --- Nút Chọn Môn Học --- */}
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation(); // Ngăn việc bấm vào nút thì bị đóng mở accordion
+                                    openSubjectModal(category.id);
+                                }}
+                                className="p-1 text-purple-600 hover:bg-purple-100 rounded"
+                                title="Chọn môn học"
+                            >
+                                <BookOpen className="w-4 h-4" />
+                            </button>
+
+                            {/* --- Nút Chọn Tiêu chí --- */}
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    openEvaluationModal(category.id);
+                                }}
+                                className="p-1 text-teal-600 hover:bg-teal-50 rounded"
+                                title="Chọn Tiêu chí"
+                            >
+                                <ListChecks className="w-4 h-4" />
+                            </button>
+                        </div>
                     </div>
                 </div>
 

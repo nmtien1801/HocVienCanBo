@@ -129,7 +129,7 @@ export default function FormSurveySubject({ visible, onClose, form }) {
       if (res.message) {
         toast.error(res.message);
       } else {
-        toast.error(`Đã xóa bản ghi ID ${evaluationID}.`);
+        toast.success(`Đã xóa bản ghi ID ${evaluationID}.`);
         setGridData(prev => prev.filter(item => item.EvaluationID !== evaluationID));
         handleControlAction('clear');
       }
@@ -160,21 +160,63 @@ export default function FormSurveySubject({ visible, onClose, form }) {
           <h4 className="text-base font-bold text-blue-700 mb-3 flex items-center gap-2">
             <Gauge size={18} className="text-blue-500" /> Bảng điều khiển Khảo sát
           </h4>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <div className="md:col-span-1 hidden"><Label>Evaluation ID</Label><Input value={evaluationID} readOnly /></div>
-            <div className="md:col-span-1 hidden"><Label>Template Survey ID</Label><Input value={templateSurveyID} readOnly /></div>
-            <div className="md:col-span-2"><Label htmlFor="evaluation-name">Tên Đánh giá</Label><Input id="evaluation-name" value={evaluationName} onChange={(e) => setEvaluationName(e.target.value)} /></div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            {/* --- Tên đánh giá --- */}
+            <div className="md:col-span-2">
+              <Label htmlFor="evaluation-name">Tên Đánh giá</Label>
+              <Input
+                id="evaluation-name"
+                value={evaluationName}
+                onChange={(e) => setEvaluationName(e.target.value)}
+              />
+            </div>
+
+            {/* --- Trạng thái --- */}
             <div className="md:col-span-1">
-              <Label htmlFor="status-select">Trạng thái (Status ID)</Label>
+              <Label htmlFor="status-select">Trạng thái</Label>
               <select
                 id="status-select"
                 value={statusValue ? 'true' : 'false'}
                 onChange={(e) => setStatusValue(e.target.value === 'true')}
-                className="w-full p-2 border border-gray-300 rounded text-sm outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer bg-white"
+                className="w-full p-2 border border-gray-300 rounded text-sm outline-none focus:ring-2 focus:ring-teal-500 bg-white"
               >
-                <option value={true}>Đang hoạt động</option>
-                <option value={false}>Tạm dừng</option>
+                <option value="true">Đang hoạt động</option>
+                <option value="false">Tạm dừng</option>
               </select>
+            </div>
+
+            {/* --- Action Buttons --- */}
+            <div className="md:col-span-1 flex gap-2 justify-end">
+              <button
+                onClick={() => handleControlAction('clear')}
+                className="px-4 py-2 bg-yellow-50 text-yellow-700 rounded hover:bg-yellow-100 font-medium flex items-center gap-1"
+              >
+                <RefreshCw size={16} /> Xóa
+              </button>
+
+              <button
+                onClick={() => handleControlAction('add_edit')}
+                className="px-5 py-2 bg-teal-600 text-white rounded hover:bg-teal-700 font-medium flex items-center gap-1"
+              >
+                {isEditing ? (
+                  <>
+                    <Save size={16} /> Sửa
+                  </>
+                ) : (
+                  <>
+                    <Plus size={16} /> Thêm
+                  </>
+                )}
+              </button>
+
+              {isEditing && (
+                <button
+                  onClick={() => handleControlAction('delete')}
+                  className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 font-medium flex items-center gap-1"
+                >
+                  <Trash2 size={16} />
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -218,35 +260,7 @@ export default function FormSurveySubject({ visible, onClose, form }) {
 
         </div>
 
-        {/* FOOTER ACTIONS */}
-        <div className="flex-none p-4 border-t flex justify-end bg-white">
-          <div className='flex gap-2'>
-            <button
-              onClick={() => handleControlAction('clear')}
-              className="px-4 py-2 bg-yellow-50 text-yellow-700 rounded hover:bg-yellow-100 font-medium flex items-center gap-1 transition"
-            >
-              <RefreshCw size={16} /> Xóa trắng
-            </button>
-            <button
-              onClick={() => handleControlAction('add_edit')}
-              className="px-5 py-2 bg-teal-600 text-white rounded hover:bg-teal-700 font-medium flex items-center gap-1 transition"
-            >
-              {isEditing ? (
-                <> <Save size={16} /> Sửa (Cập nhật)</>
-              ) : (
-                <> <Plus size={16} /> Thêm mới</>
-              )}
-            </button>
-            {isEditing && (
-              <button
-                onClick={() => handleControlAction('delete')}
-                className="px-5 py-2 bg-red-500 text-white rounded hover:bg-red-600 font-medium flex items-center gap-1 transition"
-              >
-                <Trash2 size={16} /> Xóa
-              </button>
-            )}
-          </div>
-        </div>
+
       </div>
     </div>
   );
