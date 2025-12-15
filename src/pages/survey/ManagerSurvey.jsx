@@ -507,10 +507,10 @@ const ManagerSurvey = () => {
                         {/* --- Nút Chọn Tiêu chí --- */}
                         <button
                             onClick={(e) => {
-                                e.stopPropagation(); 
+                                e.stopPropagation();
                                 openEvaluationModal(category.id);
                             }}
-                            className="p-1 text-teal-600 hover:bg-teal-50 rounded" 
+                            className="p-1 text-teal-600 hover:bg-teal-50 rounded"
                             title="Chọn Tiêu chí"
                         >
                             <ListChecks className="w-4 h-4" />
@@ -745,7 +745,7 @@ const ManagerSurvey = () => {
             <FormEvaluation
                 visible={showEvaluation}
                 onClose={() => { setShowEvaluation(false); fetchList(); }}
-                form={templateForm} 
+                form={templateForm}
             />
         </div>
     );

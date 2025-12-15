@@ -25,7 +25,7 @@ const PAGE_SIZE = 5; // Kích thước mặc định của trang
 
 const ManagerSurveyOther = () => {
     const dispatch = useDispatch();
-    const { TemplateSurveysList, TemplateSurveysTotal } = useSelector((state) => state.templateSurvey);
+    const { TemplateSurveysOtherList, TemplateSurveysOtherTotal } = useSelector((state) => state.templateSurvey);
 
     const [showQuestionPicker, setShowQuestionPicker] = useState(false);
     const [pickerTarget, setPickerTarget] = useState(null);
@@ -36,7 +36,7 @@ const ManagerSurveyOther = () => {
     const [editMode, setEditMode] = useState(null); // Có thể xóa nếu không dùng sửa inline
 
     const [showTemplateModal, setShowTemplateModal] = useState(false);
-    const [templateForm, setTemplateForm] = useState({ TemplateSurveyID: '', TypeTemplate: 1, Title: '', ShorDescription: '', Requiments: '', StatusID: true, ImagePath: '', Permission: 0 });
+    const [templateForm, setTemplateForm] = useState({ TemplateSurveyID: '', TypeTemplate: 2, Title: '', ShorDescription: '', Requiments: '', StatusID: true, ImagePath: '', Permission: 0 });
     const [templateSurveyID, setTemplateSurveyID] = useState(null);
 
     // STATE CHO TemplateSurveyCriteria (bảng quản lý câu hỏi + nhóm)
@@ -77,7 +77,7 @@ const ManagerSurveyOther = () => {
     // ----------------------------- fetch list câu hỏi ---------------------------------------
     const fetchList = async () => {
         try {
-            await dispatch(getTemplateSurvey({
+            let res = await dispatch(getTemplateSurvey({
                 key: searchTerm,
                 typeTemplate: 2, // khảo sát khác
                 statusID: filterStatus ? true : false,
@@ -96,10 +96,10 @@ const ManagerSurveyOther = () => {
     }, [dispatch, currentPage, limit, filterStatus]);
 
     // START: MAPPING DATA TỪ REDUX SANG STATE CỦA COMPONENT
-    const mapDataWithDetails = async (TemplateSurveysList) => {
-        if (TemplateSurveysList && Array.isArray(TemplateSurveysList)) {
+    const mapDataWithDetails = async (TemplateSurveysOtherList) => {
+        if (TemplateSurveysOtherList && Array.isArray(TemplateSurveysOtherList)) {
             const mappedData = await Promise.all(
-                TemplateSurveysList.map(async (item) => {
+                TemplateSurveysOtherList.map(async (item) => {
                     // 1. Lấy danh sách nhóm câu hỏi
                     let grp = await ApiTemplateSurveyCate.getTemplateSurveyCateByTemplateSurveyIDApi(item.TemplateSurveyID);
                     const listGroups = grp.data || [];
@@ -144,8 +144,8 @@ const ManagerSurveyOther = () => {
     };
 
     useEffect(() => {
-        mapDataWithDetails(TemplateSurveysList)
-    }, [TemplateSurveysList]);
+        mapDataWithDetails(TemplateSurveysOtherList)
+    }, [TemplateSurveysOtherList]);
 
     // -------------------------- Action - HÀM TÌM KIẾM CHỈ ĐƯỢC GỌI KHI BẤM NÚT --------------------------
     const handleSearch = () => {
@@ -229,7 +229,7 @@ const ManagerSurveyOther = () => {
 
     // Hàm xử lý chuyển trang
     const handlePageChange = (page) => {
-        if (page > 0 && page <= Math.ceil(TemplateSurveysTotal / limit)) {
+        if (page > 0 && page <= Math.ceil(TemplateSurveysOtherTotal / limit)) {
             setCurrentPage(page);
         }
     };
@@ -666,7 +666,7 @@ const ManagerSurveyOther = () => {
                         {categories.map(category => renderCategory(category))}
 
                         {/* Thông báo khi không có kết quả */}
-                        {(categories.length === 0 || TemplateSurveysList?.length === 0) && (
+                        {(categories.length === 0 || TemplateSurveysOtherList?.length === 0) && (
                             <div className="text-center py-12 text-gray-400">
                                 <Folder className="w-16 h-16 mx-auto mb-4 opacity-50" />
                                 <p className="text-lg">
@@ -679,9 +679,9 @@ const ManagerSurveyOther = () => {
                 </div>
 
                 {/* Component Phân trang */}
-                {TemplateSurveysTotal > limit && (
+                {TemplateSurveysOtherTotal > limit && (
                     <Pagination
-                        total={TemplateSurveysTotal}
+                        total={TemplateSurveysOtherTotal}
                         limit={limit}
                         currentPage={currentPage}
                         onPageChange={handlePageChange}

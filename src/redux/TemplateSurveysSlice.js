@@ -5,7 +5,9 @@ import ApiTemplateSurveys from "../apis/ApiTemplateSurveys.js";
 const initialState = {
   TemplateSurveysList: [],
   TemplateSurveysTotal: 0,
-  TemplateSurveysActive: []
+  TemplateSurveysOtherList: [],
+  TemplateSurveysOtherTotal: 0,
+  TemplateSurveysActive: [],
 };
 
 export const getTemplateSurvey = createAsyncThunk(
@@ -25,8 +27,7 @@ export const getTemplateSurvey = createAsyncThunk(
 export const getTemplateSurveyActive = createAsyncThunk(
   "templateSurveys/getTemplateSurveyActive",
   async (thunkAPI) => {
-    const response =
-      await ApiTemplateSurveys.getTemplateSurveyActiveApi();
+    const response = await ApiTemplateSurveys.getTemplateSurveyActiveApi();
     return response;
   }
 );
@@ -46,8 +47,16 @@ const TemplateSurveysSlice = createSlice({
     builder
       .addCase(getTemplateSurvey.pending, (state) => {})
       .addCase(getTemplateSurvey.fulfilled, (state, action) => {
-        state.TemplateSurveysList = action.payload.data || [];
-        state.TemplateSurveysTotal = action.payload.totals || 0;
+        const { typeTemplate } = action.meta.arg;
+        if (typeTemplate === 1) {
+          // Phiếu giảng viên khảo sát
+          state.TemplateSurveysList = action.payload.data || [];
+          state.TemplateSurveysTotal = action.payload.totals || 0;
+        } else if (typeTemplate === 2) {
+          // Phiếu khảo sát khác
+          state.TemplateSurveysOtherList = action.payload.data || [];
+          state.TemplateSurveysOtherTotal = action.payload.totals || 0;
+        }
       })
       .addCase(getTemplateSurvey.rejected, (state, action) => {});
 
