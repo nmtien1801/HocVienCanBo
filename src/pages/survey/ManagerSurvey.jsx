@@ -70,10 +70,10 @@ const ManagerSurvey = () => {
 
     // Hàm mở modal chọn tiêu chí
     const openEvaluationModal = (catId) => {
-        setCategoryForm(prev => ({
-            ...prev,
-            TemplateSurveyCateID: catId
-        }));
+        setTemplateForm({
+            ...templateForm,
+            TemplateSurveyID: catId,
+        });
         setShowEvaluation(true);
     };
 
@@ -507,10 +507,10 @@ const ManagerSurvey = () => {
                         {/* --- Nút Chọn Tiêu chí --- */}
                         <button
                             onClick={(e) => {
-                                e.stopPropagation(); // Ngăn việc đóng/mở group
-                                openEvaluationModal(category.id); // Gọi hàm mở modal tiêu chí
+                                e.stopPropagation(); 
+                                openEvaluationModal(category.id);
                             }}
-                            className="p-1 text-teal-600 hover:bg-teal-50 rounded" // Dùng màu teal (xanh lá)
+                            className="p-1 text-teal-600 hover:bg-teal-50 rounded" 
                             title="Chọn Tiêu chí"
                         >
                             <ListChecks className="w-4 h-4" />
@@ -745,7 +745,7 @@ const ManagerSurvey = () => {
             <FormEvaluation
                 visible={showEvaluation}
                 onClose={() => { setShowEvaluation(false); fetchList(); }}
-                form={categoryForm} // Truyền TemplateSurveyCateID qua categoryForm
+                form={templateForm} 
             />
         </div>
     );
