@@ -43,6 +43,7 @@ import Test from "../pages/test/Test.jsx"
 import SurveyManager from "../pages/survey/ManagerSurvey.jsx"
 import ManagerSurveyOther from "../pages/survey/ManagerSurveyOther.jsx"
 import ManagerQuestion from "../pages/question/ManagerQuestion.jsx"
+import SurveyPage from "../pages/survey/SurveyPage.jsx";
 
 const ProtectedRoute = ({ children, userInfo, isLoading, hasCheckedAuth }) => {
   if (isLoading || !hasCheckedAuth) {
@@ -142,6 +143,7 @@ function RouterRoot() {
           <Route path="manager-survey-teacher" element={<SurveyManager />} />
           <Route path="manager-survey-other" element={<ManagerSurveyOther />} />
           <Route path="manager-question" element={<ManagerQuestion />} />
+          <Route path="danh-sach-khao-sat" element={<SurveyPage />} />
 
           {/* route schedule */}
           <Route path="schedule-teach-month" element={<ScheduleTeachMonth />} />

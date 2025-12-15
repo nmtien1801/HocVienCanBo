@@ -8,6 +8,7 @@ import pointReducer from "./pointSlice";
 import studentReducer from "./studentSlice";
 import CriteriaEvaluationReducer from "./CriteriaEvaluationSlice";
 import TemplateSurveyReducer from "./TemplateSurveysSlice";
+import SurveyReducer from "./surveySlice";
 
 export const store = configureStore({
   reducer: {
@@ -20,5 +21,6 @@ export const store = configureStore({
     student: studentReducer,
     criteriaEvaluation: CriteriaEvaluationReducer,
     templateSurvey: TemplateSurveyReducer,
+    survey: SurveyReducer,
   },
 });

@@ -8,6 +8,7 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
   const { userInfo } = useSelector((state) => state.auth);
   const [expandedMenu, setExpandedMenu] = useState('system');
   const [role, setRole] = useState({ role: "", canAccess: false });
+  console.log('userInfo: ', userInfo);
 
   useEffect(() => {
     const userType = userInfo?.TypeUserID;
@@ -37,6 +38,7 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
     role.canAccess ? { label: 'Đổi mật khẩu học viên', path: '/change-pass-student' } : null,
     { label: 'Đổi mật khẩu tài khoản', path: '/change-pass-tc' },
     { label: 'Thông tin tài khoản', path: '/account' },
+    { label: 'Danh sách khảo sát', path: '/danh-sach-khao-sat' },
     userInfo?.TypeUserID === TypeUserIDCons.Administrator
       ? { label: 'Ngân hàng câu hỏi', path: '/manager-question' }
       : null,

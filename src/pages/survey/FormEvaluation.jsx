@@ -19,7 +19,7 @@ const Label = ({ children, className = "" }) => (
   </label>
 );
 
-export default function FormSurveySubject({ visible, onClose, form }) {
+export default function FormEvaluation({ visible, onClose, form }) {
   const [statusValue, setStatusValue] = useState(true);
   const [evaluationName, setEvaluationName] = useState('');
   const [evaluationID, setEvaluationID] = useState(null);
