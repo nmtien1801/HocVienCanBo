@@ -6,7 +6,6 @@ import { toast } from "react-toastify";
 
 // --- Sub-Component: Một dòng câu hỏi ---
 const QuestionRow = ({ stt, question, lstEvaluations, values, onChange, onChangeFeedback }) => {
-
     if (question.TypeCriteria === 1) {
         // TypeCriteria: yes/no
         return (
@@ -106,9 +105,43 @@ export default function StudentSurvey() {
         }));
     };
 
-    const handleSubmit = () => {
-        console.log("Answers:", answers);
-        alert("Đã gửi khảo sát thành công!");
+    const handleSubmit = async () => {
+        const surveyAnswers = Object.keys(answers)
+            .map(qId => {
+                const answerDetail = answers[qId];
+
+                // và loại bỏ các câu hỏi feedback trống
+                if (!answerDetail.ContentAnswer && answerDetail.EvaluationID === null) {
+                    return null;
+                }
+
+                // Trả về đối tượng model mà BE mong đợi
+                return {
+                    SurveyAnswerID: parseInt(qId), // ID câu hỏi (từ key của answers)
+                    EvaluationID: answerDetail.EvaluationID,
+                    ContentAnswer: answerDetail.ContentAnswer,
+                    IsAnswer: true, // Luôn là true vì đã có trong answers
+                };
+            })
+            .filter(answer => answer !== null); // Loại bỏ các câu hỏi feedback trống
+
+        // 2. Kiểm tra nếu không có câu trả lời nào
+        if (surveyAnswers.length === 0) {
+            toast.warning("Vui lòng trả lời ít nhất một câu hỏi hoặc nhập ý kiến đóng góp.");
+            return;
+        }
+
+        const postModel = {
+            SurveyID: surveyData.SurveyID,
+            lstSurveyAnswers: surveyAnswers
+        };
+
+
+        let res = await ApiSurvey.UpdateTemplateSurveyApi(postModel);
+        if (res === true) {
+            toast.success("Đã gửi khảo sát thành công!");
+            navigate('/danh-sach-khao-sat');
+        }
     };
 
     return (
