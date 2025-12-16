@@ -4,65 +4,57 @@ import ApiSurvey from '../../apis/ApiSurvey.js'
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from "react-toastify";
 
-// 1. Dữ liệu cấu hình: Thang điểm đánh giá
-const OPTIONS = [
-    { value: 'A', label: 'A. Hoàn toàn không đồng ý' },
-    { value: 'B', label: 'B. Không đồng ý' },
-    { value: 'C', label: 'C. Phân vân' },
-    { value: 'D', label: 'D. Đồng ý' },
-    { value: 'E', label: 'E. Hoàn toàn đồng ý' },
-    { value: 'F', label: 'F. Không ý kiến' },
-];
-
-const FeedbackTextarea = ({ question, value, onChange }) => {
-    return (
-        <>
-            <p className="font-semibold text-gray-800 mb-3 text-sm md:text-base">
-                {question.SurveyAnswerID} . {question.TitleCate}
-            </p>
-            <textarea
-                className="w-full border border-gray-300 rounded-md p-3 focus:ring-1 focus:ring-[#026aa8] focus:border-[#026aa8] focus:outline-none transition-shadow text-sm"
-                rows="4"
-                placeholder="Nhập ý kiến của bạn tại đây..."
-                value={value} // Nhận giá trị từ prop
-                onChange={onChange} // Nhận hàm xử lý thay đổi từ prop
-            />
-        </>
-    );
-};
-
 // --- Sub-Component: Một dòng câu hỏi ---
-const QuestionRow = ({ question, lstEvaluations, values, onChange }) => {
-console.log('ssss ', question);
+const QuestionRow = ({ stt, question, lstEvaluations, values, onChange, onChangeFeedback }) => {
 
-    return (
-        <div className="mb-6 border-b border-gray-100 pb-4 last:border-0 last:pb-0 hover:bg-gray-50 transition-colors rounded p-2">
-            <p className="font-semibold text-gray-800 mb-3 text-sm md:text-base">
-                {question.SurveyAnswerID} . {question.TitleCate}
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-2 gap-x-4 ml-2">
-                {lstEvaluations.map((opt) => (
-                    <label
-                        key={opt.EvaluationID}
-                        className="flex items-center gap-2 cursor-pointer group"
-                    >
-                        <input
-                            type="radio"
-                            name={`question_${question.SurveyAnswerID}`}
-                            value={opt.EvaluationID}
-                            checked={values[question.SurveyAnswerID] === opt.EvaluationID}
-                            onChange={() => onChange(question.SurveyAnswerID, opt.EvaluationID)}
-                            className="w-4 h-4 text-[#026aa8] border-gray-300 focus:ring-[#026aa8] focus:ring-offset-0 cursor-pointer"
-                        />
-                        {/* Hover text cũng dùng mã màu này */}
-                        <span className="text-sm text-gray-600 group-hover:text-[#026aa8] transition-colors">
-                            {opt.EvaluationName}
-                        </span>
-                    </label>
-                ))}
+    if (question.TypeCriteria === 1) {
+        // TypeCriteria: yes/no
+        return (
+            <div className="mb-6 border-b border-gray-100 pb-4 last:border-0 last:pb-0 hover:bg-gray-50 transition-colors rounded p-2">
+                <p className="font-semibold text-gray-800 mb-3 text-sm md:text-base">
+                    {stt} . {question.TitleCate}
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-2 gap-x-4 ml-2">
+                    {lstEvaluations.map((opt) => (
+                        <label
+                            key={opt.EvaluationID}
+                            className="flex items-center gap-2 cursor-pointer group"
+                        >
+                            <input
+                                type="radio"
+                                name={`question_${question.SurveyAnswerID}`}
+                                value={opt.EvaluationID}
+                                checked={values[question.SurveyAnswerID]?.EvaluationID === opt.EvaluationID}
+                                onChange={() => onChange(question.SurveyAnswerID, opt.EvaluationID, opt.EvaluationName)}
+                                className="w-4 h-4 text-[#026aa8] border-gray-300 focus:ring-[#026aa8] focus:ring-offset-0 cursor-pointer"
+                            />
+                            {/* Hover text cũng dùng mã màu này */}
+                            <span className="text-sm text-gray-600 group-hover:text-[#026aa8] transition-colors">
+                                {opt.EvaluationName}
+                            </span>
+                        </label>
+                    ))}
+                </div>
             </div>
-        </div>
-    );
+        );
+    } else {
+        return (
+            <>
+                <p className="font-semibold text-gray-800 mb-3 text-sm md:text-base">
+                    {stt} . {question.TitleCate}
+                </p>
+                <textarea
+                    className="w-full border border-gray-300 rounded-md p-3 focus:ring-1 focus:ring-[#026aa8] focus:border-[#026aa8] focus:outline-none transition-shadow text-sm"
+                    rows="4"
+                    placeholder="Nhập ý kiến của bạn tại đây..."
+                    value={values[question.SurveyAnswerID]?.ContentAnswer || ""}
+                    onChange={(e) => onChangeFeedback(question.SurveyAnswerID, e.target.value)}
+                />
+            </>
+        );
+    }
+
+
 };
 
 // --- Main Component ---
@@ -92,15 +84,30 @@ export default function StudentSurvey() {
     }, [dispatch, searchParams]);
 
     const [answers, setAnswers] = useState({});
-    const [feedback, setFeedback] = useState("");
 
-    const handleOptionChange = (qId, val) => {
-        setAnswers(prev => ({ ...prev, [qId]: val }));
+    const handleOptionChange = (qId, evaluationId, evaluationName) => {
+        setAnswers(prev => ({
+            ...prev,
+            [qId]: {
+                EvaluationID: evaluationId,
+                ContentAnswer: evaluationName
+            }
+        }));
+    };
+
+    // Sửa handler cho câu hỏi TypeCriteria !== 1 (textarea)
+    const handleFeedbackChange = (qId, content) => {
+        setAnswers(prev => ({
+            ...prev,
+            [qId]: {
+                EvaluationID: null, // hoặc 0 tùy backend yêu cầu
+                ContentAnswer: content
+            }
+        }));
     };
 
     const handleSubmit = () => {
         console.log("Answers:", answers);
-        console.log("Feedback:", feedback);
         alert("Đã gửi khảo sát thành công!");
     };
 
@@ -111,7 +118,7 @@ export default function StudentSurvey() {
                 {/* Header Phiếu: Dùng màu #026aa8 */}
                 <div className="bg-white p-6 border-b-4 border-[#026aa8]">
                     <h1 className="text-xl md:text-2xl font-bold text-[#026aa8] text-center uppercase mb-4">
-                        {surveyData.Title}
+                        {surveyData.TemplateSurveyName}
                     </h1>
                     {/* Nền xanh nhạt: Dùng màu #026aa8 với độ trong suốt 5% */}
                     <div className="bg-[#026aa8]/5 p-4 rounded text-sm text-gray-700 text-justify leading-relaxed border border-[#026aa8]/20">
@@ -137,28 +144,7 @@ export default function StudentSurvey() {
                     {/* Render các phần câu hỏi */}
                     {surveyCates && surveyCates.length > 0 && surveyCates.map((section, index) => {
                         // 1. Xác định section cuối cùng
-                        const isLastSection = (index + 1) === surveyCates.length;
 
-                        if (isLastSection) {
-                            return (
-                                <div key={index} className="mb-8">
-                                    <h3 className="font-bold text-[#026aa8] text-lg mb-3 bg-gray-50 p-2 rounded">
-                                        {section.TitleCate}
-                                    </h3>
-                                    <div className="space-y-4 pl-2">
-                                        {section.lstSurveyAnswers.map((q) => (
-                                            <FeedbackTextarea
-                                                key={q.SurveyAnswerID}
-                                                question={q}
-                                                value={feedback}
-                                                onChange={(e) => setFeedback(e.target.value)}
-                                            />
-                                        ))}
-                                    </div>
-                                </div>
-                            );
-                        }
-                        // 2. các section khác
                         return (
                             <div key={index} className="mb-8">
                                 <h3 className="font-bold text-[#026aa8] text-lg mb-3 bg-gray-50 p-2 rounded">
@@ -171,13 +157,15 @@ export default function StudentSurvey() {
                                 )}
 
                                 <div className="space-y-4 pl-2">
-                                    {section.lstSurveyAnswers.map((q) => (
+                                    {section.lstSurveyAnswers.map((q, index) => (
                                         <QuestionRow
+                                            stt={index + 1}
                                             key={q.SurveyAnswerID}
                                             question={q}
                                             lstEvaluations={lstEvaluations}
                                             values={answers}
                                             onChange={handleOptionChange}
+                                            onChangeFeedback={handleFeedbackChange}
                                         />
                                     ))}
                                 </div>

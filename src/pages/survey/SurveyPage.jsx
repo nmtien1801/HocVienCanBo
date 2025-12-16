@@ -44,7 +44,7 @@ export default function SurveyPage() {
         } else {
             let payload = {
                 ...item,
-                Title: TemplateSurveyName
+                Title: item.TemplateSurveyName
             }
             let res = await ApiSurvey.CreateSurveyTeacherApi(payload)
 
