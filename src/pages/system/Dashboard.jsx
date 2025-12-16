@@ -11,8 +11,7 @@ import { TypeUserIDCons } from "../../utils/constants";
 export default function Dashboard() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { dashboardTotal, scheduleByMonth, scheduleByExamination, listInformation, scheduleClassSubject } = useSelector((state) => state.dashboard);
-    const { scheduleDaily } = useSelector((state) => state.schedule);
+    const { dashboardTotal, scheduleByMonth, scheduleByExamination, listInformation } = useSelector((state) => state.dashboard);
     const { userInfo } = useSelector((state) => state.auth);
     const [dataSchedule, setDataSchedule] = useState([]); // lịch học lớp của bạn
     let role = userInfo?.TypeUserID !== TypeUserIDCons.Student && userInfo?.TypeStudentID !== TypeUserIDCons.Student

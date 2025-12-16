@@ -44,7 +44,8 @@ import Test from "../pages/test/Test.jsx"
 import SurveyManager from "../pages/survey/ManagerSurvey.jsx"
 import ManagerSurveyOther from "../pages/survey/ManagerSurveyOther.jsx"
 import ManagerQuestion from "../pages/question/ManagerQuestion.jsx"
-import SurveyPage from "../pages/survey/SurveyPage.jsx";
+import SurveyTeacher from "../pages/survey/SurveyTeacher.jsx";
+import SurveyOther from "../pages/survey/SurveyOther.jsx";
 import SurveyDetail from "../pages/survey/SurveyDetail.jsx";
 import { getSurveySubjectByStudentID } from "../redux/surveySlice.js";
 
@@ -187,8 +188,9 @@ function RouterRoot() {
           <Route path="manager-survey-teacher" element={<SurveyManager />} />
           <Route path="manager-survey-other" element={<ManagerSurveyOther />} />
           <Route path="manager-question" element={<ManagerQuestion />} />
-          <Route path="danh-sach-khao-sat" element={<SurveyPage />} />
+          <Route path="danh-sach-khao-sat" element={<SurveyTeacher />} />
           <Route path="survey-detail" element={<SurveyDetail />} />
+          <Route path="survey-other" element={<SurveyOther />} />
 
           {/* route schedule */}
           <Route path="schedule-teach-month" element={<ScheduleTeachMonth />} />

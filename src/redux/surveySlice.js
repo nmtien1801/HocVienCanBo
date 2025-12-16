@@ -4,6 +4,7 @@ import ApiSurvey from "../apis/ApiSurvey.js";
 const initialState = {
   SurveysByStudentList: [],
   SurveysByStudentTotal: 0,
+  SurveyForTeacherStudentList:[]
 };
 
 export const getSurveySubjectByStudentID = createAsyncThunk(
@@ -14,6 +15,14 @@ export const getSurveySubjectByStudentID = createAsyncThunk(
       limit
     );
     return response.data;
+  }
+);
+
+export const getTemplateSurveyForTeacherStudent = createAsyncThunk(
+  "survey/getTemplateSurveyForTeacherStudent",
+  async (thunkAPI) => {
+    const response = await ApiSurvey.getTemplateSurveyForTeacherStudentApi();
+    return response;
   }
 );
 
@@ -36,6 +45,14 @@ const surveySlice = createSlice({
         state.SurveysByStudentTotal = action.payload.totals || 0;
       })
       .addCase(getSurveySubjectByStudentID.rejected, (state, action) => {});
+
+    // getTemplateSurveyForTeacherStudent
+    builder
+      .addCase(getTemplateSurveyForTeacherStudent.pending, (state) => {})
+      .addCase(getTemplateSurveyForTeacherStudent.fulfilled, (state, action) => {
+        state.SurveyForTeacherStudentList = action.payload.data || [];
+      })
+      .addCase(getTemplateSurveyForTeacherStudent.rejected, (state, action) => {});
   },
 });
 

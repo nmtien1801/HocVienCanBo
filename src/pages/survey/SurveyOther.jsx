@@ -1,27 +1,29 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { getSurveySubjectByStudentID } from "../../redux/surveySlice.js";
+import { getTemplateSurveyForTeacherStudent } from "../../redux/surveySlice.js";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import ApiSurvey from '../../apis/ApiSurvey.js'
 
-export default function SurveyPage() {
+export default function SurveyOther() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    const { SurveysByStudentList, SurveysByStudentTotal } = useSelector((state) => state.survey);
+    const { SurveyForTeacherStudentList, SurveysByStudentTotal } = useSelector((state) => state.survey);
 
     const [activeTab, setActiveTab] = useState("not-surveyed");
 
     // --- 1. State cho phân trang ---
     const [currentPage, setCurrentPage] = useState(1);
     const pageSize = 20;
+    console.log('sssssss ', SurveyForTeacherStudentList);
 
     // --------------------------------------- Initial
     useEffect(() => {
-        const fetchSurveyByID = async () => {
+        // lấy phiếu khảo sát của học viên (bắt buộc nộp)
+        const fetchSurveyTeacher_Student = async () => {
             const res = await dispatch(
-                getSurveySubjectByStudentID({ page: currentPage, limit: pageSize })
+                getTemplateSurveyForTeacherStudent({ page: currentPage, limit: pageSize })
             );
 
             if (!res.payload || !res.payload.data) {
@@ -29,11 +31,11 @@ export default function SurveyPage() {
             }
         };
 
-        fetchSurveyByID();
+        fetchSurveyTeacher_Student();
     }, [dispatch, currentPage]); // Thêm currentPage vào dependency
 
     // Lọc theo tab
-    const displayList = SurveysByStudentList.filter((item) =>
+    const displayList = SurveyForTeacherStudentList.filter((item) =>
         activeTab === "surveyed" ? item.StatusID_Survey : !item.StatusID_Survey
     );
 
@@ -84,7 +86,7 @@ export default function SurveyPage() {
                             <nav className="-mb-px flex space-x-8">
                                 <button
                                     onClick={() => setActiveTab("not-surveyed")}
-                                    className={`py-4 px-1 border-b-2 font-medium text-sm transition-all whitespace-nowrap ${activeTab === "not-surveyed"
+                                    className={`py-4 px-1 border-b-2 font-medium text-base transition-all whitespace-nowrap ${activeTab === "not-surveyed"
                                         ? "border-[#337ab7] text-[#337ab7]"
                                         : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                                         }`}
@@ -94,7 +96,7 @@ export default function SurveyPage() {
 
                                 <button
                                     onClick={() => setActiveTab("surveyed")}
-                                    className={`py-4 px-1 border-b-2 font-medium text-sm transition-all whitespace-nowrap ${activeTab === "surveyed"
+                                    className={`py-4 px-1 border-b-2 font-medium text-base transition-all whitespace-nowrap ${activeTab === "surveyed"
                                         ? "border-[#337ab7] text-[#337ab7]"
                                         : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                                         }`}

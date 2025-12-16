@@ -6,6 +6,8 @@ const ApiSurvey = {
     CreateSurveyTeacherApi: (model) => ApiManager.post(`/survey/create-teacher`, model),
     UpdateTemplateSurveyApi: (model) => ApiManager.post(`/survey/update-teacher`, model),
     DeleteSurveyApi: (model) => ApiManager.post(`/survey-admin/delete`, model),
+
+    getTemplateSurveyForTeacherStudentApi: () => ApiManager.get(`/template-survey/get-list-for-teacher-student`),
 }
 
 export default ApiSurvey;
