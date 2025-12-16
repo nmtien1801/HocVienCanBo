@@ -8,7 +8,6 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
   const { userInfo } = useSelector((state) => state.auth);
   const [expandedMenu, setExpandedMenu] = useState('system');
   const [role, setRole] = useState({ role: "", canAccess: false });
-  console.log('userInfo: ', userInfo);
 
   useEffect(() => {
     const userType = userInfo?.TypeUserID;

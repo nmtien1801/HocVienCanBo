@@ -60,7 +60,6 @@ export default function FormEvaluation({ visible, onClose, form }) {
         setStatusValue(form.StatusID === true);
         setSelectedRowId(form.EvaluationID); // Dùng EvaluationID làm key
       } else {
-        // Mode tạo mới - chỉ có TemplateSurveyID
         handleControlAction('clear');
         setTemplateSurveyID(form.TemplateSurveyID || null);
       }
@@ -82,7 +81,6 @@ export default function FormEvaluation({ visible, onClose, form }) {
     // --- CLEAR / RESET ---
     if (actionType === 'clear' || actionType === 'reset') {
       setEvaluationID(null);
-      setTemplateSurveyID(null);
       setEvaluationName('');
       setStatusValue(true);
       setSelectedRowId(null);
@@ -102,6 +100,7 @@ export default function FormEvaluation({ visible, onClose, form }) {
       EvaluationName: evaluationName,
       StatusID: statusValue
     };
+
     if (actionType === 'add_edit') {
       if (isEditing) {
         let res = await ApiEvaluations.UpdateEvaluationApi(payload);
@@ -119,7 +118,8 @@ export default function FormEvaluation({ visible, onClose, form }) {
           toast.error(res.message);
         } else {
           toast.success(`Đã thêm tiêu chí đánh giá thành công`);
-          setGridData(prev => [...prev, payload]);
+          setGridData(prev => [...prev, res]);
+          handleRowSelect(res);
         }
       }
     }

@@ -3,18 +3,25 @@ import { useSelector, useDispatch } from "react-redux";
 import { getSurveySubjectByStudentID } from "../../redux/surveySlice.js";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import ApiSurvey from '../../apis/ApiSurvey.js'
 
 export default function SurveyPage() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { SurveysByStudentList } = useSelector((state) => state.survey);
 
-    const [activeTab, setActiveTab] = useState("not-surveyed"); // 'not-surveyed' | 'surveyed'
+    const { SurveysByStudentList, SurveysByStudentTotal } = useSelector((state) => state.survey);
 
+    const [activeTab, setActiveTab] = useState("not-surveyed");
+
+    // --- 1. State cho phân trang ---
+    const [currentPage, setCurrentPage] = useState(1);
+    const pageSize = 20;
+
+    // --------------------------------------- Initial
     useEffect(() => {
         const fetchSurveyByID = async () => {
             const res = await dispatch(
-                getSurveySubjectByStudentID({ page: 1, limit: 20 })
+                getSurveySubjectByStudentID({ page: currentPage, limit: pageSize })
             );
 
             if (!res.payload || !res.payload.data) {
@@ -23,23 +30,43 @@ export default function SurveyPage() {
         };
 
         fetchSurveyByID();
-    }, [dispatch]);
-
-    // Map dữ liệu
-    const allItems =
-        SurveysByStudentList?.map((item) => ({
-            SurveyID: item.SurveyID,
-            TemplateSurveyName: item.TemplateSurveyName,
-            SubjectCode: item.SubjectCode,
-            SubjectName: item.SubjectName,
-            TeacherName: item.TeacherName,
-            isCompleted: item.StatusID_Survey === true,
-        })) || [];
+    }, [dispatch, currentPage]); // Thêm currentPage vào dependency
 
     // Lọc theo tab
-    const displayList = allItems.filter((item) =>
-        activeTab === "surveyed" ? item.isCompleted : !item.isCompleted
+    const displayList = SurveysByStudentList.filter((item) =>
+        activeTab === "surveyed" ? item.StatusID_Survey : !item.StatusID_Survey
     );
+
+    // -------------------------------------------------- Action
+    const handleDetailSurvey = async (item) => {
+        if (item.SurveyID !== null) {
+            navigate(`/survey-detail?id=${item.SurveyID}`)
+        } else {
+            let payload = {
+                ...item,
+                Title: TemplateSurveyName
+            }
+            let res = await ApiSurvey.CreateSurveyTeacherApi(payload)
+
+            if (res.message) {
+                toast.error(res.message);
+            } else {
+                navigate(`/survey-detail?id=${res.SurveyID}`)
+            }
+        }
+    }
+
+    // --------------------------------------------------------- 3. Tính toán tổng số trang ---
+    const totalPages = SurveysByStudentTotal ? Math.ceil(SurveysByStudentTotal / pageSize) : 1;
+
+    // Hàm chuyển trang
+    const handlePageChange = (newPage) => {
+        if (newPage >= 1 && newPage <= totalPages) {
+            setCurrentPage(newPage);
+            // Scroll lên đầu khi chuyển trang
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
 
     return (
         <div className="min-h-screen bg-gray-50 py-4 px-4 lg:py-8 lg:px-6">
@@ -81,11 +108,7 @@ export default function SurveyPage() {
                         <div className="p-6 space-y-4">
                             {displayList.length === 0 ? (
                                 <div className="text-center text-gray-500 py-8 text-sm italic">
-                                    Không có dữ liệu{" "}
-                                    {activeTab === "surveyed"
-                                        ? "đã khảo sát"
-                                        : "chưa khảo sát"}
-                                    .
+                                    Không có dữ liệu {activeTab === "surveyed" ? "đã khảo sát" : "chưa khảo sát"}.
                                 </div>
                             ) : (
                                 displayList.map((item, index) => {
@@ -94,29 +117,15 @@ export default function SurveyPage() {
                                     return (
                                         <div
                                             key={index}
-                                            onClick={() =>
-                                                navigate(
-                                                    `/notification-detail?id=${item.SurveyID}`
-                                                )
-                                            }
-                                            className={`group cursor-pointer rounded transition hover:bg-gray-50 px-2
-                        ${!isLast
-                                                    ? "border-b border-dashed border-gray-400 pb-4 mb-4"
-                                                    : "pb-2"
-                                                }
-                      `}
+                                            onClick={() => handleDetailSurvey(item)}
+                                            className={`group cursor-pointer rounded transition hover:bg-gray-50 px-2 
+                                                ${!isLast ? "border-b border-dashed border-gray-400 pb-4 mb-4" : "pb-2"}`}
                                         >
                                             <div className="flex-1">
-                                                {/* Tiêu đề */}
                                                 <h3 className="font-semibold text-[#337ab7] text-sm mb-1 transition-colors group-hover:text-gray-800">
-                                                    {item.TemplateSurveyName} - {item.SubjectCode} -{" "}
-                                                    {item.SubjectName}{" "}
-                                                    <span className="text-red-600 font-semibold">
-                                                        (Bắt buộc)
-                                                    </span>
+                                                    {item.TemplateSurveyName} - {item.SubjectCode} - {item.SubjectName}{" "}
+                                                    <span className="text-red-600 font-semibold">(Bắt buộc)</span>
                                                 </h3>
-
-                                                {/* Giảng viên */}
                                                 <div className="font-semibold text-[#337ab7] text-sm transition-colors group-hover:text-gray-800">
                                                     Giảng viên: {item.TeacherName}
                                                 </div>
@@ -126,6 +135,37 @@ export default function SurveyPage() {
                                 })
                             )}
                         </div>
+
+                        {/* --- 4. Giao diện Phân trang (Pagination) --- */}
+                        {SurveysByStudentTotal > pageSize && (
+                            <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+                                <div className="text-sm text-gray-500">
+                                    Trang <span className="font-medium">{currentPage}</span> / <span className="font-medium">{totalPages}</span>
+                                </div>
+                                <div className="flex space-x-2">
+                                    <button
+                                        onClick={() => handlePageChange(currentPage - 1)}
+                                        disabled={currentPage === 1}
+                                        className={`px-3 py-1 text-sm border rounded ${currentPage === 1
+                                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                            : "bg-white text-gray-700 hover:bg-gray-50 border-gray-300"
+                                            }`}
+                                    >
+                                        Trước
+                                    </button>
+                                    <button
+                                        onClick={() => handlePageChange(currentPage + 1)}
+                                        disabled={currentPage === totalPages}
+                                        className={`px-3 py-1 text-sm border rounded ${currentPage === totalPages
+                                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                            : "bg-white text-gray-700 hover:bg-gray-50 border-gray-300"
+                                            }`}
+                                    >
+                                        Sau
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
