@@ -57,7 +57,7 @@ const QuestionRow = ({ stt, question, lstEvaluations, values, onChange, onChange
 };
 
 // --- Main Component ---
-export default function StudentSurvey() {
+export default function SurveyDetail() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
@@ -66,6 +66,26 @@ export default function StudentSurvey() {
     const [lstEvaluations, setLstEvaluations] = useState([]);
 
     // ---------------------------------------------- lấy chi tiết phiếu khảo sát
+    // chọn khi đã khảo sát
+    const normalizeSavedAnswers = (lstSurveyCates) => {
+        const initialAnswers = {};
+
+        lstSurveyCates.forEach(section => {
+            section.lstSurveyAnswers.forEach(q => {
+                // Kiểm tra xem câu hỏi này đã có câu trả lời (IsAnswer: true) chưa
+                if (q.IsAnswer === true) {
+                    // LƯU Ý: Dữ liệu API có thể có SurveyAnswerID, EvaluationID, và ContentAnswer ngay trên đối tượng Q
+                    initialAnswers[q.SurveyAnswerID] = {
+                        EvaluationID: q.EvaluationID,
+                        ContentAnswer: q.ContentAnswer
+                    };
+                }
+            });
+        });
+        return initialAnswers;
+    };
+
+    // fetch data
     useEffect(() => {
         const fetchSurveyByID = async () => {
             const idDetail = searchParams.get('id');
@@ -74,6 +94,13 @@ export default function StudentSurvey() {
             setSurveyData(res.data);
             setSurveyCates(res.data.lstSurveyCates)
             setLstEvaluations(res.data.lstEvaluations)
+
+            // >>> THÊM LOGIC NẠP CÂU TRẢ LỜI ĐÃ LƯU VÀO STATE ANSWERS <<<
+            if (res.data.lstSurveyCates && res.data.lstSurveyCates.length > 0) {
+                const savedAnswers = normalizeSavedAnswers(res.data.lstSurveyCates);
+                setAnswers(savedAnswers);
+            }
+
             if (res.Message) {
                 toast.error(res.message);
             }
@@ -84,6 +111,9 @@ export default function StudentSurvey() {
 
     const [answers, setAnswers] = useState({});
 
+
+
+    // ------------------------------------------------------------- CRUD
     const handleOptionChange = (qId, evaluationId, evaluationName) => {
         setAnswers(prev => ({
             ...prev,
