@@ -4,6 +4,7 @@ import {
   Routes,
   Route,
   Navigate,
+  useLocation
 } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import AuthenticatedLayout from "../components/AuthenticatedLayout";
@@ -45,6 +46,7 @@ import ManagerSurveyOther from "../pages/survey/ManagerSurveyOther.jsx"
 import ManagerQuestion from "../pages/question/ManagerQuestion.jsx"
 import SurveyPage from "../pages/survey/SurveyPage.jsx";
 import SurveyDetail from "../pages/survey/SurveyDetail.jsx";
+import { getSurveySubjectByStudentID } from "../redux/surveySlice.js";
 
 const ProtectedRoute = ({ children, userInfo, isLoading, hasCheckedAuth }) => {
   if (isLoading || !hasCheckedAuth) {
@@ -54,7 +56,6 @@ const ProtectedRoute = ({ children, userInfo, isLoading, hasCheckedAuth }) => {
   if (!userInfo) {
     return <Navigate to="/home" replace />;
   }
-
   return children;
 };
 
@@ -70,9 +71,49 @@ const PublicRoute = ({ children, userInfo, isLoading, hasCheckedAuth }) => {
   return children;
 };
 
+const SurveyProtectedRoute = ({ children, SurveysByStudentList }) => {
+  const location = useLocation();
+
+  // Nếu SurveysByStudentList chưa có dữ liệu hoặc rỗng, cho phép truy cập
+  if (!Array.isArray(SurveysByStudentList) || SurveysByStudentList.length === 0) {
+    return children;
+  }
+
+  // Kiểm tra có survey nào chưa hoàn thành không
+  const hasIncompleteSurvey = SurveysByStudentList.some(item => {
+    return item && item.StatusID_Survey === null;
+  });
+
+  // Nếu có survey chưa hoàn thành
+  if (hasIncompleteSurvey) {
+    const currentPath = location.pathname;
+    if (currentPath !== '/danh-sach-khao-sat' && currentPath !== '/survey-detail') {
+      return <Navigate to="/danh-sach-khao-sat" replace />;
+    }
+  }
+
+  return children;
+};
+
 function RouterRoot() {
   const dispatch = useDispatch();
   const { userInfo, isLoading, hasCheckedAuth } = useSelector((state) => state.auth);
+  const { SurveysByStudentList, SurveysByStudentTotal } = useSelector((state) => state.survey);
+
+  useEffect(() => {
+    const fetchSurveyByID = async () => {
+      const res = await dispatch(
+        getSurveySubjectByStudentID({ page: 1, limit: 20 })
+      );
+
+      if (!res.payload || !res.payload.data) {
+        toast.error(res.payload?.message);
+      }
+    };
+
+    fetchSurveyByID();
+  }, [dispatch]);
+
 
   useEffect(() => {
     if (!hasCheckedAuth && !isLoading) {
@@ -130,7 +171,9 @@ function RouterRoot() {
           path="/"
           element={
             <ProtectedRoute userInfo={userInfo} isLoading={isLoading} hasCheckedAuth={hasCheckedAuth}>
-              <AuthenticatedLayout />
+              <SurveyProtectedRoute SurveysByStudentList={SurveysByStudentList}>
+                <AuthenticatedLayout />
+              </SurveyProtectedRoute>
             </ProtectedRoute>
           }
         >

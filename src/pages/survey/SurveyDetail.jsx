@@ -5,7 +5,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from "react-toastify";
 
 // --- Sub-Component: Một dòng câu hỏi ---
-const QuestionRow = ({ stt, question, lstEvaluations, values, onChange, onChangeFeedback }) => {
+const QuestionRow = ({ stt, question, lstEvaluations, values, onChange, onChangeFeedback, isSubmit }) => {
     if (question.TypeCriteria === 1) {
         // TypeCriteria: yes/no
         return (
@@ -26,6 +26,7 @@ const QuestionRow = ({ stt, question, lstEvaluations, values, onChange, onChange
                                 checked={values[question.SurveyAnswerID]?.EvaluationID === opt.EvaluationID}
                                 onChange={() => onChange(question.SurveyAnswerID, opt.EvaluationID, opt.EvaluationName)}
                                 className="w-4 h-4 text-[#026aa8] border-gray-300 focus:ring-[#026aa8] focus:ring-offset-0 cursor-pointer"
+                                disabled={isSubmit}
                             />
                             {/* Hover text cũng dùng mã màu này */}
                             <span className="text-sm text-gray-600 group-hover:text-[#026aa8] transition-colors">
@@ -48,6 +49,7 @@ const QuestionRow = ({ stt, question, lstEvaluations, values, onChange, onChange
                     placeholder="Nhập ý kiến của bạn tại đây..."
                     value={values[question.SurveyAnswerID]?.ContentAnswer || ""}
                     onChange={(e) => onChangeFeedback(question.SurveyAnswerID, e.target.value)}
+                    disabled={isSubmit}
                 />
             </>
         );
@@ -61,7 +63,7 @@ export default function SurveyDetail() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const isSubmit = searchParams.get('submit')
+    const isSubmit = searchParams.get('submit')?.toLowerCase() === 'true';
     const [surveyData, setSurveyData] = useState([]);
     const [surveyCates, setSurveyCates] = useState([]);
     const [lstEvaluations, setLstEvaluations] = useState([]);
@@ -137,28 +139,50 @@ export default function SurveyDetail() {
     };
 
     const handleSubmit = async () => {
+        // --- BƯỚC 1: XÁC ĐỊNH CÁC CÂU HỎI BẮT BUỘC (RADIO BUTTONS) ---
+        let requiredQIds = [];
+        surveyCates.forEach(section => {
+            section.lstSurveyAnswers.forEach(q => {
+                if (q.TypeCriteria === 1) {
+                    requiredQIds.push(String(q.SurveyAnswerID));
+                }
+            });
+        });
+
+        // --- BƯỚC 2: KIỂM TRA TẤT CẢ CÂU HỎI BẮT BUỘC ĐÃ ĐƯỢC TRẢ LỜI CHƯA ---
+        const answeredQIds = Object.keys(answers);
+
+        // Tìm các ID bắt buộc mà chưa có trong answers (chưa được trả lời)
+        const unansweredQIds = requiredQIds.filter(qId => {
+            return !answeredQIds.includes(qId);
+        });
+
+        if (unansweredQIds.length > 0) {
+            toast.warning(`Vui lòng trả lời đầy đủ tất cả các câu hỏi đánh giá.`);
+            return;
+        }
+
+        // --- BƯỚC 3: CHUYỂN ĐỔI VÀ GỬI DỮ LIỆU (Logic đã có) ---
         const surveyAnswers = Object.keys(answers)
             .map(qId => {
                 const answerDetail = answers[qId];
 
-                // và loại bỏ các câu hỏi feedback trống
                 if (!answerDetail.ContentAnswer && answerDetail.EvaluationID === null) {
                     return null;
                 }
 
-                // Trả về đối tượng model mà BE mong đợi
                 return {
                     SurveyAnswerID: parseInt(qId), // ID câu hỏi (từ key của answers)
                     EvaluationID: answerDetail.EvaluationID,
                     ContentAnswer: answerDetail.ContentAnswer,
-                    IsAnswer: true, // Luôn là true vì đã có trong answers
+                    IsAnswer: true,
                 };
             })
-            .filter(answer => answer !== null); // Loại bỏ các câu hỏi feedback trống
+            .filter(answer => answer !== null);
 
-        // 2. Kiểm tra nếu không có câu trả lời nào
+        // validate
         if (surveyAnswers.length === 0) {
-            toast.warning("Vui lòng trả lời ít nhất một câu hỏi hoặc nhập ý kiến đóng góp.");
+            toast.warning("Phiếu khảo sát trống. Vui lòng trả lời.");
             return;
         }
 
@@ -167,11 +191,12 @@ export default function SurveyDetail() {
             lstSurveyAnswers: surveyAnswers
         };
 
-
         let res = await ApiSurvey.UpdateTemplateSurveyApi(postModel);
         if (res === true) {
             toast.success("Đã gửi khảo sát thành công!");
             navigate('/danh-sach-khao-sat');
+        } else {
+            toast.error(res.message || "Gửi khảo sát thất bại.");
         }
     };
 
@@ -229,6 +254,7 @@ export default function SurveyDetail() {
                                             values={answers}
                                             onChange={handleOptionChange}
                                             onChangeFeedback={handleFeedbackChange}
+                                            isSubmit={isSubmit}
                                         />
                                     ))}
                                 </div>
@@ -237,7 +263,9 @@ export default function SurveyDetail() {
                     })}
 
                     {/* Nút Submit */}
-                    {!isSubmit &&
+                    {isSubmit ?
+                        <span className="text-red-600">Xin chân thành cảm ơn sự hợp tác của các bạn!</span>
+                        :
                         <div className="flex justify-center md:justify-end gap-4 mt-8 pt-6 border-t border-gray-200">
                             <button className="px-6 py-2 bg-gray-100 text-gray-700 font-semibold rounded hover:bg-gray-200 transition-colors" onClick={() => navigate('/danh-sach-khao-sat')}>
                                 Hủy bỏ
@@ -254,11 +282,11 @@ export default function SurveyDetail() {
                 </div>
 
                 {/* Footer Thông tin liên hệ */}
-                <div className="bg-gray-50 p-6 border-t border-gray-200 text-center text-sm text-gray-500">
+                <div className="bg-gray-50 p-6 border-t border-gray-200 text-sm text-gray-700">
                     <h1 className="font-bold text-gray-700 mb-1">Phòng Khảo thí và Đảm bảo chất lượng</h1>
-                    <p>Trường Đại học Công nghiệp TP.HCM</p>
-                    <p>12 Nguyễn Văn Bảo, P.4, Quận Gò Vấp, Tp.HCM (Phòng C1.03)</p>
-                    <p>Điện thoại: 083. 8940390 – 169</p>
+                    <p>Học viện cán bộ TP.HCM</p>
+                    <p>324 Chu Văn An - Phường Bình Thạnh - TPHCM</p>
+                    <p>Điện thoại: 02822437830 - 02822437838</p>
                 </div>
 
             </div>
