@@ -16,7 +16,6 @@ export default function SurveyOther() {
     // --- 1. State cho phân trang ---
     const [currentPage, setCurrentPage] = useState(1);
     const pageSize = 20;
-    console.log('sssssss ', SurveyForTeacherStudentList);
 
     // --------------------------------------- Initial
     useEffect(() => {

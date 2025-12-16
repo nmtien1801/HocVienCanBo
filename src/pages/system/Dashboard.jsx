@@ -7,6 +7,8 @@ import { toast } from "react-toastify";
 import { useNavigate } from 'react-router-dom';
 import ImageLoader from "../../components/ImageLoader.jsx";
 import { TypeUserIDCons } from "../../utils/constants";
+import SurveyNotification from '../../components/NotifySurvey.jsx';
+import { getTemplateSurveyForTeacherStudent } from '../../redux/surveySlice.js'
 
 export default function Dashboard() {
     const dispatch = useDispatch();
@@ -15,6 +17,26 @@ export default function Dashboard() {
     const { userInfo } = useSelector((state) => state.auth);
     const [dataSchedule, setDataSchedule] = useState([]); // lịch học lớp của bạn
     let role = userInfo?.TypeUserID !== TypeUserIDCons.Student && userInfo?.TypeStudentID !== TypeUserIDCons.Student
+
+    // state khảo sát chưa điền
+    const [showSurvey, setShowSurvey] = useState(true);
+    const { SurveyForTeacherStudentList } = useSelector((state) => state.survey);
+
+
+    useEffect(() => {
+        // Fetch danh sách khảo sát chưa điền
+        const fetchPendingSurveys = async () => {
+            const res = await dispatch(getTemplateSurveyForTeacherStudent());
+
+            if (res.message) {
+                toast.error(res.message);
+            }
+        };
+
+        fetchPendingSurveys();
+    }, []);
+
+    // -------------------------------------------- INITIAL
     useEffect(() => {
         const fetchDashboardTotal = async () => {
             let res = await dispatch(DashboardTotal());
@@ -343,6 +365,14 @@ export default function Dashboard() {
                 <div className="mt-6 lg:mt-8 text-center lg:text-right text-[10px] lg:text-xs text-gray-500">
                     Copyright © 2023 by G&BSoft
                 </div>
+
+                {showSurvey && (
+                    <SurveyNotification
+                        surveys={SurveyForTeacherStudentList}
+                        onClose={() => setShowSurvey(false)}
+                        onNavigate={(surveyId) => navigate(`/survey/${surveyId}`)}
+                    />
+                )}
             </div>
         </div>
     );
