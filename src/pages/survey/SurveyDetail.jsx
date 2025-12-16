@@ -61,6 +61,7 @@ export default function SurveyDetail() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
+    const isSubmit = searchParams.get('submit')
     const [surveyData, setSurveyData] = useState([]);
     const [surveyCates, setSurveyCates] = useState([]);
     const [lstEvaluations, setLstEvaluations] = useState([]);
@@ -207,7 +208,6 @@ export default function SurveyDetail() {
                     {/* Render các phần câu hỏi */}
                     {surveyCates && surveyCates.length > 0 && surveyCates.map((section, index) => {
                         // 1. Xác định section cuối cùng
-
                         return (
                             <div key={index} className="mb-8">
                                 <h3 className="font-bold text-[#026aa8] text-lg mb-3 bg-gray-50 p-2 rounded">
@@ -237,17 +237,19 @@ export default function SurveyDetail() {
                     })}
 
                     {/* Nút Submit */}
-                    <div className="flex justify-center md:justify-end gap-4 mt-8 pt-6 border-t border-gray-200">
-                        <button className="px-6 py-2 bg-gray-100 text-gray-700 font-semibold rounded hover:bg-gray-200 transition-colors" onClick={() => navigate('/danh-sach-khao-sat')}>
-                            Hủy bỏ
-                        </button>
-                        <button
-                            onClick={handleSubmit}
-                            className="px-8 py-2 bg-[#026aa8] text-white font-bold rounded shadow hover:opacity-90 transition-all transform active:scale-95"
-                        >
-                            Gửi khảo sát
-                        </button>
-                    </div>
+                    {!isSubmit &&
+                        <div className="flex justify-center md:justify-end gap-4 mt-8 pt-6 border-t border-gray-200">
+                            <button className="px-6 py-2 bg-gray-100 text-gray-700 font-semibold rounded hover:bg-gray-200 transition-colors" onClick={() => navigate('/danh-sach-khao-sat')}>
+                                Hủy bỏ
+                            </button>
+                            <button
+                                onClick={handleSubmit}
+                                className="px-8 py-2 bg-[#026aa8] text-white font-bold rounded shadow hover:opacity-90 transition-all transform active:scale-95"
+                            >
+                                Gửi khảo sát
+                            </button>
+                        </div>
+                    }
 
                 </div>
 

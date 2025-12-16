@@ -40,7 +40,7 @@ export default function SurveyPage() {
     // -------------------------------------------------- Action
     const handleDetailSurvey = async (item) => {
         if (item.SurveyID !== null) {
-            navigate(`/survey-detail?id=${item.SurveyID}`)
+            navigate(`/survey-detail?id=${item.SurveyID}&submit=${item.StatusID_Survey}`)
         } else {
             let payload = {
                 ...item,
@@ -51,7 +51,7 @@ export default function SurveyPage() {
             if (res.message) {
                 toast.error(res.message);
             } else {
-                navigate(`/survey-detail?id=${res.SurveyID}`)
+                navigate(`/survey-detail?id=${res.SurveyID}&submit=${item.StatusID_Survey}`)
             }
         }
     }
