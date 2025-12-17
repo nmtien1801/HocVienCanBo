@@ -173,9 +173,9 @@ function RouterRoot() {
           path="/"
           element={
             <ProtectedRoute userInfo={userInfo} isLoading={isLoading} hasCheckedAuth={hasCheckedAuth}>
-              {/* <SurveyProtectedRoute SurveysByStudentList={SurveysByStudentList}> */}
+              <SurveyProtectedRoute SurveysByStudentList={SurveysByStudentList}>
                 <AuthenticatedLayout />
-              {/* </SurveyProtectedRoute> */}
+              </SurveyProtectedRoute>
             </ProtectedRoute>
           }
         >

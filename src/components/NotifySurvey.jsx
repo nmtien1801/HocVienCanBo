@@ -1,47 +1,38 @@
 import React, { useState, useEffect } from 'react';
-import { X, ClipboardList, AlertCircle, ChevronRight } from 'lucide-react';
+import { X, ClipboardList, AlertCircle, ChevronRight, ChevronLeft } from 'lucide-react';
 import ApiSurvey from '../apis/ApiSurvey';
 import { toast } from 'react-toastify';
 
 const SurveyNotification = ({ surveys = [], onClose, onNavigate }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [isMounted, setIsMounted] = useState(true);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Mock data nếu không có surveys được truyền vào
-  const defaultSurveys = [
-    {
-      id: 1,
-      title: "Khảo sát đánh giá chất lượng giảng dạy học kỳ 1",
-      subject: "Lập trình Web",
-      teacher: "Nguyễn Văn A",
-      deadline: "2024-12-20",
-      type: "teaching"
-    },
-    {
-      id: 2,
-      title: "Khảo sát cơ sở vật chất phòng học",
-      subject: "Tất cả các môn",
-      teacher: "",
-      deadline: "2024-12-25",
-      type: "facility"
-    }
-  ];
+  // CHỈ SỬ DỤNG DỮ LIỆU ĐƯỢC TRUYỀN VÀO
+  const displaySurveys = surveys;
 
-  const displaySurveys = surveys.length > 0 ? surveys : defaultSurveys;
+  // Lấy survey hiện tại (chỉ khi có dữ liệu)
+  const currentSurvey = displaySurveys.length > 0 ? displaySurveys[currentIndex] : null;
 
   // Hiển thị Modal sau khi mount để kích hoạt Transition
   useEffect(() => {
     if (displaySurveys.length > 0) {
       setIsVisible(true);
+      // Đảm bảo currentIndex không vượt quá giới hạn nếu danh sách thay đổi
+      if (currentIndex >= displaySurveys.length) {
+        setCurrentIndex(0);
+      }
+    } else {
+      // Nếu không có khảo sát, đóng popup
+      handleClose(false);
     }
   }, [displaySurveys]);
 
-  const handleClose = () => {
+  const handleClose = (shouldCallOnClose = true) => {
     setIsVisible(false);
 
     setTimeout(() => {
-      setIsMounted(false);
-      if (onClose) onClose();
+      if (shouldCallOnClose && onClose) onClose();
     }, 300);
   };
 
@@ -50,10 +41,21 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate }) => {
     if (res.message) {
       toast.error(res.message);
     } else {
+      handleClose();
       onNavigate(res);
     }
   };
 
+  // Hàm điều hướng Carousel
+  const goToNext = () => {
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % displaySurveys.length);
+  };
+
+  const goToPrev = () => {
+    setCurrentIndex((prevIndex) => (prevIndex - 1 + displaySurveys.length) % displaySurveys.length);
+  };
+
+  // Hàm tính toán ngày còn lại
   const getDaysRemaining = (deadline) => {
     const today = new Date();
     const deadlineDate = new Date(deadline);
@@ -62,6 +64,7 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate }) => {
     return diffDays;
   };
 
+  // Hàm xác định màu khẩn cấp
   const getUrgencyColor = (daysRemaining) => {
     if (daysRemaining <= 0) return 'text-red-600 bg-red-100';
     if (daysRemaining <= 2) return 'text-red-600 bg-red-50';
@@ -69,7 +72,12 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate }) => {
     return 'text-[#0081cd] bg-[#e0f7ff]';
   };
 
-  if (!isMounted || displaySurveys.length === 0) return null;
+
+  // KHÔNG HIỂN THỊ NẾU KHÔNG CÓ DỮ LIỆU HOẶC CHƯA MOUNT
+  if (displaySurveys.length === 0 || !currentSurvey) return null;
+  const daysRemaining = getDaysRemaining(currentSurvey.ToDate);
+  const urgencyColor = getUrgencyColor(daysRemaining);
+
 
   return (
     <div
@@ -79,13 +87,14 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate }) => {
       <div
         id="survey-popup"
         className={`
-          bg-white rounded-xl shadow-2xl max-w-sm w-full overflow-hidden 
-          pointer-events-auto transform transition-all duration-300 ease-out
-          ${isVisible
+                    bg-white rounded-xl shadow-2xl max-w-sm w-full overflow-hidden 
+                    pointer-events-auto transform transition-all duration-300 ease-out
+                    ${isVisible
             ? 'opacity-100 translate-x-0'
             : 'opacity-0 translate-x-full'} 
-        `}
+                `}
       >
+        {/* Header */}
         <div className="bg-gradient-to-r from-[#0081cd] to-[#026aa8] px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ClipboardList className="text-white flex-shrink-0" size={20} />
@@ -98,9 +107,10 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate }) => {
               </p>
             </div>
           </div>
+          {/* Nút đóng X vẫn giữ để đóng toàn bộ popup */}
           <button
-            onClick={handleClose}
-            className="text-white p-1 rounded-full transition-all flex-shrink-0"
+            onClick={() => handleClose()}
+            className="text-white p-1 rounded-full hover:bg-[#026aa8]/50 transition-colors flex-shrink-0 cursor-pointer"
           >
             <X size={16} />
           </button>
@@ -113,50 +123,59 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate }) => {
           </div>
         </div>
 
-        <div className="p-4 space-y-3 max-h-72 overflow-y-auto">
-          {displaySurveys.slice(0, 3).map((survey, index) => {
-            const daysRemaining = getDaysRemaining(survey.ToDate);
-            const urgencyColor = getUrgencyColor(daysRemaining);
+        {/* KHU VỰC CAROUSEL */}
+        <div className="p-4 relative">
+          {/* Nút điều hướng trái */}
+          {displaySurveys.length > 1 && (
+            <button
+              onClick={goToPrev}
+              className="absolute left-0 top-1/2 -translate-y-1/2 p-1 bg-white/70 rounded-full shadow-md z-10 text-gray-700 hover:bg-white transition-colors ml-2"
+              aria-label="Khảo sát trước"
+            >
+              <ChevronLeft size={18} />
+            </button>
+          )}
 
-            return (
-              <div
-                key={survey.TemplateSurveyID || index}
-                onClick={() => handleSurveyClick(survey)}
-                className="border-b border-gray-100 pb-3 hover:bg-gray-50 transition-colors cursor-pointer group"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <h3
-                      className="font-medium text-gray-800 text-sm mb-1 line-clamp-1 group-hover:text-[#0081cd]">
-                      {survey.Title}
-                    </h3>
-                    <p className="text-xs text-gray-600 line-clamp-1">
-                      {survey.PermissionName}
-                    </p>
-                  </div>
+          {/* Nội dung Khảo sát hiện tại */}
+          <div className="min-h-[100px] transition-opacity duration-300">
+            <div className="border-b border-gray-100 pb-3">
+              <h3 className="font-bold text-gray-800 text-sm mb-1">
+                {currentSurvey.Title}
+              </h3>
+              <p className="text-xs text-gray-600 mb-2 my-3">
+                {currentSurvey.PermissionName}
+              </p>
 
-                  <div className="flex-shrink-0">
-                    <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium ${urgencyColor}`}>
-                      {daysRemaining <= 0 ? <>Quá hạn</> : `Còn ${daysRemaining} ngày`}
-                    </span>
-                  </div>
-                </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-500">
+                  {currentIndex + 1} / {displaySurveys.length}
+                </span>
+                <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium ${urgencyColor}`}>
+                  {daysRemaining <= 0 ? <>Quá hạn</> : `Còn ${daysRemaining} ngày`}
+                </span>
               </div>
-            );
-          })}
-          {displaySurveys.length > 3 && (
-            <p className="text-center text-xs text-[#0081cd] pt-2 cursor-pointer hover:underline" onClick={handleClose}>
-              Và {displaySurveys.length - 3} khảo sát khác...
-            </p>
+            </div>
+          </div>
+
+          {/* Nút điều hướng phải */}
+          {displaySurveys.length > 1 && (
+            <button
+              onClick={goToNext}
+              className="absolute right-0 top-1/2 -translate-y-1/2 p-1 bg-white/70 rounded-full shadow-md z-10 text-gray-700 hover:bg-white transition-colors mr-2"
+              aria-label="Khảo sát tiếp theo"
+            >
+              <ChevronRight size={18} />
+            </button>
           )}
         </div>
 
         <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-end">
           <button
-            onClick={handleClose}
-            className="px-3 py-1.5 text-xs font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-colors"
+            onClick={() => handleSurveyClick(currentSurvey)}
+            className="flex items-center gap-1 px-4 py-1.5 text-sm font-semibold text-white bg-[#0081cd] rounded-lg hover:bg-[#026aa8] transition-colors shadow-md cursor-pointer"
           >
-            Đóng
+            Khảo sát ngay
+            <ChevronRight size={16} />
           </button>
         </div>
       </div>
