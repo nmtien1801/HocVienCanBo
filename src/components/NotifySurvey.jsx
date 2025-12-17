@@ -8,7 +8,6 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const allKeys = Object.keys(PermissionSurvey);
-  const isClient = +allKeys[2] === 3 ? true : false;
 
   // Thêm state để lưu thông tin Client
   const [clientInfo, setClientInfo] = useState({
@@ -23,9 +22,11 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate }) => {
     setClientInfo(prev => ({ ...prev, [name]: value }));
   };
 
-  // CHỈ SỬ DỤNG DỮ LIỆU ĐƯỢC TRUYỀN VÀO
+  // check quyền
   const displaySurveys = surveys;
   const currentSurvey = displaySurveys.length > 0 ? displaySurveys[currentIndex] : null;
+  const clientPermissionKey = +allKeys[2]
+  const isClientSurvey = currentSurvey && currentSurvey.Permission === clientPermissionKey;
 
   // Hiển thị Modal sau khi mount để kích hoạt Transition
   useEffect(() => {
@@ -40,6 +41,7 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate }) => {
     }
   }, [displaySurveys]);
 
+  // ------------------------------------------------ CRUD
   const handleClose = (shouldCallOnClose = true) => {
     setIsVisible(false);
 
@@ -49,11 +51,15 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate }) => {
   };
 
   const handleSurveyClick = async (survey) => {
-    let client = allKeys[2];
-    if (survey.Permission === +client) {
+    if (survey.Permission === +clientPermissionKey) {
       // client submit      
       if (!clientInfo.FullName || !clientInfo.Email || !clientInfo.Phone) {
         toast.error("Vui lòng nhập đầy đủ Tên, Email, và Số điện thoại.");
+        return;
+      }
+
+      if (!validateEmail(clientInfo.Email.trim())) {
+        toast.error("Vui lòng nhập đúng định dạng Email.");
         return;
       }
 
@@ -91,7 +97,15 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate }) => {
     setCurrentIndex((prevIndex) => (prevIndex - 1 + displaySurveys.length) % displaySurveys.length);
   };
 
-  // Hàm tính toán ngày còn lại
+  // --------------------------------------------------- Hàm tính toán 
+  // check email
+  const validateEmail = (email) => {
+    // Regex cơ bản: kiểm tra chuỗi có chứa @ và ít nhất một dấu . sau @
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  };
+
+  // ngày còn lại 
   const getDaysRemaining = (deadline) => {
     const today = new Date();
     const deadlineDate = new Date(deadline);
@@ -193,7 +207,7 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate }) => {
             </div>
           </div>
 
-          {isClient && (
+          {isClientSurvey && (
             <div className="mt-4 pt-3 border-t border-gray-100 space-y-3">
               <p className="font-semibold text-gray-700 text-sm">
                 Vui lòng nhập thông tin liên hệ:

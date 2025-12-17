@@ -6,6 +6,8 @@ import { resetDashboard } from "./dashboardSlice";
 import { resetNew } from "./newSlice";
 import { resetPoint } from "./pointSlice";
 import { resetStudent } from "./studentSlice";
+import { resetSurvey } from "./surveySlice";
+import { resetTemplateSurveys } from "./TemplateSurveysSlice";
 
 const initialState = {
   userInfo: {},
@@ -49,6 +51,8 @@ export const logout = createAsyncThunk(
     dispatch(resetNew());
     dispatch(resetPoint());
     dispatch(resetStudent());
+    dispatch(resetSurvey());
+    dispatch(resetTemplateSurveys());
 
     return null;
   }

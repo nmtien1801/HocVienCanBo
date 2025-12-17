@@ -37,6 +37,7 @@ export default function FormEvaluation({ visible, onClose, form }) {
   useEffect(() => {
     const fetchData = async () => {
       const TemplateSurveyID = form.TemplateSurveyID;
+console.log('sssss ', form);
 
       if (TemplateSurveyID) {
         const res = await ApiEvaluations.getEvaluationByTemplateSurveyIDApi(TemplateSurveyID);

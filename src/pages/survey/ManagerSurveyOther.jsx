@@ -57,10 +57,10 @@ const ManagerSurveyOther = () => {
 
     // Hàm mở modal chọn tiêu chí
     const openEvaluationModal = (catId) => {
-        setCategoryForm(prev => ({
-            ...prev,
-            TemplateSurveyCateID: catId
-        }));
+        setTemplateForm({
+            ...templateForm,
+            TemplateSurveyID: catId,
+        });
         setShowEvaluation(true);
     };
 
@@ -719,7 +719,7 @@ const ManagerSurveyOther = () => {
             <FormEvaluation
                 visible={showEvaluation}
                 onClose={() => { setShowEvaluation(false); fetchList(); }}
-                form={categoryForm} 
+                form={templateForm}
             />
         </div>
     );

@@ -50,6 +50,7 @@ import { getSurveySubjectByStudentID } from "../redux/surveySlice.js";
 import SurveyDetailOther from "../pages/survey/SurveyDetailOther.jsx";
 import { toast } from 'react-toastify';
 import SurveyDetailClient from "../pages/survey/SurveyDetailClient.jsx";
+import ReportSurvey from "../pages/survey/ReportSurvey.jsx";
 
 const ProtectedRoute = ({ children, userInfo, isLoading, hasCheckedAuth }) => {
   if (isLoading || !hasCheckedAuth) {
@@ -200,6 +201,7 @@ function RouterRoot() {
           <Route path="danh-sach-khao-sat" element={<SurveyTeacher />} />
           <Route path="survey-detail" element={<SurveyDetail />} />
           <Route path="survey-other-detail" element={<SurveyDetailOther />} />
+          <Route path="report-survey" element={<ReportSurvey />} />
 
           {/* route schedule */}
           <Route path="schedule-teach-month" element={<ScheduleTeachMonth />} />

@@ -50,6 +50,7 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
     userInfo?.TypeUserID === TypeUserIDCons.Administrator
       ? { label: 'Nhập thông báo', path: '/manager-notification' }
       : null,
+    { label: 'Báo cáo khảo sát', path: '/report-survey' },
   ].filter(Boolean)
 
   const scheduleItems = [
