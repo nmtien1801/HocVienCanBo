@@ -45,10 +45,10 @@ import SurveyManager from "../pages/survey/ManagerSurvey.jsx"
 import ManagerSurveyOther from "../pages/survey/ManagerSurveyOther.jsx"
 import ManagerQuestion from "../pages/question/ManagerQuestion.jsx"
 import SurveyTeacher from "../pages/survey/SurveyTeacher.jsx";
-import SurveyOther from "../pages/survey/SurveyOther.jsx";
 import SurveyDetail from "../pages/survey/SurveyDetail.jsx";
 import { getSurveySubjectByStudentID } from "../redux/surveySlice.js";
 import SurveyDetailOther from "../pages/survey/SurveyDetailOther.jsx";
+import { toast } from 'react-toastify';
 
 const ProtectedRoute = ({ children, userInfo, isLoading, hasCheckedAuth }) => {
   if (isLoading || !hasCheckedAuth) {
@@ -116,7 +116,6 @@ function RouterRoot() {
     fetchSurveyByID();
   }, [dispatch]);
 
-
   useEffect(() => {
     if (!hasCheckedAuth && !isLoading) {
       dispatch(GetAccount());
@@ -173,9 +172,9 @@ function RouterRoot() {
           path="/"
           element={
             <ProtectedRoute userInfo={userInfo} isLoading={isLoading} hasCheckedAuth={hasCheckedAuth}>
-              <SurveyProtectedRoute SurveysByStudentList={SurveysByStudentList}>
+              {/* <SurveyProtectedRoute SurveysByStudentList={SurveysByStudentList}> */}
                 <AuthenticatedLayout />
-              </SurveyProtectedRoute>
+              {/* </SurveyProtectedRoute> */}
             </ProtectedRoute>
           }
         >
@@ -191,7 +190,6 @@ function RouterRoot() {
           <Route path="manager-question" element={<ManagerQuestion />} />
           <Route path="danh-sach-khao-sat" element={<SurveyTeacher />} />
           <Route path="survey-detail" element={<SurveyDetail />} />
-          <Route path="survey-other" element={<SurveyOther />} />
           <Route path="survey-other-detail" element={<SurveyDetailOther />} />
 
           {/* route schedule */}

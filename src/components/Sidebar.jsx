@@ -38,7 +38,6 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
     { label: 'Đổi mật khẩu tài khoản', path: '/change-pass-tc' },
     { label: 'Thông tin tài khoản', path: '/account' },
     { label: 'Khảo sát giảng viên giảng dạy', path: '/danh-sach-khao-sat' },
-    { label: 'Khảo sát khác', path: '/survey-other' },
     userInfo?.TypeUserID === TypeUserIDCons.Administrator
       ? { label: 'Ngân hàng câu hỏi', path: '/manager-question' }
       : null,

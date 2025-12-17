@@ -4,7 +4,8 @@ import ApiSurvey from "../apis/ApiSurvey.js";
 const initialState = {
   SurveysByStudentList: [],
   SurveysByStudentTotal: 0,
-  SurveyForTeacherStudentList:[]
+  SurveyForTeacherStudentList: [],
+  TemplateSurveyForClientList: [],
 };
 
 export const getSurveySubjectByStudentID = createAsyncThunk(
@@ -22,6 +23,14 @@ export const getTemplateSurveyForTeacherStudent = createAsyncThunk(
   "survey/getTemplateSurveyForTeacherStudent",
   async (thunkAPI) => {
     const response = await ApiSurvey.getTemplateSurveyForTeacherStudentApi();
+    return response;
+  }
+);
+
+export const getTemplateSurveyForClient = createAsyncThunk(
+  "survey/getTemplateSurveyForClient",
+  async (thunkAPI) => {
+    const response = await ApiSurvey.getTemplateSurveyForClientApi();
     return response;
   }
 );
@@ -49,10 +58,24 @@ const surveySlice = createSlice({
     // getTemplateSurveyForTeacherStudent
     builder
       .addCase(getTemplateSurveyForTeacherStudent.pending, (state) => {})
-      .addCase(getTemplateSurveyForTeacherStudent.fulfilled, (state, action) => {
-        state.SurveyForTeacherStudentList = action.payload.data || [];
+      .addCase(
+        getTemplateSurveyForTeacherStudent.fulfilled,
+        (state, action) => {
+          state.SurveyForTeacherStudentList = action.payload.data || [];
+        }
+      )
+      .addCase(
+        getTemplateSurveyForTeacherStudent.rejected,
+        (state, action) => {}
+      );
+
+    // getTemplateSurveyForClient
+    builder
+      .addCase(getTemplateSurveyForClient.pending, (state) => {})
+      .addCase(getTemplateSurveyForClient.fulfilled, (state, action) => {
+        state.TemplateSurveyForClientList = action.payload.data || [];
       })
-      .addCase(getTemplateSurveyForTeacherStudent.rejected, (state, action) => {});
+      .addCase(getTemplateSurveyForClient.rejected, (state, action) => {});
   },
 });
 

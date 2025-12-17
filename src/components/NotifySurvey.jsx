@@ -2,23 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { X, ClipboardList, AlertCircle, ChevronRight, ChevronLeft } from 'lucide-react';
 import ApiSurvey from '../apis/ApiSurvey';
 import { toast } from 'react-toastify';
+import { PermissionSurvey } from '../utils/constants';
 
 const SurveyNotification = ({ surveys = [], onClose, onNavigate }) => {
   const [isVisible, setIsVisible] = useState(false);
-  const [isMounted, setIsMounted] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // CHỈ SỬ DỤNG DỮ LIỆU ĐƯỢC TRUYỀN VÀO
   const displaySurveys = surveys;
-
-  // Lấy survey hiện tại (chỉ khi có dữ liệu)
   const currentSurvey = displaySurveys.length > 0 ? displaySurveys[currentIndex] : null;
 
   // Hiển thị Modal sau khi mount để kích hoạt Transition
   useEffect(() => {
     if (displaySurveys.length > 0) {
       setIsVisible(true);
-      // Đảm bảo currentIndex không vượt quá giới hạn nếu danh sách thay đổi
       if (currentIndex >= displaySurveys.length) {
         setCurrentIndex(0);
       }
@@ -37,12 +34,27 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate }) => {
   };
 
   const handleSurveyClick = async (survey) => {
-    let res = await ApiSurvey.CreateSurveyLocalApi(survey)
-    if (res.message) {
-      toast.error(res.message);
+    const allKeys = Object.keys(PermissionSurvey);
+    let client = allKeys[2];
+
+    if (survey.Permission === +client) {
+      // client submit
+      let res = await ApiSurvey.CreateSurveyClientApi(survey)
+      if (res.message) {
+        toast.error(res.message);
+      } else {
+        handleClose();
+        onNavigate(res);
+      }
     } else {
-      handleClose();
-      onNavigate(res);
+      // teacher or student submit
+      let res = await ApiSurvey.CreateSurveyLocalApi(survey)
+      if (res.message) {
+        toast.error(res.message);
+      } else {
+        handleClose();
+        onNavigate(res);
+      }
     }
   };
 

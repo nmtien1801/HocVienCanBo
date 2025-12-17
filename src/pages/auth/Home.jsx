@@ -1,13 +1,36 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import SurveyNotification from '../../components/NotifySurvey.jsx';
+import { getTemplateSurveyForClient } from '../../redux/surveySlice.js'
+import { useSelector, useDispatch } from "react-redux";
+import { toast } from 'react-toastify';
 
 export default function Home() {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
+    // state khảo sát chưa điền
+    const [showSurvey, setShowSurvey] = useState(true);
+    const { TemplateSurveyForClientList } = useSelector((state) => state.survey);
+
+    useEffect(() => {
+        // Fetch danh sách khảo sát chưa điền
+        const fetchPendingSurveys = async () => {
+            const res = await dispatch(getTemplateSurveyForClient());
+
+            if (res.message) {
+                toast.error(res.message);
+            }
+        };
+
+        fetchPendingSurveys();
+    }, []);
+
+    // --------------------------------------- CRUD
     const handleNavigateToLogin = (type) => {
-        if(type === 'chinh-tri'){
+        if (type === 'chinh-tri') {
             navigate('/loginTC');
-        }else{
+        } else {
             navigate('/loginHBD');
         }
     };
@@ -94,6 +117,15 @@ export default function Home() {
                     </div>
                 </div>
             </div>
+            {showSurvey && (
+                <SurveyNotification
+                    surveys={TemplateSurveyForClientList}
+                    onClose={() => setShowSurvey(false)}
+                    onNavigate={(stateData) =>
+                        navigate(`/survey-client-detail`, { state: { apiResponse: stateData } })
+                    }
+                />
+            )}
         </div>
     );
 }
