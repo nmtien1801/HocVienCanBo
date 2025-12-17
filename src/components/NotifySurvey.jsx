@@ -7,6 +7,21 @@ import { PermissionSurvey } from '../utils/constants';
 const SurveyNotification = ({ surveys = [], onClose, onNavigate }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const allKeys = Object.keys(PermissionSurvey);
+  const isClient = +allKeys[2] === 3 ? true : false;
+
+  // Thêm state để lưu thông tin Client
+  const [clientInfo, setClientInfo] = useState({
+    FullName: '',
+    Email: '',
+    Phone: ''
+  });
+
+  // Hàm xử lý thay đổi input
+  const handleClientInfoChange = (e) => {
+    const { name, value } = e.target;
+    setClientInfo(prev => ({ ...prev, [name]: value }));
+  };
 
   // CHỈ SỬ DỤNG DỮ LIỆU ĐƯỢC TRUYỀN VÀO
   const displaySurveys = surveys;
@@ -34,12 +49,21 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate }) => {
   };
 
   const handleSurveyClick = async (survey) => {
-    const allKeys = Object.keys(PermissionSurvey);
     let client = allKeys[2];
-
     if (survey.Permission === +client) {
-      // client submit
-      let res = await ApiSurvey.CreateSurveyClientApi(survey)
+      // client submit      
+      if (!clientInfo.FullName || !clientInfo.Email || !clientInfo.Phone) {
+        toast.error("Vui lòng nhập đầy đủ Tên, Email, và Số điện thoại.");
+        return;
+      }
+
+      let res = await ApiSurvey.CreateSurveyClientApi({
+        ...survey,
+        Email: clientInfo.Email,
+        FullName: clientInfo.FullName,
+        Phone: clientInfo.Phone
+      });
+
       if (res.message) {
         toast.error(res.message);
       } else {
@@ -168,6 +192,38 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate }) => {
               </div>
             </div>
           </div>
+
+          {isClient && (
+            <div className="mt-4 pt-3 border-t border-gray-100 space-y-3">
+              <p className="font-semibold text-gray-700 text-sm">
+                Vui lòng nhập thông tin liên hệ:
+              </p>
+              <input
+                type="text"
+                name="FullName"
+                placeholder="Họ và Tên"
+                value={clientInfo.FullName}
+                onChange={handleClientInfoChange}
+                className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-[#0081cd] focus:border-[#0081cd]"
+              />
+              <input
+                type="email"
+                name="Email"
+                placeholder="Email"
+                value={clientInfo.Email}
+                onChange={handleClientInfoChange}
+                className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-[#0081cd] focus:border-[#0081cd]"
+              />
+              <input
+                type="tel"
+                name="Phone"
+                placeholder="Số điện thoại"
+                value={clientInfo.Phone}
+                onChange={handleClientInfoChange}
+                className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-[#0081cd] focus:border-[#0081cd]"
+              />
+            </div>
+          )}
 
           {/* Nút điều hướng phải */}
           {displaySurveys.length > 1 && (

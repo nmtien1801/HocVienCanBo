@@ -49,6 +49,7 @@ import SurveyDetail from "../pages/survey/SurveyDetail.jsx";
 import { getSurveySubjectByStudentID } from "../redux/surveySlice.js";
 import SurveyDetailOther from "../pages/survey/SurveyDetailOther.jsx";
 import { toast } from 'react-toastify';
+import SurveyDetailClient from "../pages/survey/SurveyDetailClient.jsx";
 
 const ProtectedRoute = ({ children, userInfo, isLoading, hasCheckedAuth }) => {
   if (isLoading || !hasCheckedAuth) {
@@ -166,15 +167,23 @@ function RouterRoot() {
             </PublicRoute>
           }
         />
+        <Route
+          path="/survey-client-detail"
+          element={
+            <PublicRoute userInfo={userInfo} isLoading={isLoading} hasCheckedAuth={hasCheckedAuth}>
+              <SurveyDetailClient />
+            </PublicRoute>
+          }
+        />
 
         {/* private route */}
         <Route
           path="/"
           element={
             <ProtectedRoute userInfo={userInfo} isLoading={isLoading} hasCheckedAuth={hasCheckedAuth}>
-              {/* <SurveyProtectedRoute SurveysByStudentList={SurveysByStudentList}> */}
+              <SurveyProtectedRoute SurveysByStudentList={SurveysByStudentList}>
                 <AuthenticatedLayout />
-              {/* </SurveyProtectedRoute> */}
+              </SurveyProtectedRoute>
             </ProtectedRoute>
           }
         >
