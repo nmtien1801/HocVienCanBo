@@ -8,6 +8,7 @@ const ApiSurvey = {
     DeleteSurveyApi: (model) => ApiManager.post(`/survey-admin/delete`, model),
 
     getTemplateSurveyForTeacherStudentApi: () => ApiManager.get(`/template-survey/get-list-for-teacher-student`),
+    CreateSurveyLocalApi: (model) => ApiManager.post(`/survey/create-local`, model),
 }
 
 export default ApiSurvey;

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { X, ClipboardList, AlertCircle, ChevronRight } from 'lucide-react';
+import ApiSurvey from '../apis/ApiSurvey';
+import { toast } from 'react-toastify';
 
 const SurveyNotification = ({ surveys = [], onClose, onNavigate }) => {
-  const [isVisible, setIsVisible] = useState(false); 
-  const [isMounted, setIsMounted] = useState(true); 
+  const [isVisible, setIsVisible] = useState(false);
+  const [isMounted, setIsMounted] = useState(true);
 
   // Mock data nếu không có surveys được truyền vào
   const defaultSurveys = [
@@ -26,27 +28,29 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate }) => {
   ];
 
   const displaySurveys = surveys.length > 0 ? surveys : defaultSurveys;
-  
+
   // Hiển thị Modal sau khi mount để kích hoạt Transition
   useEffect(() => {
     if (displaySurveys.length > 0) {
-        setIsVisible(true);
+      setIsVisible(true);
     }
   }, [displaySurveys]);
 
   const handleClose = () => {
-    setIsVisible(false); 
-    
+    setIsVisible(false);
+
     setTimeout(() => {
-      setIsMounted(false); 
+      setIsMounted(false);
       if (onClose) onClose();
-    }, 300); 
+    }, 300);
   };
 
-  const handleSurveyClick = (surveyId) => {
-    handleClose(); 
-    if (onNavigate) {
-      onNavigate(surveyId);
+  const handleSurveyClick = async (survey) => {
+    let res = await ApiSurvey.CreateSurveyLocalApi(survey)
+    if (res.message) {
+      toast.error(res.message);
+    } else {
+      onNavigate(res);
     }
   };
 
@@ -59,26 +63,26 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate }) => {
   };
 
   const getUrgencyColor = (daysRemaining) => {
-    if (daysRemaining <= 0) return 'text-red-600 bg-red-100'; 
-    if (daysRemaining <= 2) return 'text-red-600 bg-red-50'; 
-    if (daysRemaining <= 5) return 'text-orange-600 bg-orange-50'; 
-    return 'text-[#0081cd] bg-[#e0f7ff]'; 
+    if (daysRemaining <= 0) return 'text-red-600 bg-red-100';
+    if (daysRemaining <= 2) return 'text-red-600 bg-red-50';
+    if (daysRemaining <= 5) return 'text-orange-600 bg-orange-50';
+    return 'text-[#0081cd] bg-[#e0f7ff]';
   };
 
   if (!isMounted || displaySurveys.length === 0) return null;
 
   return (
-    <div 
-      id="survey-popup-container" 
+    <div
+      id="survey-popup-container"
       className="fixed bottom-4 right-4 z-[9999] p-4 pointer-events-none"
     >
-      <div 
+      <div
         id="survey-popup"
         className={`
           bg-white rounded-xl shadow-2xl max-w-sm w-full overflow-hidden 
           pointer-events-auto transform transition-all duration-300 ease-out
-          ${isVisible 
-            ? 'opacity-100 translate-x-0' 
+          ${isVisible
+            ? 'opacity-100 translate-x-0'
             : 'opacity-0 translate-x-full'} 
         `}
       >
@@ -117,20 +121,20 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate }) => {
             return (
               <div
                 key={survey.TemplateSurveyID || index}
-                onClick={() => handleSurveyClick(survey.TemplateSurveyID)}
+                onClick={() => handleSurveyClick(survey)}
                 className="border-b border-gray-100 pb-3 hover:bg-gray-50 transition-colors cursor-pointer group"
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <h3 
-                        className="font-medium text-gray-800 text-sm mb-1 line-clamp-1 group-hover:text-[#0081cd]">
+                    <h3
+                      className="font-medium text-gray-800 text-sm mb-1 line-clamp-1 group-hover:text-[#0081cd]">
                       {survey.Title}
                     </h3>
                     <p className="text-xs text-gray-600 line-clamp-1">
-                        {survey.PermissionName}
+                      {survey.PermissionName}
                     </p>
                   </div>
-                  
+
                   <div className="flex-shrink-0">
                     <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium ${urgencyColor}`}>
                       {daysRemaining <= 0 ? <>Quá hạn</> : `Còn ${daysRemaining} ngày`}
@@ -141,9 +145,9 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate }) => {
             );
           })}
           {displaySurveys.length > 3 && (
-              <p className="text-center text-xs text-[#0081cd] pt-2 cursor-pointer hover:underline" onClick={handleClose}>
-                  Và {displaySurveys.length - 3} khảo sát khác...
-              </p>
+            <p className="text-center text-xs text-[#0081cd] pt-2 cursor-pointer hover:underline" onClick={handleClose}>
+              Và {displaySurveys.length - 3} khảo sát khác...
+            </p>
           )}
         </div>
 

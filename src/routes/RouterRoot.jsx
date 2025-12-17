@@ -48,6 +48,7 @@ import SurveyTeacher from "../pages/survey/SurveyTeacher.jsx";
 import SurveyOther from "../pages/survey/SurveyOther.jsx";
 import SurveyDetail from "../pages/survey/SurveyDetail.jsx";
 import { getSurveySubjectByStudentID } from "../redux/surveySlice.js";
+import SurveyDetailOther from "../pages/survey/SurveyDetailOther.jsx";
 
 const ProtectedRoute = ({ children, userInfo, isLoading, hasCheckedAuth }) => {
   if (isLoading || !hasCheckedAuth) {
@@ -172,9 +173,9 @@ function RouterRoot() {
           path="/"
           element={
             <ProtectedRoute userInfo={userInfo} isLoading={isLoading} hasCheckedAuth={hasCheckedAuth}>
-              <SurveyProtectedRoute SurveysByStudentList={SurveysByStudentList}>
+              {/* <SurveyProtectedRoute SurveysByStudentList={SurveysByStudentList}> */}
                 <AuthenticatedLayout />
-              </SurveyProtectedRoute>
+              {/* </SurveyProtectedRoute> */}
             </ProtectedRoute>
           }
         >
@@ -191,6 +192,7 @@ function RouterRoot() {
           <Route path="danh-sach-khao-sat" element={<SurveyTeacher />} />
           <Route path="survey-detail" element={<SurveyDetail />} />
           <Route path="survey-other" element={<SurveyOther />} />
+          <Route path="survey-other-detail" element={<SurveyDetailOther />} />
 
           {/* route schedule */}
           <Route path="schedule-teach-month" element={<ScheduleTeachMonth />} />

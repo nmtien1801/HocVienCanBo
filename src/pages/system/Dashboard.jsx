@@ -370,7 +370,9 @@ export default function Dashboard() {
                     <SurveyNotification
                         surveys={SurveyForTeacherStudentList}
                         onClose={() => setShowSurvey(false)}
-                        onNavigate={(surveyId) => navigate(`/survey/${surveyId}`)}
+                        onNavigate={( stateData) =>
+                            navigate(`/survey-other-detail`, { state: { apiResponse: stateData } })
+                        }
                     />
                 )}
             </div>

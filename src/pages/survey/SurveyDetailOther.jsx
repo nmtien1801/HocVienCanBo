@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import ApiSurvey from '../../apis/ApiSurvey.js'
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { toast } from "react-toastify";
 
 // --- Sub-Component: Một dòng câu hỏi ---
-const QuestionRow = ({ stt, question, lstEvaluations, values, onChange, onChangeFeedback, isSubmit }) => {
+const QuestionRow = ({ stt, question, lstEvaluations, values, onChange, onChangeFeedback }) => {
     if (question.TypeCriteria === 1) {
         // TypeCriteria: yes/no
         return (
@@ -52,7 +52,6 @@ const QuestionRow = ({ stt, question, lstEvaluations, values, onChange, onChange
                     placeholder="Nhập ý kiến của bạn tại đây..."
                     value={values[question.SurveyAnswerID]?.ContentAnswer || ""}
                     onChange={(e) => onChangeFeedback(question.SurveyAnswerID, e.target.value)}
-                    disabled={isSubmit}
                 />
             </>
         );
@@ -60,11 +59,11 @@ const QuestionRow = ({ stt, question, lstEvaluations, values, onChange, onChange
 };
 
 // --- Main Component ---
-export default function SurveyDetail() {
+export default function SurveyDetailOther() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
-    const isSubmit = searchParams.get('submit')?.toLowerCase() === 'true';
+    const location = useLocation();
+    const apiResponse = location.state?.apiResponse;
     const [surveyData, setSurveyData] = useState([]);
     const [surveyCates, setSurveyCates] = useState([]);
     const [lstEvaluations, setLstEvaluations] = useState([]);
@@ -92,26 +91,19 @@ export default function SurveyDetail() {
     // fetch data
     useEffect(() => {
         const fetchSurveyByID = async () => {
-            const idDetail = searchParams.get('id');
-            let res = await ApiSurvey.getSurveyByIDApi(idDetail)
-
-            setSurveyData(res.data);
-            setSurveyCates(res.data.lstSurveyCates)
-            setLstEvaluations(res.data.lstEvaluations)
+            setSurveyData(apiResponse);
+            setSurveyCates(apiResponse.lstSurveyCates)
+            setLstEvaluations(apiResponse.lstEvaluations)
 
             // >>> THÊM LOGIC NẠP CÂU TRẢ LỜI ĐÃ LƯU VÀO STATE ANSWERS <<<
-            if (res.data.lstSurveyCates && res.data.lstSurveyCates.length > 0) {
-                const savedAnswers = normalizeSavedAnswers(res.data.lstSurveyCates);
+            if (apiResponse.lstSurveyCates && apiResponse.lstSurveyCates.length > 0) {
+                const savedAnswers = normalizeSavedAnswers(apiResponse.lstSurveyCates);
                 setAnswers(savedAnswers);
-            }
-
-            if (res.Message) {
-                toast.error(res.message);
             }
         };
 
         fetchSurveyByID();
-    }, [dispatch, searchParams]);
+    }, [dispatch]);
 
     const [answers, setAnswers] = useState({});
 
@@ -195,7 +187,7 @@ export default function SurveyDetail() {
         let res = await ApiSurvey.UpdateTemplateSurveyApi(postModel);
         if (res === true) {
             toast.success("Đã gửi khảo sát thành công!");
-            navigate('/danh-sach-khao-sat');
+            navigate('/dashboard');
         } else {
             toast.error(res.message || "Gửi khảo sát thất bại.");
         }
@@ -255,7 +247,6 @@ export default function SurveyDetail() {
                                             values={answers}
                                             onChange={handleOptionChange}
                                             onChangeFeedback={handleFeedbackChange}
-                                            isSubmit={isSubmit}
                                         />
                                     ))}
                                 </div>
@@ -264,21 +255,14 @@ export default function SurveyDetail() {
                     })}
 
                     {/* Nút Submit */}
-                    {isSubmit ?
-                        <span className="text-red-600">Xin chân thành cảm ơn sự hợp tác của các bạn!</span>
-                        :
-                        <div className="flex justify-center md:justify-end gap-4 mt-8 pt-6 border-t border-gray-200">
-                            <button className="px-6 py-2 bg-gray-100 text-gray-700 font-semibold rounded hover:bg-gray-200 transition-colors" onClick={() => navigate('/danh-sach-khao-sat')}>
-                                Hủy bỏ
-                            </button>
-                            <button
-                                onClick={handleSubmit}
-                                className="px-8 py-2 bg-[#026aa8] text-white font-bold rounded shadow hover:opacity-90 transition-all transform active:scale-95"
-                            >
-                                Gửi khảo sát
-                            </button>
-                        </div>
-                    }
+                    <div className="flex justify-center md:justify-end gap-4 mt-8 pt-6 border-t border-gray-200">
+                        <button
+                            onClick={handleSubmit}
+                            className="px-8 py-2 bg-[#026aa8] text-white font-bold rounded shadow hover:opacity-90 transition-all transform active:scale-95"
+                        >
+                            Gửi khảo sát
+                        </button>
+                    </div>
 
                 </div>
 
