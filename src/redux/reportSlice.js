@@ -16,7 +16,7 @@ export const getReportTrackingTeacher = createAsyncThunk(
       page,
       limit
     );
-    return response.data;
+    return response;
   }
 );
 
@@ -35,7 +35,7 @@ const reportSlice = createSlice({
     builder
       .addCase(getReportTrackingTeacher.pending, (state) => {})
       .addCase(getReportTrackingTeacher.fulfilled, (state, action) => {
-        state.SurveyReportList = action.payload.data || [];
+        state.SurveyReportList = action.payload.data.lstEvalution || [];
         state.SurveyReportTotal = action.payload.totals || 0;
       })
       .addCase(getReportTrackingTeacher.rejected, (state, action) => {});

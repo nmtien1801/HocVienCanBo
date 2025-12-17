@@ -28,7 +28,7 @@ export default function DropdownSearch({ options = [], placeholder = "Select opt
   };
 
   return (
-    <div className="relative w-160 dropdown-container">
+    <div className="relative w-full dropdown-container">
       {!open ? (
         <button
           onClick={() => setOpen(true)}

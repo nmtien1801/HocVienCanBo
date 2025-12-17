@@ -13,7 +13,8 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate }) => {
   const [clientInfo, setClientInfo] = useState({
     FullName: '',
     Email: '',
-    Phone: ''
+    Phone: '',
+    Office: ''
   });
 
   // Hàm xử lý thay đổi input
@@ -53,7 +54,7 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate }) => {
   const handleSurveyClick = async (survey) => {
     if (survey.Permission === +clientPermissionKey) {
       // client submit      
-      if (!clientInfo.FullName || !clientInfo.Email || !clientInfo.Phone) {
+      if (!clientInfo.FullName || !clientInfo.Email || !clientInfo.Phone || !clientInfo.Office) {
         toast.error("Vui lòng nhập đầy đủ Tên, Email, và Số điện thoại.");
         return;
       }
@@ -67,7 +68,8 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate }) => {
         ...survey,
         Email: clientInfo.Email,
         FullName: clientInfo.FullName,
-        Phone: clientInfo.Phone
+        Phone: clientInfo.Phone,
+        Office: clientInfo.Office
       });
 
       if (res.message) {
@@ -233,6 +235,14 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate }) => {
                 name="Phone"
                 placeholder="Số điện thoại"
                 value={clientInfo.Phone}
+                onChange={handleClientInfoChange}
+                className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-[#0081cd] focus:border-[#0081cd]"
+              />
+               <input
+                type="text"
+                name="Office"
+                placeholder="đơn vị hợp tác"
+                value={clientInfo.Office}
                 onChange={handleClientInfoChange}
                 className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-[#0081cd] focus:border-[#0081cd]"
               />

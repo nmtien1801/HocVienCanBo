@@ -29,7 +29,6 @@ const QuestionRow = ({ stt, question, lstEvaluations, values, onChange, onChange
                                     checked={values[question.SurveyAnswerID]?.EvaluationID === opt.EvaluationID}
                                     onChange={() => onChange(question.SurveyAnswerID, opt.EvaluationID, opt.EvaluationName)}
                                     className="w-4 h-4 text-[#026aa8] border-gray-300 focus:ring-[#026aa8] focus:ring-offset-0 cursor-pointer"
-                                    disabled={isSubmit}
                                 />
                                 <span className="text-sm text-gray-600 group-hover:text-[#026aa8] transition-colors">
                                     {letter}. {opt.EvaluationName}
