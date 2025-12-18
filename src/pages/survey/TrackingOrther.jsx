@@ -4,12 +4,10 @@ import { toast } from 'react-toastify';
 import { getReportTrackingOrder } from '../../redux/reportSlice.js';
 import { useSelector, useDispatch } from "react-redux";
 import DropdownSearch from '../../components/FormFields/DropdownSearch.jsx';
-import { getSubjectLearnAll } from '../../redux/scheduleSlice.js';
-import { getAllTeacher } from '../../redux/teacherSlice.js';
 import { getTemplateTrackingTeacher } from '../../redux/reportSlice.js'
 import * as XLSX from 'xlsx';
 
-const TrackingOrther = () => {
+const TrackingOrder = () => {
     const dispatch = useDispatch();
 
     // Lấy dữ liệu từ Redux (Giả sử cấu trúc slice của bạn)
@@ -168,7 +166,7 @@ const TrackingOrther = () => {
                     <div>
                         <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
                             <BarChart3 className="text-[#0081cd]" />
-                            Báo cáo kết quả khảo sát
+                            Báo cáo kết quả khảo sát khác
                         </h1>
                         <p className="text-gray-500 text-sm">Xem thống kê chi tiết theo các tiêu chí đánh giá</p>
                     </div>
@@ -352,4 +350,4 @@ const TrackingOrther = () => {
     );
 };
 
-export default TrackingOrther;
+export default TrackingOrder;

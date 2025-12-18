@@ -11,15 +11,14 @@ const ReportOther = () => {
     const dispatch = useDispatch();
 
     // Lấy dữ liệu từ Redux (Giả sử cấu trúc slice của bạn)
-    const { EvaluationList, SurveyReportList, SurveyReportTotal } = useSelector((state) => state.report);
-    const { subjectLearnAll } = useSelector((state) => state.schedule);
-    const [selectedTemplateSurvey, setSelectedTemplateSurvey] = useState(0);
+    const { EvaluationOtherList, ReportOtherList, ReportOtherTotal } = useSelector((state) => state.report);
     const [totalParticipants, setTotalParticipants] = useState(0);
 
     // ---------------------------------------------------  PHÂN TRANG
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(20);
     const [isLoading, setIsLoading] = useState(false);
+            console.log('sssss ', EvaluationOtherList);
 
     // ----------------------------------- FETCH DATA
     const fetchReport = async () => {
@@ -31,7 +30,6 @@ const ReportOther = () => {
                     limit
                 })
             );
-console.log('sssss ', res);
 
             if (res.payload?.Message) {
                 toast.error(res.payload?.Message || "Lỗi tải dữ liệu");
@@ -60,9 +58,7 @@ console.log('sssss ', res);
 
     // ----------------------------------------------------------- CRUD
     useEffect(() => {
-        if (selectedTemplateSurvey !== 0) { // Chỉ gọi khi đã chọn mẫu
-            fetchReport();
-        }
+        fetchReport();
     }, [page, limit]);
 
     const handleCheckboxChange = (id) => {
@@ -85,7 +81,7 @@ console.log('sssss ', res);
         }
 
         try {
-            const activeCriteria = EvaluationList.filter(c => selectedCriteria.includes(c.EvaluationID));
+            const activeCriteria = EvaluationOtherList.filter(c => selectedCriteria.includes(c.EvaluationID));
 
             // 1. Dữ liệu các hàng câu hỏi (không có cột tổng)
             const excelData = groupedReportList.map((row, index) => {
@@ -123,28 +119,16 @@ console.log('sssss ', res);
     const [selectedCriteria, setSelectedCriteria] = useState([]);
 
     useEffect(() => {
-        if (EvaluationList.length > 0) {
-            setSelectedCriteria(EvaluationList.map(item => item.EvaluationID));
+        if (EvaluationOtherList.length > 0) {
+            setSelectedCriteria(EvaluationOtherList.map(item => item.EvaluationID));
         }
-    }, [EvaluationList]);
-
-
-
-    const calculateRowTotal = (lstEvalutionTracking) => {
-        if (!lstEvalutionTracking) return 0;
-        return lstEvalutionTracking.reduce((sum, item) => {
-            if (selectedCriteria.includes(item.EvaluationID)) {
-                return sum + (item.NumberTracking || 0);
-            }
-            return sum;
-        }, 0);
-    };
+    }, [EvaluationOtherList]);
 
     // Gộp các câu hỏi trùng nhau
     const groupedReportList = useMemo(() => {
-        if (!SurveyReportList || SurveyReportList.length === 0) return [];
+        if (!ReportOtherList || ReportOtherList.length === 0) return [];
 
-        const groups = SurveyReportList.reduce((acc, current) => {
+        const groups = ReportOtherList.reduce((acc, current) => {
             // Lấy tiêu đề làm khóa để gộp
             const key = current.TitleCriteriaEvaluation;
 
@@ -167,10 +151,10 @@ console.log('sssss ', res);
         }, {});
 
         return Object.values(groups);
-    }, [SurveyReportList]);
+    }, [ReportOtherList]);
 
     // Tính tổng số trang
-    const totalPages = Math.ceil(SurveyReportTotal / limit);
+    const totalPages = Math.ceil(ReportOtherTotal / limit);
 
     return (
         <div className="p-6 bg-gray-50 min-h-screen">
@@ -179,9 +163,32 @@ console.log('sssss ', res);
                     <div>
                         <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
                             <BarChart3 className="text-[#0081cd]" />
-                            Báo cáo kết quả khảo sát
+                            Danh sách phiếu đã khảo sát
                         </h1>
                         <p className="text-gray-500 text-sm">Xem thống kê chi tiết theo các tiêu chí đánh giá</p>
+                    </div>
+                </div>
+
+                {/* BỘ LỌC */}
+                <div className="grid grid-cols-1 md:grid-cols-10 gap-4 mb-6 bg-white p-4 rounded-xl shadow-sm border border-gray-200 items-end">
+                    <div className="md:col-span-4 flex gap-2 h-full items-end">
+                        <button
+                            className="flex-1 bg-[#0081cd] hover:bg-blue-600 text-white px-4 py-2.5 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors shadow-sm"
+                            onClick={handleSearch}
+                        >
+                            <Search size={16} />
+                            <span className="whitespace-nowrap">Tìm kiếm</span>
+                        </button>
+
+                        <button
+                            className="flex-1 bg-teal-600 hover:bg-teal-700 text-white px-4 py-2.5 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-all shadow-sm
+                                 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-teal-600"
+                            onClick={handleExportExcel}
+                            title="Xuất Excel"
+                        >
+                            <FileDown size={16} />
+                            <span className="whitespace-nowrap">Xuất Excel</span>
+                        </button>
                     </div>
                 </div>
 
@@ -192,7 +199,7 @@ console.log('sssss ', res);
                         Chọn tiêu chí hiển thị trên bảng:
                     </h3>
                     <div className="flex flex-wrap gap-4">
-                        {EvaluationList.map(item => (
+                        {EvaluationOtherList.map(item => (
                             <label key={item.EvaluationID} className="flex items-center gap-2 cursor-pointer group">
                                 <input
                                     type="checkbox"
@@ -216,7 +223,7 @@ console.log('sssss ', res);
                                 <tr className="bg-gray-50 border-b border-gray-200">
                                     <th className="p-4 text-sm font-bold text-gray-700 w-16">STT</th>
                                     <th className="p-4 text-sm font-bold text-gray-700">Nội dung câu hỏi</th>
-                                    {EvaluationList.filter(c => selectedCriteria.includes(c.EvaluationID)).map(c => (
+                                    {EvaluationOtherList.filter(c => selectedCriteria.includes(c.EvaluationID)).map(c => (
                                         <th key={c.EvaluationID} className="p-4 text-sm font-bold text-center text-[#026aa8] bg-blue-50/50 w-20">
                                             {c.EvaluationName}
                                         </th>
@@ -241,7 +248,7 @@ console.log('sssss ', res);
                                                     <tr key={row.EvaluationID || index} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                                                         <td className="p-4 text-sm text-gray-600">{(page - 1) * limit + index + 1}</td>
                                                         <td className="p-4 text-sm text-gray-800 font-medium">{row.TitleCriteriaEvaluation}</td>
-                                                        {EvaluationList.filter(c => selectedCriteria.includes(c.EvaluationID)).map(c => {
+                                                        {EvaluationOtherList.filter(c => selectedCriteria.includes(c.EvaluationID)).map(c => {
                                                             const evaluationData = row.lstEvalutionTracking?.find(e => e.EvaluationID === c.EvaluationID);
                                                             return (
                                                                 <td key={c.EvaluationID} className="p-4 text-sm text-center text-gray-600">
@@ -319,7 +326,7 @@ console.log('sssss ', res);
                                 <option value={20}>20</option>
                                 <option value={50}>50</option>
                             </select>
-                            <span className="text-sm text-gray-600">trên tổng số {SurveyReportTotal} dòng</span>
+                            <span className="text-sm text-gray-600">trên tổng số {ReportOtherTotal} dòng</span>
                         </div>
                     </div>
                 </div>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, FileEdit, BarChart3, TrendingUp, Calendar, ChevronDown, User, X } from 'lucide-react';
+import { Home, FileEdit, BarChart3, TrendingUp, Calendar, ChevronDown, User, X, ClipboardList } from 'lucide-react';
 import { useSelector } from "react-redux";
 import { TypeUserIDCons } from "../utils/constants";
 
@@ -41,7 +41,7 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
     userInfo?.TypeUserID === TypeUserIDCons.Administrator
       ? { label: 'Nhập thông báo', path: '/manager-notification' }
       : null,
-    { label: 'Theo dõi đơn hàng', path: '/tracking-order' },
+    { label: 'Phiếu đã khảo sát', path: '/report-survey-other' },
   ].filter(Boolean)
 
   const surveyItems = [
@@ -55,7 +55,7 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
       ? { label: 'Phiếu khảo sát khác', path: '/manager-survey-other' }
       : null,
     { label: 'Báo cáo khảo sát', path: '/report-survey' },
-    { label: 'Báo cáo khảo sát khác', path: '/report-survey-other' },
+    { label: 'Báo cáo khảo sát khác', path: '/tracking-order' },
 
   ].filter(Boolean)
 
@@ -185,7 +185,7 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
                       className={`w-full px-3 py-2.5 flex items-center gap-3 rounded-lg hover:bg-white/10 transition-all ${expandedMenu === 'grades' ? 'bg-white/15 shadow-sm' : ''
                         }`}
                     >
-                      <BarChart3 className="w-5 h-5 flex-shrink-0" />
+                      <ClipboardList className="w-5 h-5 flex-shrink-0" />
                       <span className="flex-1 text-left text-sm font-medium">Khảo sát</span>
                       <ChevronDown className={`w-4 h-4 transition-transform ${expandedMenu === 'grades' ? 'rotate-180' : ''}`} />
                     </button>

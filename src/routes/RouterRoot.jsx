@@ -51,8 +51,8 @@ import SurveyDetailOther from "../pages/survey/SurveyDetailOther.jsx";
 import { toast } from 'react-toastify';
 import SurveyDetailClient from "../pages/survey/SurveyDetailClient.jsx";
 import ReportSurvey from "../pages/survey/ReportSurvey.jsx";
-import ReportOther from "../pages/survey/ReportOther.jsx";
-import TrackingOrther from "../pages/system/TrackingOrther.jsx";
+import ReportOther from "../pages/system/ReportOther.jsx";
+import TrackingOrther from "../pages/survey/TrackingOrther.jsx";
 
 const ProtectedRoute = ({ children, userInfo, isLoading, hasCheckedAuth }) => {
   if (isLoading || !hasCheckedAuth) {

@@ -43,7 +43,7 @@ export const getReportTrackingOrder = createAsyncThunk(
 export const getReportTrackingOther = createAsyncThunk(
   "report/getReportTrackingOther",
   async ({ page, limit }, thunkAPI) => {
-    const response = await ApiReport.getReportTrackingOtherApi(page, limit);
+    const response = await ApiReport.getReportTrackingOtherApi(page, limit);    
     return response;
   }
 );
@@ -97,7 +97,8 @@ const reportSlice = createSlice({
         state.ReportOtherTotal = 0;
       })
       .addCase(getReportTrackingOther.fulfilled, (state, action) => {
-        state.ReportOtherList = action.payload.data.data || [];
+        state.EvaluationOtherList = action.payload.lstEvalution || [];
+        state.ReportOtherList = action.payload.lstSurveyCates || [];
         state.ReportOtherTotal = action.payload.data.totals || 0;
       })
       .addCase(getReportTrackingOther.rejected, (state, action) => {});
