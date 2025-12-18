@@ -104,6 +104,11 @@ const StatusID = {
   false: "Tạm dừng",
 };
 
+const TypeTemplateID = {
+  1: "Câu hỏi khảo sát",
+  2: "Câu hỏi tự luận",
+};
+
 export {
   TypeUserIDCons,
   formatDate,
@@ -117,4 +122,5 @@ export {
   PermissionSurvey,
   StatusID,
   formatToInputDate,
+  TypeTemplateID,
 };

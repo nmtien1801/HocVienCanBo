@@ -19,7 +19,7 @@ const ReportSurvey = () => {
     const [selectedTeacher, setSelectedTeacher] = useState(0);
     const [selectedTemplateSurvey, setSelectedTemplateSurvey] = useState(0);
 
-    // -----------------------------------  PHÂN TRANG
+    // ---------------------------------------------------  PHÂN TRANG
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(20);
     const [isLoading, setIsLoading] = useState(false);
@@ -81,16 +81,22 @@ const ReportSurvey = () => {
         fetchTeacher();
     }, [dispatch]);
 
-    // -------------------------------------- CRUD
+    // ----------------------------------------------------------- CRUD
     useEffect(() => {
         if (selectedTemplateSurvey !== 0) { // Chỉ gọi khi đã chọn mẫu
             fetchReport();
         }
     }, [page, limit]);
 
+    const handleCheckboxChange = (id) => {
+        setSelectedCriteria(prev =>
+            prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+        );
+    };
+
     const handleSearch = () => {
-        setPage(1); // Reset về trang 1
-        fetchReport(); // Gọi hàm fetch dữ liệu
+        setPage(1);
+        fetchReport();
     };
 
     const handleExportExcel = () => {
@@ -98,7 +104,7 @@ const ReportSurvey = () => {
         toast.info('Chức năng xuất Excel đang được phát triển');
     };
 
-    // ----------------------------------- LOGIC HIỂN THỊ CỘT ĐỘNG
+    // --------------------------------------------------------- LOGIC HIỂN THỊ CỘT
     const [selectedCriteria, setSelectedCriteria] = useState([]);
 
     useEffect(() => {
@@ -107,11 +113,7 @@ const ReportSurvey = () => {
         }
     }, [EvaluationList]);
 
-    const handleCheckboxChange = (id) => {
-        setSelectedCriteria(prev =>
-            prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
-        );
-    };
+
 
     const calculateRowTotal = (lstEvalutionTracking) => {
         if (!lstEvalutionTracking) return 0;
@@ -123,8 +125,38 @@ const ReportSurvey = () => {
         }, 0);
     };
 
+    // Gộp các câu hỏi trùng nhau
+    const groupedReportList = useMemo(() => {
+        if (!SurveyReportList || SurveyReportList.length === 0) return [];
+
+        const groups = SurveyReportList.reduce((acc, current) => {
+            // Lấy tiêu đề làm khóa để gộp
+            const key = current.TitleCriteriaEvaluation;
+
+            if (!acc[key]) {
+                // Nếu chưa có thì khởi tạo
+                acc[key] = {
+                    ...current,
+                    lstEvalutionTracking: JSON.parse(JSON.stringify(current.lstEvalutionTracking || []))
+                };
+            } else {
+                // Nếu đã có thì cộng dồn NumberTracking của từng EvaluationID
+                current.lstEvalutionTracking?.forEach(currEval => {
+                    const targetEval = acc[key].lstEvalutionTracking.find(e => e.EvaluationID === currEval.EvaluationID);
+                    if (targetEval) {
+                        targetEval.NumberTracking += (currEval.NumberTracking || 0);
+                    }
+                });
+            }
+            return acc;
+        }, {});
+
+        return Object.values(groups);
+    }, [SurveyReportList]);
+
     // Tính tổng số trang
     const totalPages = Math.ceil(SurveyReportTotal / limit);
+    console.log('sssss ', groupedReportList);
 
     return (
         <div className="p-6 bg-gray-50 min-h-screen">
@@ -187,7 +219,7 @@ const ReportSurvey = () => {
                             onClick={handleExportExcel}
                             title="Xuất Excel"
                         >
-                            <FileDown size={16} />
+                            <FileDown size={16} /> Xuất Excel
                         </button>
                     </div>
                 </div>
@@ -242,7 +274,7 @@ const ReportSurvey = () => {
                                         </td>
                                     </tr>
                                 ) : (
-                                    SurveyReportList.length > 0 ? SurveyReportList.map((row, index) => (
+                                    groupedReportList.length > 0 ? groupedReportList.map((row, index) => (
                                         <tr key={row.EvaluationID || index} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                                             <td className="p-4 text-sm text-gray-600">{(page - 1) * limit + index + 1}</td>
                                             <td className="p-4 text-sm text-gray-800 font-medium">{row.TitleCriteriaEvaluation}</td>
