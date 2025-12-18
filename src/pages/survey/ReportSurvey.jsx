@@ -22,7 +22,7 @@ const ReportSurvey = () => {
     // -----------------------------------  PHÂN TRANG
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(20);
-        console.log('ssssss ', SurveyReportList);
+    console.log('ssssss ', SurveyReportList);
 
     // ----------------------------------- FETCH DATA
     const fetchReport = async () => {
@@ -90,10 +90,7 @@ const ReportSurvey = () => {
 
     useEffect(() => {
         if (EvaluationList.length > 0) {
-            const firstRow = EvaluationList[0];
-            if (firstRow.results) {
-                setSelectedCriteria(Object.keys(firstRow.results));
-            }
+            setSelectedCriteria(EvaluationList.map(item => item.EvaluationID));
         }
     }, [EvaluationList]);
 
@@ -103,9 +100,14 @@ const ReportSurvey = () => {
         );
     };
 
-    const calculateRowTotal = (results) => {
-        if (!results) return 0;
-        return selectedCriteria.reduce((sum, key) => sum + (results[key] || 0), 0);
+    const calculateRowTotal = (lstEvalutionTracking) => {
+        if (!lstEvalutionTracking) return 0;
+        return lstEvalutionTracking.reduce((sum, item) => {
+            if (selectedCriteria.includes(item.EvaluationID)) {
+                return sum + (item.NumberTracking || 0);
+            }
+            return sum;
+        }, 0);
     };
 
     // Tính tổng số trang
@@ -220,14 +222,17 @@ const ReportSurvey = () => {
                                 {SurveyReportList.length > 0 ? SurveyReportList.map((row, index) => (
                                     <tr key={row.EvaluationID || index} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                                         <td className="p-4 text-sm text-gray-600">{(page - 1) * limit + index + 1}</td>
-                                        <td className="p-4 text-sm text-gray-800 font-medium">{row.question}</td>
-                                        {SurveyReportList.filter(c => selectedCriteria.includes(c.EvaluationID)).map(c => (
-                                            <td key={c.EvaluationID} className="p-4 text-sm text-center text-gray-600">
-                                                {row.results?.[c.EvaluationID] || 0}
-                                            </td>
-                                        ))}
+                                        <td className="p-4 text-sm text-gray-800 font-medium">{row.TitleCriteriaEvaluation}</td>
+                                        {EvaluationList.filter(c => selectedCriteria.includes(c.EvaluationID)).map(c => {
+                                            const evaluationData = row.lstEvalutionTracking?.find(e => e.EvaluationID === c.EvaluationID);
+                                            return (
+                                                <td key={c.EvaluationID} className="p-4 text-sm text-center text-gray-600">
+                                                    {evaluationData ? evaluationData.NumberTracking : 0}
+                                                </td>
+                                            );
+                                        })}
                                         <td className="p-4 text-sm text-center font-bold text-gray-900 bg-gray-50">
-                                            {calculateRowTotal(row.results)}
+                                            {calculateRowTotal(row.lstEvalutionTracking)}
                                         </td>
                                     </tr>
                                 )) : (
