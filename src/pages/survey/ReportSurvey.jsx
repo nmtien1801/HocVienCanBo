@@ -17,12 +17,10 @@ const ReportSurvey = () => {
     const { subjectLearnAll } = useSelector((state) => state.schedule);
     const { SurveyForTeacherStudentList } = useSelector((state) => state.survey);
     const [selectedSubject, setSelectedSubject] = useState(0);
+    const [selectedTeacher, setSelectedTeacher] = useState(0);
     const [selectedTemplateSurvey, setSelectedTemplateSurvey] = useState(0);
 
-    // ----------------------------------- STATE QUẢN LÝ FILTERS & PHÂN TRANG
-    const [filters, setFilters] = useState({
-        teacherID: 59,
-    });
+    // -----------------------------------  PHÂN TRANG
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(20);
 
@@ -31,12 +29,13 @@ const ReportSurvey = () => {
         const res = await dispatch(
             getReportTrackingTeacher({
                 templateSurveyID: selectedTemplateSurvey,
-                teacherID: 59,
+                teacherID: selectedTeacher,
                 subjectID: selectedSubject,
                 page,
                 limit
             })
         );
+        console.log('ssssss ', res.payload.data);
 
         if (res.payload.Message) {
             toast.error(res.payload?.message || "Lỗi tải dữ liệu");
@@ -99,12 +98,6 @@ const ReportSurvey = () => {
         return selectedCriteria.reduce((sum, key) => sum + (results[key] || 0), 0);
     };
 
-    // Xử lý thay đổi filter
-    const handleFilterChange = (e) => {
-        const { name, value } = e.target;
-        setFilters(prev => ({ ...prev, [name]: value }));
-        setPage(1); // Reset về trang 1 khi lọc
-    };
 
     // Tính tổng số trang
     const totalPages = Math.ceil(SurveyReportTotal / limit);
@@ -152,7 +145,7 @@ const ReportSurvey = () => {
                             placeholder="------ chọn giảng viên ------"
                             labelKey="TeacherName"
                             valueKey="TeacherID"
-                            onChange={(e) => setSelectedTemplateSurvey(e.TeacherID)}
+                            onChange={(e) => setSelectedTeacher(e.TeacherID)}
                         />
                     </div>
 
