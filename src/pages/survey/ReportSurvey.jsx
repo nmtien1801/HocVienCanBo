@@ -7,6 +7,7 @@ import DropdownSearch from '../../components/FormFields/DropdownSearch.jsx';
 import { getSubjectLearnAll } from '../../redux/scheduleSlice.js';
 import { getAllTeacher } from '../../redux/teacherSlice.js';
 import { getTemplateTrackingTeacher } from '../../redux/reportSlice.js'
+import * as XLSX from 'xlsx';
 
 const ReportSurvey = () => {
     const dispatch = useDispatch();
@@ -94,14 +95,66 @@ const ReportSurvey = () => {
         );
     };
 
+    // tìm kiếm
     const handleSearch = () => {
         setPage(1);
         fetchReport();
     };
 
+    // xuất excel
     const handleExportExcel = () => {
-        // TODO: Implement Excel export functionality
-        toast.info('Chức năng xuất Excel đang được phát triển');
+        if (groupedReportList.length === 0) {
+            toast.warning("Không có dữ liệu để xuất");
+            return;
+        }
+
+        try {
+            // 2. Xác định các tiêu chí (cột) đang được chọn
+            const activeCriteria = EvaluationList.filter(c => selectedCriteria.includes(c.EvaluationID));
+
+            // 3. Chuẩn bị dữ liệu cho Excel
+            const excelData = groupedReportList.map((row, index) => {
+                // Các cột cố định
+                const rowData = {
+                    "STT": index + 1,
+                    "Nội dung câu hỏi": row.TitleCriteriaEvaluation,
+                };
+
+                // Các cột động dựa trên tiêu chí đánh giá
+                activeCriteria.forEach(c => {
+                    const evalData = row.lstEvalutionTracking?.find(e => e.EvaluationID === c.EvaluationID);
+                    rowData[c.EvaluationName] = evalData ? evalData.NumberTracking : 0;
+                });
+
+                // Cột tổng cộng
+                rowData["Tổng cộng"] = calculateRowTotal(row.lstEvalutionTracking);
+
+                return rowData;
+            });
+
+            // 4. Tạo Workbook và Worksheet
+            const worksheet = XLSX.utils.json_to_sheet(excelData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Báo cáo khảo sát");
+
+            // 5. Định dạng độ rộng cột (tùy chọn)
+            const wscols = [
+                { wch: 5 },  // STT
+                { wch: 50 }, // Nội dung câu hỏi
+                ...activeCriteria.map(() => ({ wch: 15 })), // Các cột tiêu chí
+                { wch: 15 }  // Tổng cộng
+            ];
+            worksheet['!cols'] = wscols;
+
+            // 6. Xuất file
+            const fileName = `Bao_cao_cau_hoi_khao_sat_${new Date().getTime()}.xlsx`;
+            XLSX.writeFile(workbook, fileName);
+
+            toast.success('Xuất file Excel thành công!');
+        } catch (error) {
+            console.error("Export error:", error);
+            toast.error('Có lỗi khi xuất file Excel');
+        }
     };
 
     // --------------------------------------------------------- LOGIC HIỂN THỊ CỘT
@@ -156,7 +209,6 @@ const ReportSurvey = () => {
 
     // Tính tổng số trang
     const totalPages = Math.ceil(SurveyReportTotal / limit);
-    console.log('sssss ', groupedReportList);
 
     return (
         <div className="p-6 bg-gray-50 min-h-screen">
@@ -215,9 +267,11 @@ const ReportSurvey = () => {
                             Tìm kiếm
                         </button>
                         <button
-                            className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 text-sm transition-colors"
+                            className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 text-sm transition-all 
+                                disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-teal-600"
                             onClick={handleExportExcel}
                             title="Xuất Excel"
+                            disabled={isLoading || selectedTemplateSurvey === 0 || selectedTeacher === 0}
                         >
                             <FileDown size={16} /> Xuất Excel
                         </button>
