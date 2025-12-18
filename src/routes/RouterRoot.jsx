@@ -106,6 +106,11 @@ function RouterRoot() {
   const [listSurvey, setListSurvey] = useState([]);
 
   useEffect(() => {
+    // Chỉ gọi API khi user đã login và đã check auth xong
+    if (!userInfo || !hasCheckedAuth || isLoading) {
+      return;
+    }
+
     const fetchSurveyByID = async () => {
       const res = await dispatch(
         getSurveySubjectByStudentID({ page: 1, limit: 20 })
@@ -119,7 +124,7 @@ function RouterRoot() {
     };
 
     fetchSurveyByID();
-  }, [dispatch]);
+  }, [dispatch, userInfo, hasCheckedAuth, isLoading]);
 
   useEffect(() => {
     if (!hasCheckedAuth && !isLoading) {
