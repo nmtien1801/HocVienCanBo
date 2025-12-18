@@ -22,22 +22,29 @@ const ReportSurvey = () => {
     // -----------------------------------  PHÂN TRANG
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(20);
-    console.log('ssssss ', SurveyReportList);
+    const [isLoading, setIsLoading] = useState(false);
 
     // ----------------------------------- FETCH DATA
     const fetchReport = async () => {
-        const res = await dispatch(
-            getReportTrackingTeacher({
-                templateSurveyID: selectedTemplateSurvey,
-                teacherID: selectedTeacher,
-                subjectID: selectedSubject,
-                page,
-                limit
-            })
-        );
+        setIsLoading(true); // Bật loading
+        try {
+            const res = await dispatch(
+                getReportTrackingTeacher({
+                    templateSurveyID: selectedTemplateSurvey,
+                    teacherID: selectedTeacher,
+                    subjectID: selectedSubject,
+                    page,
+                    limit
+                })
+            );
 
-        if (res.payload.Message) {
-            toast.error(res.payload?.message || "Lỗi tải dữ liệu");
+            if (res.payload?.Message) {
+                toast.error(res.payload?.Message || "Lỗi tải dữ liệu");
+            }
+        } catch (error) {
+            toast.error("Đã có lỗi xảy ra");
+        } finally {
+            setIsLoading(false); // Tắt loading dù thành công hay lỗi
         }
     };
 
@@ -75,6 +82,12 @@ const ReportSurvey = () => {
     }, [dispatch]);
 
     // -------------------------------------- CRUD
+    useEffect(() => {
+        if (selectedTemplateSurvey !== 0) { // Chỉ gọi khi đã chọn mẫu
+            fetchReport();
+        }
+    }, [page, limit]);
+
     const handleSearch = () => {
         setPage(1); // Reset về trang 1
         fetchReport(); // Gọi hàm fetch dữ liệu
@@ -219,28 +232,39 @@ const ReportSurvey = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {SurveyReportList.length > 0 ? SurveyReportList.map((row, index) => (
-                                    <tr key={row.EvaluationID || index} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                                        <td className="p-4 text-sm text-gray-600">{(page - 1) * limit + index + 1}</td>
-                                        <td className="p-4 text-sm text-gray-800 font-medium">{row.TitleCriteriaEvaluation}</td>
-                                        {EvaluationList.filter(c => selectedCriteria.includes(c.EvaluationID)).map(c => {
-                                            const evaluationData = row.lstEvalutionTracking?.find(e => e.EvaluationID === c.EvaluationID);
-                                            return (
-                                                <td key={c.EvaluationID} className="p-4 text-sm text-center text-gray-600">
-                                                    {evaluationData ? evaluationData.NumberTracking : 0}
-                                                </td>
-                                            );
-                                        })}
-                                        <td className="p-4 text-sm text-center font-bold text-gray-900 bg-gray-50">
-                                            {calculateRowTotal(row.lstEvalutionTracking)}
-                                        </td>
-                                    </tr>
-                                )) : (
+                                {isLoading ? (
                                     <tr>
-                                        <td colSpan={EvaluationList.length + 3} className="p-8 text-center text-gray-400 italic">
-                                            Không có dữ liệu hiển thị.
+                                        <td colSpan={selectedCriteria.length + 3} className="p-20 text-center">
+                                            <div className="flex flex-col items-center justify-center gap-3">
+                                                <div className="w-10 h-10 border-4 border-[#0081cd] border-t-transparent rounded-full animate-spin"></div>
+                                                <p className="text-gray-500 font-medium">Đang lấy dữ liệu báo cáo...</p>
+                                            </div>
                                         </td>
                                     </tr>
+                                ) : (
+                                    SurveyReportList.length > 0 ? SurveyReportList.map((row, index) => (
+                                        <tr key={row.EvaluationID || index} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                                            <td className="p-4 text-sm text-gray-600">{(page - 1) * limit + index + 1}</td>
+                                            <td className="p-4 text-sm text-gray-800 font-medium">{row.TitleCriteriaEvaluation}</td>
+                                            {EvaluationList.filter(c => selectedCriteria.includes(c.EvaluationID)).map(c => {
+                                                const evaluationData = row.lstEvalutionTracking?.find(e => e.EvaluationID === c.EvaluationID);
+                                                return (
+                                                    <td key={c.EvaluationID} className="p-4 text-sm text-center text-gray-600">
+                                                        {evaluationData ? evaluationData.NumberTracking : 0}
+                                                    </td>
+                                                );
+                                            })}
+                                            <td className="p-4 text-sm text-center font-bold text-gray-900 bg-gray-50">
+                                                {calculateRowTotal(row.lstEvalutionTracking)}
+                                            </td>
+                                        </tr>
+                                    )) : (
+                                        <tr>
+                                            <td colSpan={EvaluationList.length + 3} className="p-8 text-center text-gray-400 italic">
+                                                Không có dữ liệu hiển thị.
+                                            </td>
+                                        </tr>
+                                    )
                                 )}
                             </tbody>
                         </table>

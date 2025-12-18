@@ -45,11 +45,14 @@ const reportSlice = createSlice({
   extraReducers: (builder) => {
     // getReportTrackingTeacher
     builder
-      .addCase(getReportTrackingTeacher.pending, (state) => {})
+      .addCase(getReportTrackingTeacher.pending, (state) => {
+        state.SurveyReportList = [];
+        state.SurveyReportTotal = 0;
+      })
       .addCase(getReportTrackingTeacher.fulfilled, (state, action) => {
         state.EvaluationList = action.payload.data.lstEvalution || [];
         state.SurveyReportList = action.payload.data.data || [];
-        state.SurveyReportTotal = action.payload.totals || 0;
+        state.SurveyReportTotal = action.payload.data.totals || 0;
       })
       .addCase(getReportTrackingTeacher.rejected, (state, action) => {});
 
