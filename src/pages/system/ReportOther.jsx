@@ -1,338 +1,132 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { BarChart3, CheckCircle2, Search, FileDown, Users, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
-import { toast } from 'react-toastify';
-import { getReportTrackingOther } from '../../redux/reportSlice.js';
+import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import DropdownSearch from '../../components/FormFields/DropdownSearch.jsx';
-import { getTemplateTrackingTeacher } from '../../redux/reportSlice.js'
-import * as XLSX from 'xlsx';
+import { getReportTrackingOther } from "../../redux/reportSlice.js";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
-const ReportOther = () => {
+export default function SurveyTeacher() {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
-    // Lấy dữ liệu từ Redux (Giả sử cấu trúc slice của bạn)
-    const { EvaluationOtherList, ReportOtherList, ReportOtherTotal } = useSelector((state) => state.report);
-    const [totalParticipants, setTotalParticipants] = useState(0);
+    const { ReportOtherList, ReportOtherTotal } = useSelector((state) => state.report);
 
-    // ---------------------------------------------------  PHÂN TRANG
-    const [page, setPage] = useState(1);
-    const [limit, setLimit] = useState(20);
-    const [isLoading, setIsLoading] = useState(false);
-            console.log('sssss ', EvaluationOtherList);
+    // --- 1. State cho phân trang ---
+    const [currentPage, setCurrentPage] = useState(1);
+    const pageSize = 20;
+console.log('ssssss ', ReportOtherList);
 
-    // ----------------------------------- FETCH DATA
-    const fetchReport = async () => {
-        setIsLoading(true); // Bật loading
-        try {
+    // --------------------------------------- Initial
+    useEffect(() => {
+        const fetchSurveyOther = async () => {
             const res = await dispatch(
-                getReportTrackingOther({
-                    page,
-                    limit
-                })
+                getReportTrackingOther({ page: currentPage, limit: pageSize })
             );
 
-            if (res.payload?.Message) {
-                toast.error(res.payload?.Message || "Lỗi tải dữ liệu");
-            } else {
-                setTotalParticipants(res.payload.data.totalSurveys);
-            }
-        } catch (error) {
-            toast.error("Đã có lỗi xảy ra");
-        } finally {
-            setIsLoading(false); // Tắt loading dù thành công hay lỗi
-        }
-    };
-
-    // Gọi lại API khi filter hoặc phân trang thay đổi
-    useEffect(() => {
-        const fetchPendingSurveys = async () => {
-            const res = await dispatch(getTemplateTrackingTeacher({ typeTemplate: 1 }));
-
-            if (res.message) {
-                toast.error(res.message);
+            if (!res.payload || !res.payload.data) {
+                toast.error(res.payload?.message || "Không thể tải danh sách");
             }
         };
 
-        fetchPendingSurveys();
-    }, [dispatch]);
+        fetchSurveyOther();
+    }, [dispatch, currentPage]);
 
-    // ----------------------------------------------------------- CRUD
-    useEffect(() => {
-        fetchReport();
-    }, [page, limit]);
+    // -------------------------------------------------- Action
+    const handleDetailSurvey = (item) => {
+        // Vì là danh sách đã khảo sát, item.SurveyID luôn có giá trị
+        navigate(`/survey-detail?id=${item.SurveyID}&submit=true`);
+    }
 
-    const handleCheckboxChange = (id) => {
-        setSelectedCriteria(prev =>
-            prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
-        );
-    };
+    const totalPages = ReportOtherTotal ? Math.ceil(ReportOtherTotal / pageSize) : 1;
 
-    // tìm kiếm
-    const handleSearch = () => {
-        setPage(1);
-        fetchReport();
-    };
-
-    // xuất excel
-    const handleExportExcel = () => {
-        if (groupedReportList.length === 0) {
-            toast.warning("Không có dữ liệu để xuất");
-            return;
-        }
-
-        try {
-            const activeCriteria = EvaluationOtherList.filter(c => selectedCriteria.includes(c.EvaluationID));
-
-            // 1. Dữ liệu các hàng câu hỏi (không có cột tổng)
-            const excelData = groupedReportList.map((row, index) => {
-                const rowData = {
-                    "STT": index + 1,
-                    "Nội dung câu hỏi": row.TitleCriteriaEvaluation,
-                };
-                activeCriteria.forEach(c => {
-                    const evalData = row.lstEvalutionTracking?.find(e => e.EvaluationID === c.EvaluationID);
-                    rowData[c.EvaluationName] = evalData ? evalData.NumberTracking : 0;
-                });
-                return rowData;
-            });
-
-            // 2. Tạo worksheet
-            const worksheet = XLSX.utils.json_to_sheet(excelData);
-
-            // 3. Thêm dòng tổng vào cuối worksheet
-            const lastRowIndex = excelData.length + 1;
-            XLSX.utils.sheet_add_aoa(worksheet, [[
-                "TỔNG SỐ NGƯỜI KHẢO SÁT:",
-                "",
-                totalParticipants
-            ]], { origin: `A${lastRowIndex + 1}` });
-
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Báo cáo");
-            XLSX.writeFile(workbook, `Bao_cao_${new Date().getTime()}.xlsx`);
-        } catch (error) {
-            toast.error('Lỗi khi xuất file');
+    const handlePageChange = (newPage) => {
+        if (newPage >= 1 && newPage <= totalPages) {
+            setCurrentPage(newPage);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
-
-    // --------------------------------------------------------- LOGIC HIỂN THỊ CỘT
-    const [selectedCriteria, setSelectedCriteria] = useState([]);
-
-    useEffect(() => {
-        if (EvaluationOtherList.length > 0) {
-            setSelectedCriteria(EvaluationOtherList.map(item => item.EvaluationID));
-        }
-    }, [EvaluationOtherList]);
-
-    // Gộp các câu hỏi trùng nhau
-    const groupedReportList = useMemo(() => {
-        if (!ReportOtherList || ReportOtherList.length === 0) return [];
-
-        const groups = ReportOtherList.reduce((acc, current) => {
-            // Lấy tiêu đề làm khóa để gộp
-            const key = current.TitleCriteriaEvaluation;
-
-            if (!acc[key]) {
-                // Nếu chưa có thì khởi tạo
-                acc[key] = {
-                    ...current,
-                    lstEvalutionTracking: JSON.parse(JSON.stringify(current.lstEvalutionTracking || []))
-                };
-            } else {
-                // Nếu đã có thì cộng dồn NumberTracking của từng EvaluationID
-                current.lstEvalutionTracking?.forEach(currEval => {
-                    const targetEval = acc[key].lstEvalutionTracking.find(e => e.EvaluationID === currEval.EvaluationID);
-                    if (targetEval) {
-                        targetEval.NumberTracking += (currEval.NumberTracking || 0);
-                    }
-                });
-            }
-            return acc;
-        }, {});
-
-        return Object.values(groups);
-    }, [ReportOtherList]);
-
-    // Tính tổng số trang
-    const totalPages = Math.ceil(ReportOtherTotal / limit);
 
     return (
-        <div className="p-6 bg-gray-50 min-h-screen">
-            <div className="max-w-7xl mx-auto">
+        <div className="min-h-screen bg-gray-50 py-6 px-4 lg:px-8">
+            <div className="max-w-0xl mx-auto">
+                {/* Header */}
                 <div className="flex items-center justify-between mb-8">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                            <BarChart3 className="text-[#0081cd]" />
-                            Danh sách phiếu đã khảo sát
+                        <h1 className="text-2xl font-bold text-gray-800">
+                            Lịch sử khảo sát của bạn
                         </h1>
-                        <p className="text-gray-500 text-sm">Xem thống kê chi tiết theo các tiêu chí đánh giá</p>
+                        <p className="text-gray-500 text-sm mt-1">Danh sách các phiếu khảo sát bạn đã hoàn thành</p>
                     </div>
                 </div>
 
-                {/* BỘ LỌC */}
-                <div className="grid grid-cols-1 md:grid-cols-10 gap-4 mb-6 bg-white p-4 rounded-xl shadow-sm border border-gray-200 items-end">
-                    <div className="md:col-span-4 flex gap-2 h-full items-end">
-                        <button
-                            className="flex-1 bg-[#0081cd] hover:bg-blue-600 text-white px-4 py-2.5 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors shadow-sm"
-                            onClick={handleSearch}
-                        >
-                            <Search size={16} />
-                            <span className="whitespace-nowrap">Tìm kiếm</span>
-                        </button>
-
-                        <button
-                            className="flex-1 bg-teal-600 hover:bg-teal-700 text-white px-4 py-2.5 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-all shadow-sm
-                                 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-teal-600"
-                            onClick={handleExportExcel}
-                            title="Xuất Excel"
-                        >
-                            <FileDown size={16} />
-                            <span className="whitespace-nowrap">Xuất Excel</span>
-                        </button>
-                    </div>
-                </div>
-
-                {/* SECTION 2: CHỌN TIÊU CHÍ HIỂN THỊ */}
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-6">
-                    <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                        <CheckCircle2 size={16} className="text-green-500" />
-                        Chọn tiêu chí hiển thị trên bảng:
-                    </h3>
-                    <div className="flex flex-wrap gap-4">
-                        {EvaluationOtherList.map(item => (
-                            <label key={item.EvaluationID} className="flex items-center gap-2 cursor-pointer group">
-                                <input
-                                    type="checkbox"
-                                    checked={selectedCriteria.includes(item.EvaluationID)}
-                                    onChange={() => handleCheckboxChange(item.EvaluationID)}
-                                    className="w-4 h-4 text-[#0081cd] rounded border-gray-300"
-                                />
-                                <span className="text-sm text-gray-600 group-hover:text-gray-900">
-                                    {item.EvaluationName}
-                                </span>
-                            </label>
-                        ))}
-                    </div>
-                </div>
-
-                {/* SECTION 3: BẢNG DỮ LIỆU */}
-                <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="bg-gray-50 border-b border-gray-200">
-                                    <th className="p-4 text-sm font-bold text-gray-700 w-16">STT</th>
-                                    <th className="p-4 text-sm font-bold text-gray-700">Nội dung câu hỏi</th>
-                                    {EvaluationOtherList.filter(c => selectedCriteria.includes(c.EvaluationID)).map(c => (
-                                        <th key={c.EvaluationID} className="p-4 text-sm font-bold text-center text-[#026aa8] bg-blue-50/50 w-20">
-                                            {c.EvaluationName}
-                                        </th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {isLoading ? (
-                                    <tr>
-                                        <td colSpan={selectedCriteria.length + 2} className="p-20 text-center">
-                                            <div className="flex flex-col items-center justify-center gap-3">
-                                                <div className="w-10 h-10 border-4 border-[#0081cd] border-t-transparent rounded-full animate-spin"></div>
-                                                <p className="text-gray-500 font-medium">Đang lấy dữ liệu báo cáo...</p>
+                {/* Body */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div className="p-0">
+                        {ReportOtherList.length === 0 ? (
+                            <div className="text-center text-gray-400 py-16">
+                                <div className="text-5xl mb-4">📋</div>
+                                <p className="italic">Bạn chưa có phiếu khảo sát nào đã hoàn thành.</p>
+                            </div>
+                        ) : (
+                            <div className="divide-y divide-gray-100">
+                                {ReportOtherList.map((item, index) => (
+                                    <div
+                                        key={item.SurveyID || index}
+                                        onClick={() => handleDetailSurvey(item)}
+                                        className="group p-5 cursor-pointer transition-all hover:bg-blue-50/40 flex items-center justify-between"
+                                    >
+                                        <div className="flex-1">
+                                            <h3 className="font-bold text-[#337ab7] text-base mb-1 group-hover:text-blue-700 transition-colors">
+                                                {item.TemplateSurveyName}
+                                            </h3>
+                                            <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-gray-600">
+                                                <p><span className="text-gray-400 font-medium">Mã môn:</span> {item.SubjectCode}</p>
+                                                <p><span className="text-gray-400 font-medium">Môn học:</span> {item.SubjectName}</p>
+                                                <p><span className="text-gray-400 font-medium">Giảng viên:</span> {item.TeacherName}</p>
                                             </div>
-                                        </td>
-                                    </tr>
-                                ) : (
-                                    <>
-                                        {groupedReportList.length > 0 ? (
-                                            <>
-                                                {groupedReportList.map((row, index) => (
-                                                    <tr key={row.EvaluationID || index} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                                                        <td className="p-4 text-sm text-gray-600">{(page - 1) * limit + index + 1}</td>
-                                                        <td className="p-4 text-sm text-gray-800 font-medium">{row.TitleCriteriaEvaluation}</td>
-                                                        {EvaluationOtherList.filter(c => selectedCriteria.includes(c.EvaluationID)).map(c => {
-                                                            const evaluationData = row.lstEvalutionTracking?.find(e => e.EvaluationID === c.EvaluationID);
-                                                            return (
-                                                                <td key={c.EvaluationID} className="p-4 text-sm text-center text-gray-600">
-                                                                    {evaluationData ? evaluationData.NumberTracking : 0}
-                                                                </td>
-                                                            );
-                                                        })}
-                                                    </tr>
-                                                ))}
-
-                                                {/* HÀNG TỔNG SỐ NGƯỜI KHẢO SÁT */}
-                                                <tr className="bg-blue-50 font-bold">
-                                                    <td colSpan={2} className="p-4 text-sm text-[#0081cd] text-right uppercase">
-                                                        Tổng số người khảo sát:
-                                                    </td>
-                                                    <td colSpan={selectedCriteria.length} className="p-4 text-lg text-[#0081cd] text-center">
-                                                        {totalParticipants} <span className="text-sm font-normal text-gray-500">(người)</span>
-                                                    </td>
-                                                </tr>
-                                            </>
-                                        ) : (
-                                            <tr>
-                                                <td colSpan={selectedCriteria.length + 2} className="p-8 text-center text-gray-400 italic">
-                                                    Không có dữ liệu hiển thị.
-                                                </td>
-                                            </tr>
-                                        )}
-                                    </>
-                                )}
-                            </tbody>
-                        </table>
+                                        </div>
+                                        <div className="ml-4 flex flex-col items-end gap-2">
+                                            <span className="bg-green-100 text-green-700 text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full font-bold">
+                                                Đã nộp
+                                            </span>
+                                            <span className="text-xs text-blue-500 font-medium group-hover:underline">Xem chi tiết →</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
-                    {/* SECTION 4: PHÂN TRANG */}
-                    <div className="p-4 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4 bg-gray-50">
-                        <div className="flex items-center gap-1">
-                            <button
-                                onClick={() => setPage(prev => Math.max(prev - 1, 1))}
-                                disabled={page === 1}
-                                className="p-2 border border-gray-300 rounded-lg hover:bg-white disabled:opacity-50 transition-all"
-                            >
-                                <ChevronLeft size={18} />
-                            </button>
-
-                            {[...Array(totalPages)].map((_, i) => (
+                    {/* Phân trang */}
+                    {ReportOtherTotal > pageSize && (
+                        <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
+                            <span className="text-sm text-gray-500">
+                                Trang <span className="font-semibold">{currentPage}</span> / {totalPages}
+                            </span>
+                            <div className="flex gap-2">
                                 <button
-                                    key={i + 1}
-                                    onClick={() => setPage(i + 1)}
-                                    className={`w-10 h-10 rounded-lg text-sm font-medium transition-all ${page === i + 1
-                                        ? 'bg-[#0081cd] text-white shadow-md'
-                                        : 'hover:bg-white border border-transparent hover:border-gray-300'
-                                        }`}
+                                    onClick={() => handlePageChange(currentPage - 1)}
+                                    disabled={currentPage === 1}
+                                    className="px-4 py-1.5 text-sm font-medium bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
                                 >
-                                    {i + 1}
+                                    Trước
                                 </button>
-                            ))}
-
-                            <button
-                                onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
-                                disabled={page === totalPages || totalPages === 0}
-                                className="p-2 border border-gray-300 rounded-lg hover:bg-white disabled:opacity-50 transition-all"
-                            >
-                                <ChevronRight size={18} />
-                            </button>
+                                <button
+                                    onClick={() => handlePageChange(currentPage + 1)}
+                                    disabled={currentPage === totalPages}
+                                    className="px-4 py-1.5 text-sm font-medium bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                                >
+                                    Sau
+                                </button>
+                            </div>
                         </div>
+                    )}
+                </div>
 
-                        <div className="flex items-center gap-2">
-                            <span className="text-sm text-gray-600">Hiển thị</span>
-                            <select
-                                value={limit}
-                                onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}
-                                className="border border-gray-300 rounded p-1 text-sm outline-none"
-                            >
-                                <option value={10}>10</option>
-                                <option value={20}>20</option>
-                                <option value={50}>50</option>
-                            </select>
-                            <span className="text-sm text-gray-600">trên tổng số {ReportOtherTotal} dòng</span>
-                        </div>
-                    </div>
+                {/* Footer */}
+                <div className="mt-12 text-center text-[10px] text-gray-400 tracking-widest uppercase">
+                    Copyright © 2023 G&BSoft
                 </div>
             </div>
-        </div >
+        </div>
     );
-};
-
-export default ReportOther;
+}
