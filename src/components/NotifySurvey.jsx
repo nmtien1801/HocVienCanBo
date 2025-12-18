@@ -241,7 +241,7 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate }) => {
                <input
                 type="text"
                 name="Office"
-                placeholder="đơn vị hợp tác"
+                placeholder="Đơn vị công tác"
                 value={clientInfo.Office}
                 onChange={handleClientInfoChange}
                 className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-[#0081cd] focus:border-[#0081cd]"

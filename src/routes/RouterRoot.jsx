@@ -51,6 +51,8 @@ import SurveyDetailOther from "../pages/survey/SurveyDetailOther.jsx";
 import { toast } from 'react-toastify';
 import SurveyDetailClient from "../pages/survey/SurveyDetailClient.jsx";
 import ReportSurvey from "../pages/survey/ReportSurvey.jsx";
+import ReportOther from "../pages/survey/ReportOther.jsx";
+import TrackingOrther from "../pages/system/TrackingOrther.jsx";
 
 const ProtectedRoute = ({ children, userInfo, isLoading, hasCheckedAuth }) => {
   if (isLoading || !hasCheckedAuth) {
@@ -118,7 +120,7 @@ function RouterRoot() {
 
       if (!res.payload || !res.payload.data) {
         toast.error(res.payload?.message);
-      }else{
+      } else {
         setListSurvey(res.payload.data);
       }
     };
@@ -203,13 +205,17 @@ function RouterRoot() {
           <Route path="change-pass-tc" element={<ChangePassTC />} />
           <Route path="account" element={<Account />} />
           <Route path="test" element={<Test />} />
+          <Route path="danh-sach-khao-sat" element={<SurveyTeacher />} />
+          <Route path="tracking-order" element={<TrackingOrther />} />
+
+          {/* router survey */}
           <Route path="manager-survey-teacher" element={<SurveyManager />} />
           <Route path="manager-survey-other" element={<ManagerSurveyOther />} />
           <Route path="manager-question" element={<ManagerQuestion />} />
-          <Route path="danh-sach-khao-sat" element={<SurveyTeacher />} />
           <Route path="survey-detail" element={<SurveyDetail />} />
           <Route path="survey-other-detail" element={<SurveyDetailOther />} />
           <Route path="report-survey" element={<ReportSurvey />} />
+          <Route path="report-survey-other" element={<ReportOther />} />
 
           {/* route schedule */}
           <Route path="schedule-teach-month" element={<ScheduleTeachMonth />} />

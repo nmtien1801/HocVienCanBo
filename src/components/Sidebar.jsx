@@ -39,6 +39,13 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
     { label: 'Thông tin tài khoản', path: '/account' },
     { label: 'Khảo sát giảng viên giảng dạy', path: '/danh-sach-khao-sat' },
     userInfo?.TypeUserID === TypeUserIDCons.Administrator
+      ? { label: 'Nhập thông báo', path: '/manager-notification' }
+      : null,
+    { label: 'Theo dõi đơn hàng', path: '/tracking-order' },
+  ].filter(Boolean)
+
+  const surveyItems = [
+    userInfo?.TypeUserID === TypeUserIDCons.Administrator
       ? { label: 'Ngân hàng câu hỏi', path: '/manager-question' }
       : null,
     userInfo?.TypeUserID === TypeUserIDCons.Administrator
@@ -47,10 +54,9 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
     userInfo?.TypeUserID === TypeUserIDCons.Administrator
       ? { label: 'Phiếu khảo sát khác', path: '/manager-survey-other' }
       : null,
-    userInfo?.TypeUserID === TypeUserIDCons.Administrator
-      ? { label: 'Nhập thông báo', path: '/manager-notification' }
-      : null,
     { label: 'Báo cáo khảo sát', path: '/report-survey' },
+    { label: 'Báo cáo khảo sát khác', path: '/report-survey-other' },
+
   ].filter(Boolean)
 
   const scheduleItems = [
@@ -172,6 +178,40 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
 
               {(role.role === "TC_TRUE" || role.role === "TC_FALSE") &&
                 <>
+                  {/* Khảo sát */}
+                  {role.canAccess && <div>
+                    <button
+                      onClick={() => toggleMenu('survey')}
+                      className={`w-full px-3 py-2.5 flex items-center gap-3 rounded-lg hover:bg-white/10 transition-all ${expandedMenu === 'grades' ? 'bg-white/15 shadow-sm' : ''
+                        }`}
+                    >
+                      <BarChart3 className="w-5 h-5 flex-shrink-0" />
+                      <span className="flex-1 text-left text-sm font-medium">Khảo sát</span>
+                      <ChevronDown className={`w-4 h-4 transition-transform ${expandedMenu === 'grades' ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {expandedMenu === 'survey' && (
+                      <div className="mt-1 ml-2 space-y-0.5">
+                        {surveyItems.map((item, index) => (
+                          <NavLink
+                            key={index}
+                            to={item.path}
+                            onClick={() => window.innerWidth < 1024 && onToggleSidebar?.()}
+                            className={({ isActive }) =>
+                              `flex items-center gap-2 px-3 py-2 pl-10 rounded-lg transition-all text-sm no-underline text-white ${isActive
+                                ? 'bg-white/20 font-semibold shadow-sm'
+                                : 'hover:bg-white/10'
+                              }`
+                            }
+                          >
+                            <div className="w-1.5 h-1.5 bg-white rounded-full flex-shrink-0"></div>
+                            <span className="truncate">{item.label}</span>
+                          </NavLink>
+                        ))}
+                      </div>
+                    )}
+                  </div>}
+
                   {/* Lịch học */}
                   <div>
                     <button
@@ -304,6 +344,13 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
                 <Home className="w-6 h-6" />
               </button>
               {(role.role === "TC_TRUE" || role.role === "TC_FALSE") && <>
+                <button
+                  onClick={() => toggleMenu('survey')}
+                  className="p-3 hover:bg-white/10 rounded-lg transition-colors w-full flex justify-center"
+                  title="Khảo sát"
+                >
+                  <BarChart3 className="w-6 h-6" />
+                </button>
                 <button
                   onClick={() => toggleMenu('schedule')}
                   className="p-3 hover:bg-white/10 rounded-lg transition-colors w-full flex justify-center"

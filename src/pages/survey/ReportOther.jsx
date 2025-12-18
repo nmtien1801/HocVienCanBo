@@ -1,23 +1,18 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { BarChart3, CheckCircle2, Search, FileDown, Users, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { getReportTrackingTeacher } from '../../redux/reportSlice.js';
+import { getReportTrackingOther } from '../../redux/reportSlice.js';
 import { useSelector, useDispatch } from "react-redux";
 import DropdownSearch from '../../components/FormFields/DropdownSearch.jsx';
-import { getSubjectLearnAll } from '../../redux/scheduleSlice.js';
-import { getAllTeacher } from '../../redux/teacherSlice.js';
 import { getTemplateTrackingTeacher } from '../../redux/reportSlice.js'
 import * as XLSX from 'xlsx';
 
-const ReportSurvey = () => {
+const ReportOther = () => {
     const dispatch = useDispatch();
 
     // Lấy dữ liệu từ Redux (Giả sử cấu trúc slice của bạn)
-    const { TemplateTrackingTeacherList, EvaluationList, SurveyReportList, SurveyReportTotal } = useSelector((state) => state.report);
-    const { teacherList } = useSelector((state) => state.teacher);
+    const { EvaluationList, SurveyReportList, SurveyReportTotal } = useSelector((state) => state.report);
     const { subjectLearnAll } = useSelector((state) => state.schedule);
-    const [selectedSubject, setSelectedSubject] = useState(0);
-    const [selectedTeacher, setSelectedTeacher] = useState(0);
     const [selectedTemplateSurvey, setSelectedTemplateSurvey] = useState(0);
     const [totalParticipants, setTotalParticipants] = useState(0);
 
@@ -31,14 +26,12 @@ const ReportSurvey = () => {
         setIsLoading(true); // Bật loading
         try {
             const res = await dispatch(
-                getReportTrackingTeacher({
-                    templateSurveyID: selectedTemplateSurvey,
-                    teacherID: selectedTeacher,
-                    subjectID: selectedSubject,
+                getReportTrackingOther({
                     page,
                     limit
                 })
             );
+console.log('sssss ', res);
 
             if (res.payload?.Message) {
                 toast.error(res.payload?.Message || "Lỗi tải dữ liệu");
@@ -54,13 +47,6 @@ const ReportSurvey = () => {
 
     // Gọi lại API khi filter hoặc phân trang thay đổi
     useEffect(() => {
-        const fetchSubjectLearnAll = async () => {
-            let res = await dispatch(getSubjectLearnAll());
-            if (!res.payload || !res.payload.data) {
-                toast.error(res.payload?.message || 'Không thể tải danh sách môn học');
-            }
-        };
-
         const fetchPendingSurveys = async () => {
             const res = await dispatch(getTemplateTrackingTeacher({ typeTemplate: 1 }));
 
@@ -69,20 +55,7 @@ const ReportSurvey = () => {
             }
         };
 
-        const fetchTeacher = async () => {
-            const res = await dispatch(getAllTeacher());
-
-            if (res.message) {
-                toast.error(res.message);
-            }
-        };
-
-
-        if (subjectLearnAll.length === 0) {
-            fetchSubjectLearnAll();
-        }
         fetchPendingSurveys();
-        fetchTeacher();
     }, [dispatch]);
 
     // ----------------------------------------------------------- CRUD
@@ -155,6 +128,18 @@ const ReportSurvey = () => {
         }
     }, [EvaluationList]);
 
+
+
+    const calculateRowTotal = (lstEvalutionTracking) => {
+        if (!lstEvalutionTracking) return 0;
+        return lstEvalutionTracking.reduce((sum, item) => {
+            if (selectedCriteria.includes(item.EvaluationID)) {
+                return sum + (item.NumberTracking || 0);
+            }
+            return sum;
+        }, 0);
+    };
+
     // Gộp các câu hỏi trùng nhau
     const groupedReportList = useMemo(() => {
         if (!SurveyReportList || SurveyReportList.length === 0) return [];
@@ -197,61 +182,6 @@ const ReportSurvey = () => {
                             Báo cáo kết quả khảo sát
                         </h1>
                         <p className="text-gray-500 text-sm">Xem thống kê chi tiết theo các tiêu chí đánh giá</p>
-                    </div>
-                </div>
-
-                {/* BỘ LỌC */}
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mb-6 bg-white p-4 rounded-xl shadow-sm border border-gray-200 items-end">
-                    <div className="flex flex-col gap-1 md:col-span-3">
-                        <label className="text-xs font-bold text-gray-600 uppercase">Mẫu khảo sát</label>
-                        <DropdownSearch
-                            options={TemplateTrackingTeacherList}
-                            placeholder="------ chọn mẫu khảo sát ------"
-                            labelKey="Title"
-                            valueKey="TemplateSurveyID"
-                            onChange={(e) => setSelectedTemplateSurvey(e.TemplateSurveyID)}
-                        />
-                    </div>
-
-                    <div className="flex flex-col gap-1 md:col-span-3">
-                        <label className="text-xs font-bold text-gray-600 uppercase">Giảng viên</label>
-                        <DropdownSearch
-                            options={teacherList}
-                            placeholder="------ chọn giảng viên ------"
-                            labelKey="TeacherName"
-                            valueKey="TeacherID"
-                            onChange={(e) => setSelectedTeacher(e.TeacherID)}
-                        />
-                    </div>
-
-                    <div className="flex flex-col gap-1 md:col-span-3">
-                        <label className="text-xs font-bold text-gray-600 uppercase">Môn học</label>
-                        <DropdownSearch
-                            options={subjectLearnAll}
-                            placeholder="------ chọn môn học ------"
-                            labelKey="SubjectName"
-                            valueKey="SubjectID"
-                            onChange={(e) => setSelectedSubject(e.SubjectID)}
-                        />
-                    </div>
-
-                    <div className="md:col-span-3 flex gap-2">
-                        <button
-                            className="bg-[#0081cd] hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 text-sm transition-colors flex-1"
-                            onClick={handleSearch}
-                        >
-                            <Search size={16} />
-                            Tìm kiếm
-                        </button>
-                        <button
-                            className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 text-sm transition-all 
-                                disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-teal-600"
-                            onClick={handleExportExcel}
-                            title="Xuất Excel"
-                            disabled={isLoading || selectedTemplateSurvey === 0 || selectedTeacher === 0}
-                        >
-                            <FileDown size={16} /> Xuất Excel
-                        </button>
                     </div>
                 </div>
 
@@ -398,4 +328,4 @@ const ReportSurvey = () => {
     );
 };
 
-export default ReportSurvey;
+export default ReportOther;

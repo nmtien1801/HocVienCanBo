@@ -5,7 +5,13 @@ const initialState = {
   EvaluationList: [],
   SurveyReportList: [],
   SurveyReportTotal: 0,
+  ReportOtherList: [],
+  ReportOtherTotal: 0,
+  EvaluationOtherList: [],
   TemplateTrackingTeacherList: [],
+  TrackingOrderList: [],
+  TrackingOrderTotal: 0,
+  EvaluationOrderList: [],
 };
 
 export const getReportTrackingTeacher = createAsyncThunk(
@@ -18,6 +24,26 @@ export const getReportTrackingTeacher = createAsyncThunk(
       page,
       limit
     );
+    return response;
+  }
+);
+
+export const getReportTrackingOrder = createAsyncThunk(
+  "report/getReportTrackingOrder",
+  async ({ templateSurveyID, page, limit }, thunkAPI) => {
+    const response = await ApiReport.getReportTrackingOrderApi(
+      templateSurveyID,
+      page,
+      limit
+    );
+    return response;
+  }
+);
+
+export const getReportTrackingOther = createAsyncThunk(
+  "report/getReportTrackingOther",
+  async ({ page, limit }, thunkAPI) => {
+    const response = await ApiReport.getReportTrackingOtherApi(page, limit);
     return response;
   }
 );
@@ -63,6 +89,31 @@ const reportSlice = createSlice({
         state.TemplateTrackingTeacherList = action.payload.data || [];
       })
       .addCase(getTemplateTrackingTeacher.rejected, (state, action) => {});
+
+    // getReportTrackingOther
+    builder
+      .addCase(getReportTrackingOther.pending, (state) => {
+        state.ReportOtherList = [];
+        state.ReportOtherTotal = 0;
+      })
+      .addCase(getReportTrackingOther.fulfilled, (state, action) => {
+        state.ReportOtherList = action.payload.data.data || [];
+        state.ReportOtherTotal = action.payload.data.totals || 0;
+      })
+      .addCase(getReportTrackingOther.rejected, (state, action) => {});
+
+    // getReportTrackingOrder
+    builder
+      .addCase(getReportTrackingOrder.pending, (state) => {
+        state.TrackingOrderList = [];
+        state.TrackingOrderTotal = 0;
+      })
+      .addCase(getReportTrackingOrder.fulfilled, (state, action) => {
+        state.EvaluationOrderList = action.payload.data.lstEvalution || [];
+        state.TrackingOrderList = action.payload.data.data || [];
+        state.TrackingOrderTotal = action.payload.data.totals || 0;
+      })
+      .addCase(getReportTrackingOrder.rejected, (state, action) => {});
   },
 });
 
