@@ -6,16 +6,15 @@ import { useSelector, useDispatch } from "react-redux";
 import DropdownSearch from '../../components/FormFields/DropdownSearch.jsx';
 import { getSubjectLearnAll } from '../../redux/scheduleSlice.js';
 import { getAllTeacher } from '../../redux/teacherSlice.js';
-import { getTemplateSurveyForTeacherStudent } from '../../redux/surveySlice.js'
+import { getTemplateTrackingTeacher } from '../../redux/reportSlice.js'
 
 const ReportSurvey = () => {
     const dispatch = useDispatch();
 
     // Lấy dữ liệu từ Redux (Giả sử cấu trúc slice của bạn)
-    const { SurveyReportList, SurveyReportTotal } = useSelector((state) => state.report);
+    const { TemplateTrackingTeacherList, EvaluationList, SurveyReportList, SurveyReportTotal } = useSelector((state) => state.report);
     const { teacherList } = useSelector((state) => state.teacher);
     const { subjectLearnAll } = useSelector((state) => state.schedule);
-    const { SurveyForTeacherStudentList } = useSelector((state) => state.survey);
     const [selectedSubject, setSelectedSubject] = useState(0);
     const [selectedTeacher, setSelectedTeacher] = useState(0);
     const [selectedTemplateSurvey, setSelectedTemplateSurvey] = useState(0);
@@ -23,6 +22,7 @@ const ReportSurvey = () => {
     // -----------------------------------  PHÂN TRANG
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(20);
+        console.log('ssssss ', SurveyReportList);
 
     // ----------------------------------- FETCH DATA
     const fetchReport = async () => {
@@ -35,7 +35,6 @@ const ReportSurvey = () => {
                 limit
             })
         );
-        console.log('ssssss ', res.payload.data);
 
         if (res.payload.Message) {
             toast.error(res.payload?.message || "Lỗi tải dữ liệu");
@@ -52,7 +51,7 @@ const ReportSurvey = () => {
         };
 
         const fetchPendingSurveys = async () => {
-            const res = await dispatch(getTemplateSurveyForTeacherStudent());
+            const res = await dispatch(getTemplateTrackingTeacher({ typeTemplate: 1 }));
 
             if (res.message) {
                 toast.error(res.message);
@@ -75,17 +74,28 @@ const ReportSurvey = () => {
         fetchTeacher();
     }, [dispatch]);
 
+    // -------------------------------------- CRUD
+    const handleSearch = () => {
+        setPage(1); // Reset về trang 1
+        fetchReport(); // Gọi hàm fetch dữ liệu
+    };
+
+    const handleExportExcel = () => {
+        // TODO: Implement Excel export functionality
+        toast.info('Chức năng xuất Excel đang được phát triển');
+    };
+
     // ----------------------------------- LOGIC HIỂN THỊ CỘT ĐỘNG
     const [selectedCriteria, setSelectedCriteria] = useState([]);
 
     useEffect(() => {
-        if (SurveyReportList.length > 0) {
-            const firstRow = SurveyReportList[0];
+        if (EvaluationList.length > 0) {
+            const firstRow = EvaluationList[0];
             if (firstRow.results) {
                 setSelectedCriteria(Object.keys(firstRow.results));
             }
         }
-    }, [SurveyReportList]);
+    }, [EvaluationList]);
 
     const handleCheckboxChange = (id) => {
         setSelectedCriteria(prev =>
@@ -98,19 +108,8 @@ const ReportSurvey = () => {
         return selectedCriteria.reduce((sum, key) => sum + (results[key] || 0), 0);
     };
 
-
     // Tính tổng số trang
     const totalPages = Math.ceil(SurveyReportTotal / limit);
-
-    const handleSearch = () => {
-        setPage(1); // Reset về trang 1
-        fetchReport(); // Gọi hàm fetch dữ liệu
-    };
-
-    const handleExportExcel = () => {
-        // TODO: Implement Excel export functionality
-        toast.info('Chức năng xuất Excel đang được phát triển');
-    };
 
     return (
         <div className="p-6 bg-gray-50 min-h-screen">
@@ -130,7 +129,7 @@ const ReportSurvey = () => {
                     <div className="flex flex-col gap-1 md:col-span-3">
                         <label className="text-xs font-bold text-gray-600 uppercase">Mẫu khảo sát</label>
                         <DropdownSearch
-                            options={SurveyForTeacherStudentList}
+                            options={TemplateTrackingTeacherList}
                             placeholder="------ chọn mẫu khảo sát ------"
                             labelKey="Title"
                             valueKey="TemplateSurveyID"
@@ -185,7 +184,7 @@ const ReportSurvey = () => {
                         Chọn tiêu chí hiển thị trên bảng:
                     </h3>
                     <div className="flex flex-wrap gap-4">
-                        {SurveyReportList.map(item => (
+                        {EvaluationList.map(item => (
                             <label key={item.EvaluationID} className="flex items-center gap-2 cursor-pointer group">
                                 <input
                                     type="checkbox"
@@ -209,9 +208,9 @@ const ReportSurvey = () => {
                                 <tr className="bg-gray-50 border-b border-gray-200">
                                     <th className="p-4 text-sm font-bold text-gray-700 w-16">STT</th>
                                     <th className="p-4 text-sm font-bold text-gray-700">Nội dung câu hỏi</th>
-                                    {SurveyReportList.filter(c => selectedCriteria.includes(c.idEvaluationID)).map(c => (
+                                    {EvaluationList.filter(c => selectedCriteria.includes(c.EvaluationID)).map(c => (
                                         <th key={c.EvaluationID} className="p-4 text-sm font-bold text-center text-[#026aa8] bg-blue-50/50 w-20">
-                                            {c.EvaluationID}
+                                            {c.EvaluationName}
                                         </th>
                                     ))}
                                     <th className="p-4 text-sm font-bold text-center text-gray-700 bg-gray-100 w-28">Tổng cộng</th>
@@ -219,7 +218,7 @@ const ReportSurvey = () => {
                             </thead>
                             <tbody>
                                 {SurveyReportList.length > 0 ? SurveyReportList.map((row, index) => (
-                                    <tr key={row.id || index} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                                    <tr key={row.EvaluationID || index} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                                         <td className="p-4 text-sm text-gray-600">{(page - 1) * limit + index + 1}</td>
                                         <td className="p-4 text-sm text-gray-800 font-medium">{row.question}</td>
                                         {SurveyReportList.filter(c => selectedCriteria.includes(c.EvaluationID)).map(c => (
@@ -233,7 +232,7 @@ const ReportSurvey = () => {
                                     </tr>
                                 )) : (
                                     <tr>
-                                        <td colSpan={SurveyReportList.length + 3} className="p-8 text-center text-gray-400 italic">
+                                        <td colSpan={EvaluationList.length + 3} className="p-8 text-center text-gray-400 italic">
                                             Không có dữ liệu hiển thị.
                                         </td>
                                     </tr>

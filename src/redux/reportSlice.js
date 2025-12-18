@@ -2,8 +2,10 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import ApiReport from "../apis/ApiReport.js";
 
 const initialState = {
+  EvaluationList: [],
   SurveyReportList: [],
   SurveyReportTotal: 0,
+  TemplateTrackingTeacherList: [],
 };
 
 export const getReportTrackingTeacher = createAsyncThunk(
@@ -15,6 +17,16 @@ export const getReportTrackingTeacher = createAsyncThunk(
       subjectID,
       page,
       limit
+    );
+    return response;
+  }
+);
+
+export const getTemplateTrackingTeacher = createAsyncThunk(
+  "report/getTemplateTrackingTeacher",
+  async ({ typeTemplate }, thunkAPI) => {
+    const response = await ApiReport.getTemplateTrackingTeacherApi(
+      typeTemplate
     );
     return response;
   }
@@ -35,10 +47,19 @@ const reportSlice = createSlice({
     builder
       .addCase(getReportTrackingTeacher.pending, (state) => {})
       .addCase(getReportTrackingTeacher.fulfilled, (state, action) => {
-        state.SurveyReportList = action.payload.data.lstEvalution || [];
+        state.EvaluationList = action.payload.data.lstEvalution || [];
+        state.SurveyReportList = action.payload.data.data || [];
         state.SurveyReportTotal = action.payload.totals || 0;
       })
       .addCase(getReportTrackingTeacher.rejected, (state, action) => {});
+
+    // getTemplateTrackingTeacher
+    builder
+      .addCase(getTemplateTrackingTeacher.pending, (state) => {})
+      .addCase(getTemplateTrackingTeacher.fulfilled, (state, action) => {
+        state.TemplateTrackingTeacherList = action.payload.data || [];
+      })
+      .addCase(getTemplateTrackingTeacher.rejected, (state, action) => {});
   },
 });
 
