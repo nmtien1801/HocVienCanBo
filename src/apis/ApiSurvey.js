@@ -5,6 +5,7 @@ const ApiSurvey = {
     getSurveyByIDApi: (surveyID) => ApiManager.get(`/survey/get-by-id?surveyID=${surveyID}`),
     CreateSurveyTeacherApi: (model) => ApiManager.post(`/survey/create-teacher`, model),
     UpdateTemplateSurveyApi: (model) => ApiManager.post(`/survey/update-teacher`, model),
+    UpdateSurveyAnswerClientApi: (model) => ApiManager.post(`/survey/update-survey-answer-client`, model),
     DeleteSurveyApi: (model) => ApiManager.post(`/survey-admin/delete`, model),
 
     getTemplateSurveyForTeacherStudentApi: () => ApiManager.get(`/template-survey/get-list-for-teacher-student`),

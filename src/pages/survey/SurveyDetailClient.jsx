@@ -183,7 +183,7 @@ export default function SurveyDetailClient() {
             lstSurveyAnswers: surveyAnswers
         };
 
-        let res = await ApiSurvey.UpdateTemplateSurveyApi(postModel);
+        let res = await ApiSurvey.UpdateSurveyAnswerClientApi(postModel);
         if (res === true) {
             toast.success("Đã gửi khảo sát thành công!");
             navigate('/dashboard');

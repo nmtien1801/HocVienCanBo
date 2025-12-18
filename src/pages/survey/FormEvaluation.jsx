@@ -119,7 +119,7 @@ export default function FormEvaluation({ visible, onClose, form }) {
         } else {
           toast.success(`Đã thêm tiêu chí đánh giá thành công`);
           setGridData(prev => [...prev, res]);
-          handleRowSelect(res);
+          handleControlAction('clear');
         }
       }
     }
