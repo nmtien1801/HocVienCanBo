@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { use, useEffect, useRef, useState } from "react";
 import {
   HashRouter as Router,
   Routes,
@@ -102,7 +102,8 @@ const SurveyProtectedRoute = ({ children, SurveysByStudentList }) => {
 function RouterRoot() {
   const dispatch = useDispatch();
   const { userInfo, isLoading, hasCheckedAuth } = useSelector((state) => state.auth);
-  const { SurveysByStudentList, SurveysByStudentTotal } = useSelector((state) => state.survey);
+  const { SurveysByStudentList } = useSelector((state) => state.survey);
+  const [listSurvey, setListSurvey] = useState([]);
 
   useEffect(() => {
     const fetchSurveyByID = async () => {
@@ -112,6 +113,8 @@ function RouterRoot() {
 
       if (!res.payload || !res.payload.data) {
         toast.error(res.payload?.message);
+      }else{
+        setListSurvey(res.payload.data);
       }
     };
 

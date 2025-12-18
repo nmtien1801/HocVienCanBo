@@ -5,6 +5,7 @@ import { getReportTrackingTeacher } from '../../redux/reportSlice.js';
 import { useSelector, useDispatch } from "react-redux";
 import DropdownSearch from '../../components/FormFields/DropdownSearch.jsx';
 import { getSubjectLearnAll } from '../../redux/scheduleSlice.js';
+import { getAllTeacher } from '../../redux/teacherSlice.js';
 import { getTemplateSurveyForTeacherStudent } from '../../redux/surveySlice.js'
 
 const ReportSurvey = () => {
@@ -12,6 +13,7 @@ const ReportSurvey = () => {
 
     // Lấy dữ liệu từ Redux (Giả sử cấu trúc slice của bạn)
     const { SurveyReportList, SurveyReportTotal } = useSelector((state) => state.report);
+    const { teacherList } = useSelector((state) => state.teacher);
     const { subjectLearnAll } = useSelector((state) => state.schedule);
     const { SurveyForTeacherStudentList } = useSelector((state) => state.survey);
     const [selectedSubject, setSelectedSubject] = useState(0);
@@ -40,7 +42,6 @@ const ReportSurvey = () => {
             toast.error(res.payload?.message || "Lỗi tải dữ liệu");
         }
     };
-    console.log('aaaaa ', SurveyReportList);
 
     // Gọi lại API khi filter hoặc phân trang thay đổi
     useEffect(() => {
@@ -59,15 +60,33 @@ const ReportSurvey = () => {
             }
         };
 
+        const fetchTeacher = async () => {
+            const res = await dispatch(getAllTeacher());
+
+            if (res.message) {
+                toast.error(res.message);
+            }
+        };
+
 
         if (subjectLearnAll.length === 0) {
             fetchSubjectLearnAll();
         }
         fetchPendingSurveys();
+        fetchTeacher();
     }, [dispatch]);
 
     // ----------------------------------- LOGIC HIỂN THỊ CỘT ĐỘNG
     const [selectedCriteria, setSelectedCriteria] = useState([]);
+
+    useEffect(() => {
+        if (SurveyReportList.length > 0) {
+            const firstRow = SurveyReportList[0];
+            if (firstRow.results) {
+                setSelectedCriteria(Object.keys(firstRow.results));
+            }
+        }
+    }, [SurveyReportList]);
 
     const handleCheckboxChange = (id) => {
         setSelectedCriteria(prev =>
@@ -124,21 +143,17 @@ const ReportSurvey = () => {
                             valueKey="TemplateSurveyID"
                             onChange={(e) => setSelectedTemplateSurvey(e.TemplateSurveyID)}
                         />
-
                     </div>
 
                     <div className="flex flex-col gap-1 md:col-span-3">
                         <label className="text-xs font-bold text-gray-600 uppercase">Giảng viên</label>
-                        <select
-                            name="teacherID"
-                            value={filters.teacherID}
-                            onChange={handleFilterChange}
-                            className="p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
-                        >
-                            <option value="">-- Tất cả giảng viên --</option>
-                            <option value="101">Nguyễn Văn A</option>
-                            <option value="102">Trần Thị B</option>
-                        </select>
+                        <DropdownSearch
+                            options={teacherList}
+                            placeholder="------ chọn giảng viên ------"
+                            labelKey="TeacherName"
+                            valueKey="TeacherID"
+                            onChange={(e) => setSelectedTemplateSurvey(e.TeacherID)}
+                        />
                     </div>
 
                     <div className="flex flex-col gap-1 md:col-span-3">
