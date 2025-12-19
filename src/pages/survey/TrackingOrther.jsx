@@ -47,7 +47,7 @@ const TrackingOrder = () => {
     // Gọi lại API khi filter hoặc phân trang thay đổi
     useEffect(() => {
         const fetchPendingSurveys = async () => {
-            const res = await dispatch(getTemplateTrackingTeacher({ typeTemplate: 1 }));
+            const res = await dispatch(getTemplateTrackingTeacher({ typeTemplate: 2 }));
 
             if (res.message) {
                 toast.error(res.message);

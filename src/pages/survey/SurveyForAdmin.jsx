@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { getReportTrackingOther } from "../../redux/reportSlice.js";
+import { getSurveySubjectByStudentID, getSurveyForAdministrator } from "../../redux/surveySlice.js";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { formatToInputDate } from '../../utils/constants.js'
+import ApiSurvey from '../../apis/ApiSurvey.js'
 
-export default function SurveyTeacher() {
+export default function SurveyForAdmin() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    const { ReportOtherList, ReportOtherTotal } = useSelector((state) => state.report);
+    const { SurveysByStudentList, SurveysByStudentTotal } = useSelector((state) => state.survey);
+
+    const [activeTab, setActiveTab] = useState("not-surveyed");
 
     // --- 1. State cho phân trang ---
     const [currentPage, setCurrentPage] = useState(1);
@@ -17,26 +19,59 @@ export default function SurveyTeacher() {
 
     // --------------------------------------- Initial
     useEffect(() => {
-        const fetchSurveyOther = async () => {
+        // lấy phiếu khảo sát của học viên (bắt buộc nộp)
+        const fetchSurveyByID = async () => {
             const res = await dispatch(
-                getReportTrackingOther({ page: currentPage, limit: pageSize })
+                getSurveySubjectByStudentID({ page: currentPage, limit: pageSize })
             );
 
             if (!res.payload || !res.payload.data) {
-                toast.error(res.payload?.message || "Không thể tải danh sách");
+                toast.error(res.payload?.message);
             }
         };
 
-        fetchSurveyOther();
-    }, [dispatch, currentPage]);
+        const fetchSurveyForAdmin = async () => {
+            const res = await dispatch(
+                getSurveyForAdministrator({ page: currentPage, limit: pageSize })
+            );
+
+            console.log('sssssss ', res);
+            
+            if (!res.payload || !res.payload.data) {
+                toast.error(res.payload?.message);
+            }
+        };
+
+        fetchSurveyForAdmin()
+        fetchSurveyByID();
+    }, [dispatch, currentPage]); // Thêm currentPage vào dependency
+
+    // Lọc theo tab
+    const displayList = SurveysByStudentList.filter((item) =>
+        activeTab === "surveyed" ? item.StatusID_Survey : !item.StatusID_Survey
+    );
 
     // -------------------------------------------------- Action
     const handleDetailSurvey = async (item) => {
-        navigate(`/survey-detail?id=${item.SurveyID}&submit=true`)
+        if (item.SurveyID !== null) {
+            navigate(`/survey-detail?id=${item.SurveyID}&submit=${item.StatusID_Survey}`)
+        } else {
+            let payload = {
+                ...item,
+                Title: item.TemplateSurveyName
+            }
+            let res = await ApiSurvey.CreateSurveyForAdminApi(payload)
+
+            if (res.message) {
+                toast.error(res.message);
+            } else {
+                navigate(`/survey-detail?id=${res.SurveyID}&submit=${item.StatusID_Survey}`)
+            }
+        }
     }
 
     // --------------------------------------------------------- 3. Tính toán tổng số trang ---
-    const totalPages = ReportOtherTotal ? Math.ceil(ReportOtherTotal / pageSize) : 1;
+    const totalPages = SurveysByStudentTotal ? Math.ceil(SurveysByStudentTotal / pageSize) : 1;
 
     // Hàm chuyển trang
     const handlePageChange = (newPage) => {
@@ -52,21 +87,46 @@ export default function SurveyTeacher() {
             <div className="max-w-0xl mx-auto">
                 {/* Header */}
                 <h1 className="text-xl md:text-2xl text-gray-600 mb-6">
-                    Lịch sử khảo sát của bạn
+                    Khảo sát Người dùng
                 </h1>
 
                 {/* Body */}
                 <div className="grid grid-cols-1 gap-6">
                     <div className="bg-white rounded-lg shadow-sm">
+                        {/* Tabs */}
+                        <div className="px-6 border-b border-gray-200">
+                            <nav className="-mb-px flex space-x-8">
+                                <button
+                                    onClick={() => setActiveTab("not-surveyed")}
+                                    className={`py-4 px-1 border-b-2 font-medium text-base transition-all whitespace-nowrap ${activeTab === "not-surveyed"
+                                        ? "border-[#337ab7] text-[#337ab7]"
+                                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                                        }`}
+                                >
+                                    Chưa khảo sát
+                                </button>
+
+                                <button
+                                    onClick={() => setActiveTab("surveyed")}
+                                    className={`py-4 px-1 border-b-2 font-medium text-base transition-all whitespace-nowrap ${activeTab === "surveyed"
+                                        ? "border-[#337ab7] text-[#337ab7]"
+                                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                                        }`}
+                                >
+                                    Đã khảo sát
+                                </button>
+                            </nav>
+                        </div>
+
                         {/* Danh sách */}
                         <div className="p-6 space-y-4">
-                            {ReportOtherList.length === 0 ? (
+                            {displayList.length === 0 ? (
                                 <div className="text-center text-gray-500 py-8 text-sm italic">
-                                    Không có dữ liệu
+                                    Không có dữ liệu {activeTab === "surveyed" ? "đã khảo sát" : "chưa khảo sát"}.
                                 </div>
                             ) : (
-                                ReportOtherList.map((item, index) => {
-                                    const isLast = index === ReportOtherList.length - 1;
+                                displayList.map((item, index) => {
+                                    const isLast = index === displayList.length - 1;
 
                                     return (
                                         <div
@@ -77,10 +137,11 @@ export default function SurveyTeacher() {
                                         >
                                             <div className="flex-1">
                                                 <h3 className="font-semibold text-[#337ab7] text-sm mb-1 transition-colors group-hover:text-gray-800">
-                                                    {item.TemplateSurveyName}
+                                                    {item.TemplateSurveyName} - {item.SubjectCode} - {item.SubjectName}{" "}
+                                                    <span className="text-red-600 font-semibold">(Bắt buộc)</span>
                                                 </h3>
                                                 <div className="font-semibold text-[#337ab7] text-sm transition-colors group-hover:text-gray-800">
-                                                    Ngày khảo sát: -- {formatToInputDate(item.DateCreated)} --
+                                                    Giảng viên: {item.TeacherName}
                                                 </div>
                                             </div>
                                         </div>
@@ -90,7 +151,7 @@ export default function SurveyTeacher() {
                         </div>
 
                         {/* --- 4. Giao diện Phân trang (Pagination) --- */}
-                        {ReportOtherTotal > pageSize && (
+                        {SurveysByStudentTotal > pageSize && (
                             <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
                                 <div className="text-sm text-gray-500">
                                     Trang <span className="font-medium">{currentPage}</span> / <span className="font-medium">{totalPages}</span>

@@ -51,8 +51,9 @@ import SurveyDetailOther from "../pages/survey/SurveyDetailOther.jsx";
 import { toast } from 'react-toastify';
 import SurveyDetailClient from "../pages/survey/SurveyDetailClient.jsx";
 import ReportSurvey from "../pages/survey/ReportSurvey.jsx";
-import ReportOther from "../pages/system/ReportOther.jsx";
+import ReportOther from "../pages/survey/ReportOther.jsx";
 import TrackingOrther from "../pages/survey/TrackingOrther.jsx";
+import SurveyForAdmin from "../pages/survey/SurveyForAdmin.jsx";
 
 const ProtectedRoute = ({ children, userInfo, isLoading, hasCheckedAuth }) => {
   if (isLoading || !hasCheckedAuth) {
@@ -216,6 +217,7 @@ function RouterRoot() {
           <Route path="survey-other-detail" element={<SurveyDetailOther />} />
           <Route path="report-survey" element={<ReportSurvey />} />
           <Route path="report-survey-other" element={<ReportOther />} />
+          <Route path="survey-user" element={<SurveyForAdmin />} />
 
           {/* route schedule */}
           <Route path="schedule-teach-month" element={<ScheduleTeachMonth />} />

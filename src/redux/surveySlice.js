@@ -6,6 +6,7 @@ const initialState = {
   SurveysByStudentTotal: 0,
   SurveyForTeacherStudentList: [],
   TemplateSurveyForClientList: [],
+  SurveysForAdministratorList: [],
 };
 
 export const getSurveySubjectByStudentID = createAsyncThunk(
@@ -15,6 +16,14 @@ export const getSurveySubjectByStudentID = createAsyncThunk(
       page,
       limit
     );
+    return response.data;
+  }
+);
+
+export const getSurveyForAdministrator = createAsyncThunk(
+  "survey/getSurveyForAdministrator",
+  async ({ page, limit }, thunkAPI) => {
+    const response = await ApiSurvey.getSurveyForAdministratorApi(page, limit);
     return response.data;
   }
 );
@@ -54,6 +63,15 @@ const surveySlice = createSlice({
         state.SurveysByStudentTotal = action.payload.totals || 0;
       })
       .addCase(getSurveySubjectByStudentID.rejected, (state, action) => {});
+
+    // getSurveyForAdministrator
+    builder
+      .addCase(getSurveyForAdministrator.pending, (state) => {})
+      .addCase(getSurveyForAdministrator.fulfilled, (state, action) => {
+        state.SurveysForAdministratorList = action.payload.data || [];
+        // state.SurveysForAdministratorTotal = action.payload.totals || 0;
+      })
+      .addCase(getSurveyForAdministrator.rejected, (state, action) => {});
 
     // getTemplateSurveyForTeacherStudent
     builder
