@@ -107,11 +107,11 @@ export default function SurveyTeacher() {
                         Lịch sử khảo sát Người dùng
                     </h1>
 
-                    <div className="flex items-center gap-2">
-                        <div className="flex flex-col gap-1">
-                            <label className="text-xs font-bold text-gray-600 uppercase">
-                                Mẫu khảo sát
-                            </label>
+                    <div className="flex items-center gap-3 p-2 ">
+                        <label className="text-sm font-semibold text-gray-700 whitespace-nowrap">
+                            Mẫu khảo sát:
+                        </label>
+                        <div className="w-64 md:w-80"> {/* Giới hạn độ rộng của dropdown */}
                             <DropdownSearch
                                 key={dropdownKey}
                                 options={TemplateTrackingTeacherList || []}
