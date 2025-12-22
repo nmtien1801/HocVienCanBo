@@ -1,157 +1,208 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { getSurveySubjectByStudentID, getSurveyForAdministrator } from "../../redux/surveySlice.js";
+import { getSurveyForAdministrator } from "../../redux/surveySlice.js";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import ApiSurvey from '../../apis/ApiSurvey.js'
+import DropdownSearch from '../../components/FormFields/DropdownSearch.jsx';
+import { getTemplateTrackingTeacher } from '../../redux/reportSlice.js'
 
-export default function SurveyForAdmin() {
+export default function SurveyTeacher() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    const { SurveysByStudentList, SurveysByStudentTotal } = useSelector((state) => state.survey);
+    const { SurveysForAdministratorList, SurveysForAdministratorTotal } = useSelector((state) => state.survey);
+    const { TemplateTrackingTeacherList } = useSelector((state) => state.report);
 
-    const [activeTab, setActiveTab] = useState("not-surveyed");
-
-    // --- 1. State cho phân trang ---
+    const [activeTab, setActiveTab] = useState("surveyedOther");
     const [currentPage, setCurrentPage] = useState(1);
+    const [selectedTemplateSurvey, setSelectedTemplateSurvey] = useState(0);
+
     const pageSize = 20;
 
-    // --------------------------------------- Initial
+    // --------------------------------------- Fetch Template List 
     useEffect(() => {
-        // lấy phiếu khảo sát của học viên (bắt buộc nộp)
-        const fetchSurveyByID = async () => {
-            const res = await dispatch(
-                getSurveySubjectByStudentID({ page: currentPage, limit: pageSize })
-            );
+        const fetchTemplateList = async () => {
+            const type = activeTab === "surveyedOther" ? 1 : 2;
+            const res = await dispatch(getTemplateTrackingTeacher({ typeTemplate: type }));
 
-            if (!res.payload || !res.payload.data) {
-                toast.error(res.payload?.message);
+            if (res?.payload?.message) {
+                toast.error(res.payload.message);
             }
         };
 
-        const fetchSurveyForAdmin = async () => {
-            const res = await dispatch(
-                getSurveyForAdministrator({ page: currentPage, limit: pageSize })
-            );
+        fetchTemplateList();
+        // Reset template khi đổi tab
+        setSelectedTemplateSurvey(0);
+    }, [dispatch, activeTab]);
 
-            console.log('sssssss ', res);
-            
-            if (!res.payload || !res.payload.data) {
-                toast.error(res.payload?.message);
+    // --------------------------------------- Fetch Survey Data
+    useEffect(() => {
+        const fetchSurveyData = async () => {
+            const type = activeTab === "surveyedOther" ? 1 : 2;
+            if (selectedTemplateSurvey > 0) {
+                const res = await dispatch(
+                    getSurveyForAdministrator({
+                        typeTemplate: type,
+                        templateSurveyI: selectedTemplateSurvey,
+                        page: currentPage,
+                        limit: pageSize
+                    })
+                );
+
+                if (!res?.payload?.data) {
+                    toast.error(res?.payload?.message || "Không thể tải dữ liệu");
+                }
             }
+
         };
 
-        fetchSurveyForAdmin()
-        fetchSurveyByID();
-    }, [dispatch, currentPage]); // Thêm currentPage vào dependency
+        fetchSurveyData();
+    }, [dispatch, currentPage, activeTab, selectedTemplateSurvey]);
 
-    // Lọc theo tab
-    const displayList = SurveysByStudentList.filter((item) =>
-        activeTab === "surveyed" ? item.StatusID_Survey : !item.StatusID_Survey
-    );
+    // --------------------------------------- Handle Tab Change
+    const handleTabChange = (tabName) => {
+        setActiveTab(tabName);
+        setCurrentPage(1);
+        setSelectedTemplateSurvey(0);
+    };
 
-    // -------------------------------------------------- Action
+    // --------------------------------------- Handle Template Change
+    const handleTemplateChange = (template) => {
+        const id = template?.TemplateSurveyID || 0;
+        setSelectedTemplateSurvey(id);
+        setCurrentPage(1);
+    };
+
+    // --------------------------------------- Handle Detail Survey
     const handleDetailSurvey = async (item) => {
-        if (item.SurveyID !== null) {
-            navigate(`/survey-detail?id=${item.SurveyID}&submit=${item.StatusID_Survey}`)
-        } else {
-            let payload = {
+        try {
+            // Nếu đã có SurveyID thì điều hướng trực tiếp
+            if (item.SurveyID !== null) {
+                navigate(`/survey-detail?id=${item.SurveyID}&submit=${item.StatusID_Survey}`);
+                return;
+            }
+
+            // Nếu chưa có SurveyID thì tạo mới
+            const payload = {
                 ...item,
                 Title: item.TemplateSurveyName
-            }
-            let res = await ApiSurvey.CreateSurveyForAdminApi(payload)
+            };
 
-            if (res.message) {
+            const res = await ApiSurvey.CreateSurveyTeacherApi(payload);
+
+            if (res?.message) {
                 toast.error(res.message);
-            } else {
-                navigate(`/survey-detail?id=${res.SurveyID}&submit=${item.StatusID_Survey}`)
+                return;
             }
+
+            if (res?.SurveyID) {
+                navigate(`/survey-detail?id=${res.SurveyID}&submit=${item.StatusID_Survey}`);
+            }
+        } catch (error) {
+            toast.error("Có lỗi xảy ra khi xử lý khảo sát");
+            console.error("Error in handleDetailSurvey:", error);
         }
-    }
+    };
 
-    // --------------------------------------------------------- 3. Tính toán tổng số trang ---
-    const totalPages = SurveysByStudentTotal ? Math.ceil(SurveysByStudentTotal / pageSize) : 1;
+    // --------------------------------------- Pagination Logic
+    const totalPages = SurveysForAdministratorTotal ? Math.ceil(SurveysForAdministratorTotal / pageSize) : 1;
 
-    // Hàm chuyển trang
     const handlePageChange = (newPage) => {
         if (newPage >= 1 && newPage <= totalPages) {
             setCurrentPage(newPage);
-            // Scroll lên đầu khi chuyển trang
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
 
+    // --------------------------------------- Render
     return (
         <div className="min-h-screen bg-gray-50 py-4 px-4 lg:py-8 lg:px-6">
-            <div className="max-w-0xl mx-auto">
-                {/* Header */}
-                <h1 className="text-xl md:text-2xl text-gray-600 mb-6">
-                    Khảo sát Người dùng
-                </h1>
+            <div className="max-w-7xl mx-auto">
+                {/* Header với Select */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+                    <h1 className="text-xl md:text-2xl text-gray-600">
+                        Lịch sử khảo sát Người dùng
+                    </h1>
 
-                {/* Body */}
+                    <div className="flex items-center gap-2">
+                        <div className="flex flex-col gap-1">
+                            <label className="text-xs font-bold text-gray-600 uppercase">
+                                Mẫu khảo sát
+                            </label>
+                            <DropdownSearch
+                                options={TemplateTrackingTeacherList || []}
+                                placeholder="------ chọn mẫu khảo sát ------"
+                                labelKey="Title"
+                                valueKey="TemplateSurveyID"
+                                onChange={handleTemplateChange}
+                            />
+                        </div>
+                    </div>
+                </div>
+
                 <div className="grid grid-cols-1 gap-6">
                     <div className="bg-white rounded-lg shadow-sm">
                         {/* Tabs */}
                         <div className="px-6 border-b border-gray-200">
                             <nav className="-mb-px flex space-x-8">
                                 <button
-                                    onClick={() => setActiveTab("not-surveyed")}
-                                    className={`py-4 px-1 border-b-2 font-medium text-base transition-all whitespace-nowrap ${activeTab === "not-surveyed"
-                                        ? "border-[#337ab7] text-[#337ab7]"
-                                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                                    onClick={() => handleTabChange("surveyedOther")}
+                                    className={`py-4 px-1 border-b-2 text-lg transition-all whitespace-nowrap ${activeTab === "surveyedOther"
+                                        ? "border-[#337ab7] text-[#337ab7] font-bold"
+                                        : "border-transparent text-gray-500 font-medium hover:text-gray-700 hover:border-gray-300"
                                         }`}
                                 >
-                                    Chưa khảo sát
+                                    Khảo sát Giảng viên
                                 </button>
 
                                 <button
-                                    onClick={() => setActiveTab("surveyed")}
-                                    className={`py-4 px-1 border-b-2 font-medium text-base transition-all whitespace-nowrap ${activeTab === "surveyed"
-                                        ? "border-[#337ab7] text-[#337ab7]"
-                                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                                    onClick={() => handleTabChange("surveyedTeacher")}
+                                    className={`py-4 px-1 border-b-2 text-lg transition-all whitespace-nowrap ${activeTab === "surveyedTeacher"
+                                        ? "border-[#337ab7] text-[#337ab7] font-bold"
+                                        : "border-transparent text-gray-500 font-medium hover:text-gray-700 hover:border-gray-300"
                                         }`}
                                 >
-                                    Đã khảo sát
+                                    Khảo sát khác
                                 </button>
                             </nav>
                         </div>
 
-                        {/* Danh sách */}
+                        {/* Survey List */}
                         <div className="p-6 space-y-4">
-                            {displayList.length === 0 ? (
+                            {!SurveysForAdministratorList || SurveysForAdministratorList.length === 0 ? (
                                 <div className="text-center text-gray-500 py-8 text-sm italic">
-                                    Không có dữ liệu {activeTab === "surveyed" ? "đã khảo sát" : "chưa khảo sát"}.
+                                    Không có dữ liệu {activeTab === "surveyedOther" ? "khảo sát giảng viên" : "khảo sát khác"}.
                                 </div>
                             ) : (
-                                displayList.map((item, index) => {
-                                    const isLast = index === displayList.length - 1;
-
-                                    return (
-                                        <div
-                                            key={index}
-                                            onClick={() => handleDetailSurvey(item)}
-                                            className={`group cursor-pointer rounded transition hover:bg-gray-50 px-2 
-                                                ${!isLast ? "border-b border-dashed border-gray-400 pb-4 mb-4" : "pb-2"}`}
-                                        >
-                                            <div className="flex-1">
-                                                <h3 className="font-semibold text-[#337ab7] text-sm mb-1 transition-colors group-hover:text-gray-800">
-                                                    {item.TemplateSurveyName} - {item.SubjectCode} - {item.SubjectName}{" "}
-                                                    <span className="text-red-600 font-semibold">(Bắt buộc)</span>
-                                                </h3>
+                                SurveysForAdministratorList.map((item, index) => (
+                                    <div
+                                        key={item.SurveyID || `survey-${index}`}
+                                        onClick={() => handleDetailSurvey(item)}
+                                        className={`group cursor-pointer rounded transition hover:bg-gray-50 px-2 ${index !== SurveysForAdministratorList.length - 1
+                                            ? "border-b border-dashed border-gray-400 pb-4 mb-4"
+                                            : "pb-2"
+                                            }`}
+                                    >
+                                        <div className="flex-1">
+                                            <h3 className="font-semibold text-[#337ab7] text-sm mb-1 transition-colors group-hover:text-gray-800">
+                                                {item.Title}
+                                                {" "}
+                                                <span className="text-red-600 font-semibold">(Bắt buộc)</span>
+                                            </h3>
+                                            {item.TeacherName && (
                                                 <div className="font-semibold text-[#337ab7] text-sm transition-colors group-hover:text-gray-800">
                                                     Giảng viên: {item.TeacherName}
                                                 </div>
-                                            </div>
+                                            )}
                                         </div>
-                                    );
-                                })
+                                    </div>
+                                ))
                             )}
                         </div>
 
-                        {/* --- 4. Giao diện Phân trang (Pagination) --- */}
-                        {SurveysByStudentTotal > pageSize && (
+                        {/* Pagination */}
+                        {SurveysForAdministratorTotal > pageSize && (
                             <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
                                 <div className="text-sm text-gray-500">
                                     Trang <span className="font-medium">{currentPage}</span> / <span className="font-medium">{totalPages}</span>
@@ -181,11 +232,6 @@ export default function SurveyForAdmin() {
                             </div>
                         )}
                     </div>
-                </div>
-
-                {/* Footer */}
-                <div className="mt-8 text-right text-xs text-gray-500">
-                    Copyright © 2023 by G&BSoft
                 </div>
             </div>
         </div>

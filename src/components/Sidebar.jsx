@@ -47,25 +47,23 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
       ? { label: 'Ngân hàng câu hỏi', path: '/manager-question' }
       : null,
     userInfo?.TypeUserID === TypeUserIDCons.Administrator
-      ? { label: 'Phiếu khảo sát giảng viên', path: '/manager-survey-teacher' }
+      ? { label: 'Mẫu phiếu khảo sát giảng viên', path: '/manager-survey-teacher' }
       : null,
     userInfo?.TypeUserID === TypeUserIDCons.Administrator
-      ? { label: 'Phiếu khảo sát khác', path: '/manager-survey-other' }
+      ? { label: 'Mẫu phiếu khảo sát khác', path: '/manager-survey-other' }
       : null,
     userInfo?.TypeUserID === TypeUserIDCons.Student
       ? { label: 'Khảo sát giảng viên giảng dạy', path: '/danh-sach-khao-sat' }
       : null,
     userInfo?.TypeUserID === TypeUserIDCons.Administrator
-      ? { label: 'Khảo sát của người dùng', path: '/survey-user' }
+      ? { label: 'Lịch sử khảo sát người dùng', path: '/survey-user' }
       : null,
-    userInfo?.TypeUserID !== TypeUserIDCons.Student
+    { label: 'Lịch sử khảo sát của bạn', path: '/report-survey-other' },
+    userInfo?.TypeUserID === TypeUserIDCons.Administrator
       ? { label: 'Báo cáo khảo sát', path: '/report-survey' }
       : null,
-    userInfo?.TypeUserID !== TypeUserIDCons.Student
+    userInfo?.TypeUserID === TypeUserIDCons.Administrator
       ? { label: 'Báo cáo khảo sát khác', path: '/tracking-order' }
-      : null,
-    userInfo?.TypeUserID !== TypeUserIDCons.Student
-      ? { label: 'Lịch sử khảo sát', path: '/report-survey-other' }
       : null,
   ].filter(Boolean)
 
