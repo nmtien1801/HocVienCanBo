@@ -4,6 +4,7 @@ import { getScheduleMonth } from '../../redux/scheduleSlice.js';
 import { toast } from "react-toastify";
 import { useSelector, useDispatch } from "react-redux";
 import { getFirstDayOfMonth, getLastDayOfMonth } from '../../utils/constants.js';
+import * as XLSX from 'xlsx';
 
 export default function ScheduleTeachMonth() {
   const dispatch = useDispatch();
@@ -15,41 +16,113 @@ export default function ScheduleTeachMonth() {
   const [pageSize, setPageSize] = useState(20);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     fetchScheduleClassSubject();
   }, [dispatch, startDate, endDate, currentPage, pageSize]);
 
-  const fetchScheduleClassSubject = async () => {
+  const fetchScheduleClassSubject = async (customPage = currentPage, customLimit = pageSize) => {
     setIsLoading(true);
     setError(null);
     try {
-      let res = await dispatch(getScheduleMonth({ startDate, endDate, page: currentPage, limit: pageSize }));
+      let res = await dispatch(getScheduleMonth({ startDate, endDate, page: customPage, limit: customLimit }));
       if (!res.payload || !res.payload.data) {
         const errorMsg = res.payload?.message || 'Không thể tải dữ liệu';
         setError(errorMsg);
         toast.error(errorMsg);
+        return null;
       }
+      return res.payload.data;
     } catch (err) {
       const errorMsg = 'Đã có lỗi xảy ra khi tải dữ liệu';
       setError(errorMsg);
       toast.error(errorMsg);
+      return null;
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleSearch = async () => {
-    setCurrentPage(1);
-    // Chỉ gọi hàm fetch nếu không đang loading để tránh trùng lặp
-    if (!isLoading) {
-      fetchScheduleClassSubject();
+    if (!startDate || !endDate) {
+      toast.warning("Vui lòng chọn ngày bắt đầu và ngày kết thúc");
+      return;
     }
+
+    if (new Date(startDate) > new Date(endDate)) {
+      toast.warning("Ngày bắt đầu phải nhỏ hơn ngày kết thúc");
+      return;
+    }
+    setCurrentPage(1);
+    fetchScheduleClassSubject(1, pageSize);
   };
 
-  const handleExportExcel = () => {
-    // TODO: Implement Excel export functionality
-    toast.info('Chức năng xuất Excel đang được phát triển');
+  const handleExportExcel = async () => {
+    if (!totalSchedule || totalSchedule === 0) {
+      toast.warning("Không có dữ liệu để xuất");
+      return;
+    }
+
+    setIsExporting(true);
+
+    try {
+      // Fetch toàn bộ dữ liệu
+      const fullData = await fetchScheduleClassSubject(1, totalSchedule);
+
+      if (!fullData || fullData.length === 0) {
+        toast.warning("Không thể lấy dữ liệu đầy đủ");
+        setIsExporting(false);
+        return;
+      }
+
+      // Tạo dữ liệu cho Excel
+      const excelData = fullData.map((row, index) => ({
+        "STT": index + 1,
+        "Mã lớp": row.ClassCode || "",
+        "Tên lớp": row.ClassName || "",
+        "Sĩ số": row.NumberStudent || 0,
+        "Mã môn học": row.SubjectCode || "",
+        "Tên môn học": row.SubjectName || "",
+        "Khoa chủ quản": row.FaciltyName || "",
+        "Thứ học": row.DayOfWeek || "",
+        "Số ngày học": row.NumberDay || 0,
+        "Ngày thi": row.DateNumberDayGraduation || "",
+        "Ngày bắt đầu": row.StartDate || "",
+        "Ngày kết thúc": row.EndDate || ""
+      }));
+
+      // Tạo worksheet
+      const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+      // Set độ rộng cột
+      worksheet['!cols'] = [
+        { wch: 5 },   // STT
+        { wch: 12 },  // Mã lớp
+        { wch: 30 },  // Tên lớp
+        { wch: 8 },   // Sĩ số
+        { wch: 15 },  // Mã môn học
+        { wch: 35 },  // Tên môn học
+        { wch: 25 },  // Khoa chủ quản
+        { wch: 10 },  // Thứ học
+        { wch: 12 },  // Số ngày học
+        { wch: 15 },  // Ngày thi
+        { wch: 15 },  // Ngày bắt đầu
+        { wch: 15 }   // Ngày kết thúc
+      ];
+
+      // Tạo workbook và xuất file
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Lịch dạy");
+      XLSX.writeFile(workbook, `Lich_day_thang_${new Date().getTime()}.xlsx`);
+
+      toast.success(`Đã xuất ${fullData.length} dòng dữ liệu thành công`);
+    } catch (error) {
+      console.error("Export error:", error);
+      toast.error('Lỗi khi xuất file Excel');
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const totalPages = Math.ceil(totalSchedule / pageSize);
@@ -107,7 +180,7 @@ export default function ScheduleTeachMonth() {
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
       <div className="max-w-[1600px] mx-auto">
         {/* Header */}
-        <h1 className="text-xl md:text-2xl text-gray-600 mb-6">Lịch Học trong Tháng</h1>
+        <h1 className="text-xl md:text-2xl text-gray-600 mb-6">Lịch Dạy trong Tháng</h1>
 
         {/* Filter Section */}
         <div className="bg-white rounded-lg shadow-sm p-4 md:p-6 mb-6">
@@ -283,8 +356,8 @@ export default function ScheduleTeachMonth() {
                         key={pageNum}
                         onClick={() => setCurrentPage(pageNum)}
                         className={`px-3 py-1 border rounded text-sm ${currentPage === pageNum
-                            ? 'bg-blue-500 text-white border-blue-500'
-                            : 'border-gray-300 hover:bg-gray-100'
+                          ? 'bg-blue-500 text-white border-blue-500'
+                          : 'border-gray-300 hover:bg-gray-100'
                           }`}
                       >
                         {pageNum}
@@ -341,7 +414,7 @@ export default function ScheduleTeachMonth() {
 
         {/* Footer */}
         <div className="mt-8 text-right text-xs text-gray-500">
-          Copyright © 2023 by G&BSoft
+          Copyright © 2025 by G&BSoft
         </div>
       </div>
     </div>

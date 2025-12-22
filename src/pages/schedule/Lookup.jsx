@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import { useSelector, useDispatch } from "react-redux";
 import { getFirstDayOfMonth, getLastDayOfMonth } from '../../utils/constants.js';
 import DropdownSearch from '../../components/FormFields/DropdownSearch.jsx';
+import * as XLSX from 'xlsx';
 
 export default function Lookup() {
   const dispatch = useDispatch();
@@ -17,6 +18,7 @@ export default function Lookup() {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingSubjects, setIsLoadingSubjects] = useState(false);
   const [error, setError] = useState(null);
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     const fetchSubjectLearnAll = async () => {
@@ -44,7 +46,7 @@ export default function Lookup() {
     }
   }, [currentPage, pageSize]);
 
-  const fetchScheduleSubjectMonth = async () => {
+  const fetchScheduleSubjectMonth = async (customPage = currentPage, customLimit = pageSize) => {
     if (!selectedSubject) {
       return;
     }
@@ -56,19 +58,22 @@ export default function Lookup() {
         startDate,
         endDate,
         subjectID: selectedSubject,
-        page: currentPage,
-        limit: pageSize
+        page: customPage,
+        limit: customLimit
       }));
 
       if (!res.payload || !res.payload.data) {
         const errorMsg = res.payload?.message || 'Không thể tải dữ liệu';
         setError(errorMsg);
         toast.error(errorMsg);
+        return null;
       }
+      return res.payload.data;
     } catch (err) {
       const errorMsg = 'Đã có lỗi xảy ra khi tải dữ liệu';
       setError(errorMsg);
       toast.error(errorMsg);
+      return null;
     } finally {
       setIsLoading(false);
     }
@@ -80,12 +85,74 @@ export default function Lookup() {
       return;
     }
     setCurrentPage(1);
-    fetchScheduleSubjectMonth();
+    fetchScheduleSubjectMonth(1, pageSize);
   };
 
-  const handleExportExcel = () => {
-    // TODO: Implement Excel export functionality
-    toast.info('Chức năng xuất Excel đang được phát triển');
+  const handleExportExcel = async () => {
+    if (!totalScheduleSubjectMonth || totalScheduleSubjectMonth === 0) {
+      toast.warning("Không có dữ liệu để xuất");
+      return;
+    }
+
+    setIsExporting(true);
+
+    try {
+      // Fetch toàn bộ dữ liệu
+      const fullData = await fetchScheduleSubjectMonth(1, totalScheduleSubjectMonth);
+
+      if (!fullData || fullData.length === 0) {
+        toast.warning("Không thể lấy dữ liệu đầy đủ");
+        setIsExporting(false);
+        return;
+      }
+
+      // Tạo dữ liệu cho Excel
+      const excelData = fullData.map((row, index) => ({
+        "STT": index + 1,
+        "Mã lớp": row.ClassCode || "",
+        "Tên lớp": row.ClassName || "",
+        "Sĩ số": row.NumberStudent || 0,
+        "Mã môn học": row.SubjectCode || "",
+        "Tên môn học": row.SubjectName || "",
+        "Khoa chủ quản": row.FaciltyName || "",
+        "Thứ học": row.DayOfWeek || "",
+        "Số ngày học": row.NumberDay || 0,
+        "Ngày thi": row.DateNumberDayGraduation || "",
+        "Ngày bắt đầu": row.StartDate || "",
+        "Ngày kết thúc": row.EndDate || ""
+      }));
+
+      // Tạo worksheet
+      const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+      // Set độ rộng cột
+      worksheet['!cols'] = [
+        { wch: 5 },   // STT
+        { wch: 12 },  // Mã lớp
+        { wch: 30 },  // Tên lớp
+        { wch: 8 },   // Sĩ số
+        { wch: 15 },  // Mã môn học
+        { wch: 35 },  // Tên môn học
+        { wch: 25 },  // Khoa chủ quản
+        { wch: 10 },  // Thứ học
+        { wch: 12 },  // Số ngày học
+        { wch: 15 },  // Ngày thi
+        { wch: 15 },  // Ngày bắt đầu
+        { wch: 15 }   // Ngày kết thúc
+      ];
+
+      // Tạo workbook và xuất file
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Lịch dạy");
+      XLSX.writeFile(workbook, `Lich_day_thang_${new Date().getTime()}.xlsx`);
+
+      toast.success(`Đã xuất ${fullData.length} dòng dữ liệu thành công`);
+    } catch (error) {
+      console.error("Export error:", error);
+      toast.error('Lỗi khi xuất file Excel');
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const totalPages = Math.ceil(totalScheduleSubjectMonth / pageSize);
@@ -420,7 +487,7 @@ export default function Lookup() {
 
         {/* Footer */}
         <div className="mt-8 text-right text-xs text-gray-500">
-          Copyright © 2023 by G&BSoft
+          Copyright © 2025 by G&BSoft
         </div>
       </div>
     </div>

@@ -10,36 +10,37 @@ import * as XLSX from 'xlsx';
 const TrackingOrder = () => {
     const dispatch = useDispatch();
 
-    // Lấy dữ liệu từ Redux (Giả sử cấu trúc slice của bạn)
     const { TemplateTrackingTeacherList, EvaluationOrderList, TrackingOrderList, TrackingOrderTotal } = useSelector((state) => state.report);
     const [selectedTemplateSurvey, setSelectedTemplateSurvey] = useState(0);
     const [totalParticipants, setTotalParticipants] = useState(0);
 
-    // ---------------------------------------------------  PHÂN TRANG
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(20);
     const [isLoading, setIsLoading] = useState(false);
+    const [isExporting, setIsExporting] = useState(false);
 
     // ----------------------------------- FETCH DATA
-    const fetchReport = async () => {
+    const fetchReport = async (customPage = page, customLimit = limit) => {
         setIsLoading(true); // Bật loading
         const res = await dispatch(
             getReportTrackingOrder({
                 templateSurveyID: selectedTemplateSurvey,
-                page,
-                limit
+                page: customPage,
+                limit: customLimit
             })
         );
 
         if (res.payload?.message) {
             toast.error(res.payload?.message || "Lỗi tải dữ liệu");
+            setIsLoading(false);
+            return null;
         } else {
             setTotalParticipants(res.payload.data.totalSurveys);
+            setIsLoading(false);
+            return res.payload.data;
         }
-        setIsLoading(false); 
     };
 
-    // Gọi lại API khi filter hoặc phân trang thay đổi
     useEffect(() => {
         const fetchPendingSurveys = async () => {
             const res = await dispatch(getTemplateTrackingTeacher({ typeTemplate: 2 }));
@@ -54,7 +55,7 @@ const TrackingOrder = () => {
 
     // ----------------------------------------------------------- CRUD
     useEffect(() => {
-        if (selectedTemplateSurvey !== 0) { // Chỉ gọi khi đã chọn mẫu
+        if (selectedTemplateSurvey !== 0) {
             fetchReport();
         }
     }, [page, limit]);
@@ -65,24 +66,37 @@ const TrackingOrder = () => {
         );
     };
 
-    // tìm kiếm
     const handleSearch = () => {
         setPage(1);
         fetchReport();
     };
 
-    // xuất excel
-    const handleExportExcel = () => {
-        if (groupedReportList.length === 0) {
+    // ----------------------------------- EXPORT EXCEL FULL DATA
+    const handleExportExcel = async () => {
+        if (!TrackingOrderTotal || TrackingOrderTotal === 0) {
             toast.warning("Không có dữ liệu để xuất");
             return;
         }
 
+        setIsExporting(true);
+
         try {
+            // Fetch toàn bộ dữ liệu (page=1, limit=TrackingOrderTotal)
+            const fullData = await fetchReport(1, TrackingOrderTotal);
+
+            if (!fullData || !fullData.data || fullData.data.length === 0) {
+                toast.warning("Không thể lấy dữ liệu đầy đủ");
+                setIsExporting(false);
+                return;
+            }
+
+            // Gộp các câu hỏi trùng nhau từ full data
+            const fullGroupedData = groupDataByQuestion(fullData.data);
+
             const activeCriteria = EvaluationOrderList.filter(c => selectedCriteria.includes(c.EvaluationID));
 
-            // 1. Dữ liệu các hàng câu hỏi (không có cột tổng)
-            const excelData = groupedReportList.map((row, index) => {
+            // 1. Dữ liệu các hàng câu hỏi
+            const excelData = fullGroupedData.map((row, index) => {
                 const rowData = {
                     "STT": index + 1,
                     "Nội dung câu hỏi": row.TitleCriteriaEvaluation,
@@ -102,14 +116,30 @@ const TrackingOrder = () => {
             XLSX.utils.sheet_add_aoa(worksheet, [[
                 "TỔNG SỐ NGƯỜI KHẢO SÁT:",
                 "",
-                totalParticipants
+                fullData.totalSurveys || totalParticipants
             ]], { origin: `A${lastRowIndex + 1}` });
+
+            // 4. Style cho worksheet (optional)
+            const range = XLSX.utils.decode_range(worksheet['!ref']);
+            const totalRowIndex = lastRowIndex;
+
+            // Set width cho các cột
+            worksheet['!cols'] = [
+                { wch: 5 },  // STT
+                { wch: 50 }, // Nội dung câu hỏi
+                ...activeCriteria.map(() => ({ wch: 15 })) // Các cột đánh giá
+            ];
 
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Báo cáo");
-            XLSX.writeFile(workbook, `Bao_cao_${new Date().getTime()}.xlsx`);
+            XLSX.writeFile(workbook, `Bao_cao_khao_sat_${new Date().getTime()}.xlsx`);
+
+            toast.success(`Đã xuất ${fullGroupedData.length} câu hỏi thành công`);
         } catch (error) {
-            toast.error('Lỗi khi xuất file');
+            console.error("Export error:", error);
+            toast.error('Lỗi khi xuất file Excel');
+        } finally {
+            setIsExporting(false);
         }
     };
 
@@ -122,22 +152,19 @@ const TrackingOrder = () => {
         }
     }, [EvaluationOrderList]);
 
-    // Gộp các câu hỏi trùng nhau
-    const groupedReportList = useMemo(() => {
-        if (!TrackingOrderList || TrackingOrderList.length === 0) return [];
+    // Hàm gộp dữ liệu (tách riêng để tái sử dụng)
+    const groupDataByQuestion = (dataList) => {
+        if (!dataList || dataList.length === 0) return [];
 
-        const groups = TrackingOrderList.reduce((acc, current) => {
-            // Lấy tiêu đề làm khóa để gộp
+        const groups = dataList.reduce((acc, current) => {
             const key = current.TitleCriteriaEvaluation;
 
             if (!acc[key]) {
-                // Nếu chưa có thì khởi tạo
                 acc[key] = {
                     ...current,
                     lstEvalutionTracking: JSON.parse(JSON.stringify(current.lstEvalutionTracking || []))
                 };
             } else {
-                // Nếu đã có thì cộng dồn NumberTracking của từng EvaluationID
                 current.lstEvalutionTracking?.forEach(currEval => {
                     const targetEval = acc[key].lstEvalutionTracking.find(e => e.EvaluationID === currEval.EvaluationID);
                     if (targetEval) {
@@ -149,9 +176,13 @@ const TrackingOrder = () => {
         }, {});
 
         return Object.values(groups);
+    };
+
+    // Gộp các câu hỏi trùng nhau cho trang hiện tại
+    const groupedReportList = useMemo(() => {
+        return groupDataByQuestion(TrackingOrderList);
     }, [TrackingOrderList]);
 
-    // Tính tổng số trang
     const totalPages = Math.ceil(TrackingOrderTotal / limit);
 
     return (
@@ -194,10 +225,19 @@ const TrackingOrder = () => {
                                  disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-teal-600"
                             onClick={handleExportExcel}
                             title="Xuất Excel"
-                            disabled={isLoading || selectedTemplateSurvey === 0}
+                            disabled={isLoading || isExporting || selectedTemplateSurvey === 0 || TrackingOrderTotal === 0}
                         >
-                            <FileDown size={16} />
-                            <span className="whitespace-nowrap">Xuất Excel</span>
+                            {isExporting ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    <span className="whitespace-nowrap">Đang xuất...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <FileDown size={16} />
+                                    <span className="whitespace-nowrap">Xuất Excel</span>
+                                </>
+                            )}
                         </button>
                     </div>
                 </div>
@@ -293,55 +333,70 @@ const TrackingOrder = () => {
                     </div>
 
                     {/* SECTION 4: PHÂN TRANG */}
-                    <div className="p-4 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4 bg-gray-50">
-                        <div className="flex items-center gap-1">
-                            <button
-                                onClick={() => setPage(prev => Math.max(prev - 1, 1))}
-                                disabled={page === 1}
-                                className="p-2 border border-gray-300 rounded-lg hover:bg-white disabled:opacity-50 transition-all"
-                            >
-                                <ChevronLeft size={18} />
-                            </button>
-
-                            {[...Array(totalPages)].map((_, i) => (
+                    {totalPages > 0 && (
+                        <div className="p-4 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4 bg-gray-50">
+                            <div className="flex items-center gap-1">
                                 <button
-                                    key={i + 1}
-                                    onClick={() => setPage(i + 1)}
-                                    className={`w-10 h-10 rounded-lg text-sm font-medium transition-all ${page === i + 1
-                                        ? 'bg-[#0081cd] text-white shadow-md'
-                                        : 'hover:bg-white border border-transparent hover:border-gray-300'
-                                        }`}
+                                    onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+                                    disabled={page === 1}
+                                    className="p-2 border border-gray-300 rounded-lg hover:bg-white disabled:opacity-50 transition-all"
                                 >
-                                    {i + 1}
+                                    <ChevronLeft size={18} />
                                 </button>
-                            ))}
 
-                            <button
-                                onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
-                                disabled={page === totalPages || totalPages === 0}
-                                className="p-2 border border-gray-300 rounded-lg hover:bg-white disabled:opacity-50 transition-all"
-                            >
-                                <ChevronRight size={18} />
-                            </button>
-                        </div>
+                                {[...Array(Math.min(totalPages, 5))].map((_, i) => {
+                                    let pageNumber;
+                                    if (totalPages <= 5) {
+                                        pageNumber = i + 1;
+                                    } else if (page <= 3) {
+                                        pageNumber = i + 1;
+                                    } else if (page >= totalPages - 2) {
+                                        pageNumber = totalPages - 4 + i;
+                                    } else {
+                                        pageNumber = page - 2 + i;
+                                    }
 
-                        <div className="flex items-center gap-2">
-                            <span className="text-sm text-gray-600">Hiển thị</span>
-                            <select
-                                value={limit}
-                                onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}
-                                className="border border-gray-300 rounded p-1 text-sm outline-none"
-                            >
-                                <option value={10}>10</option>
-                                <option value={20}>20</option>
-                                <option value={50}>50</option>
-                            </select>
-                            <span className="text-sm text-gray-600">trên tổng số {TrackingOrderTotal} dòng</span>
+                                    return (
+                                        <button
+                                            key={pageNumber}
+                                            onClick={() => setPage(pageNumber)}
+                                            className={`w-10 h-10 rounded-lg text-sm font-medium transition-all ${page === pageNumber
+                                                ? 'bg-[#0081cd] text-white shadow-md'
+                                                : 'hover:bg-white border border-transparent hover:border-gray-300'
+                                                }`}
+                                        >
+                                            {pageNumber}
+                                        </button>
+                                    );
+                                })}
+
+                                <button
+                                    onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
+                                    disabled={page === totalPages || totalPages === 0}
+                                    className="p-2 border border-gray-300 rounded-lg hover:bg-white disabled:opacity-50 transition-all"
+                                >
+                                    <ChevronRight size={18} />
+                                </button>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm text-gray-600">Hiển thị</span>
+                                <select
+                                    value={limit}
+                                    onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}
+                                    className="border border-gray-300 rounded p-1 text-sm outline-none"
+                                >
+                                    <option value={10}>10</option>
+                                    <option value={20}>20</option>
+                                    <option value={50}>50</option>
+                                </select>
+                                <span className="text-sm text-gray-600">trên tổng số {TrackingOrderTotal} dòng</span>
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
-        </div >
+        </div>
     );
 };
 

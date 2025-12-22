@@ -5,6 +5,7 @@ import { getSearchPointStudentOutsite } from '../../redux/pointSlice.js';
 import { toast } from "react-toastify";
 import { useSelector, useDispatch } from "react-redux";
 import DropdownSearch from '../../components/FormFields/DropdownSearch.jsx';
+import * as XLSX from 'xlsx';
 
 export default function LookUpExternalStudent() {
     const dispatch = useDispatch();
@@ -18,6 +19,7 @@ export default function LookUpExternalStudent() {
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingStudents, setIsLoadingStudents] = useState(false);
     const [error, setError] = useState(null);
+    const [isExporting, setIsExporting] = useState(false);
 
     useEffect(() => {
         const fetchSubjectLearnAll = async () => {
@@ -40,21 +42,24 @@ export default function LookUpExternalStudent() {
         fetchSubjectLearnAll();
     }, [dispatch]);
 
-    const fetchListSearchPoint = async () => {
+    const fetchListSearchPoint = async (customPage = currentPage, customLimit = pageSize) => {
         setIsLoading(true);
         setError(null);
         try {
-            let res = await dispatch(getSearchPointStudentOutsite({ studentID: selectedStudent, page: currentPage, limit: pageSize }));
-
+            let res = await dispatch(getSearchPointStudentOutsite({ studentID: selectedStudent, page: customPage, limit: customLimit }));
             if (!res.payload || !res.payload.data) {
                 const errorMsg = res.payload?.message || 'Không thể tải dữ liệu';
                 setError(errorMsg);
                 toast.error(errorMsg);
+                return null;
+            } else {
+                return res.payload.data;
             }
         } catch (err) {
             const errorMsg = 'Đã có lỗi xảy ra khi tải dữ liệu';
             setError(errorMsg);
             toast.error(errorMsg);
+            return null;
         } finally {
             setIsLoading(false);
         }
@@ -62,12 +67,64 @@ export default function LookUpExternalStudent() {
 
     const handleSearch = async () => {
         setCurrentPage(1);
-        fetchListSearchPoint();
+        fetchListSearchPoint(1, pageSize);
     };
 
-    const handleExportExcel = () => {
-        // TODO: Implement Excel export functionality
-        toast.info('Chức năng xuất Excel đang được phát triển');
+    const handleExportExcel = async () => {
+        if (!SearchStudentOutsiteTotal || SearchStudentOutsiteTotal === 0) {
+            toast.warning("Không có dữ liệu để xuất");
+            return;
+        }
+
+        setIsExporting(true);
+
+        try {
+            // Fetch toàn bộ dữ liệu
+            const fullData = await fetchListSearchPoint(1, SearchStudentOutsiteTotal);
+
+            if (!fullData || fullData.length === 0) {
+                toast.warning("Không thể lấy dữ liệu đầy đủ");
+                setIsExporting(false);
+                return;
+            }
+
+            // Tạo dữ liệu cho Excel
+            const excelData = fullData.map((row, index) => ({
+                'STT': index + 1,
+                'Mã số học viên': row.StudentCode,
+                'Họ và tên': row.StudentName,
+                'Môn học': row.SubjectName,
+                'Lần thi': row.NumberExam,
+                'Thời gian bắt đầu': row.TimeStart,
+                'Điểm': row.Score
+            }));
+
+            // Tạo worksheet
+            const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+            // Set độ rộng cột
+            worksheet['!cols'] = [
+                { wch: 6 },   // STT
+                { wch: 20 },  // Mã số học viên
+                { wch: 30 },  // Họ và tên
+                { wch: 25 },  // Môn học
+                { wch: 10 },  // Lần thi
+                { wch: 25 },  // Thời gian bắt đầu
+                { wch: 10 }   // Điểm
+            ];
+
+            // Tạo workbook và xuất file
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "danh sách điểm học viên ngoài");
+            XLSX.writeFile(workbook, `Danh_sach_diem_hoc_vien_ngoai_${new Date().getTime()}.xlsx`);
+
+            toast.success(`Đã xuất ${fullData.length} dòng dữ liệu thành công`);
+        } catch (error) {
+            console.error("Export error:", error);
+            toast.error('Lỗi khi xuất file Excel');
+        } finally {
+            setIsExporting(false);
+        }
     };
 
     const handleSort = (key) => {
@@ -353,7 +410,7 @@ export default function LookUpExternalStudent() {
 
                 {/* Footer */}
                 <div className="mt-8 text-right text-xs text-gray-500">
-                    Copyright © 2023 by G&BSoft
+                    Copyright © 2025 by G&BSoft
                 </div>
             </div>
         </div>

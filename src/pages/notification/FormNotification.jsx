@@ -297,7 +297,7 @@ export default function FormNotification() {
 
                 {/* Footer */}
                 <footer className="mt-12 py-6 text-center text-sm text-gray-500 border-t border-gray-200">
-                    Copyright © 2023 by G&BSoft
+                    Copyright © 2025 by G&BSoft
                 </footer>
             </div>
         </div>

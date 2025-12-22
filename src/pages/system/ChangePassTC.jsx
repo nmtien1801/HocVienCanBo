@@ -179,7 +179,7 @@ export default function ChangePassTC() {
 
         {/* Footer */}
         <div className="mt-8 text-center md:text-right text-xs text-gray-500">
-          Copyright © 2023 by G&BSoft
+          Copyright © 2025 by G&BSoft
         </div>
       </div>
     </div>

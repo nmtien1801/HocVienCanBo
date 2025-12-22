@@ -4,6 +4,7 @@ import { getScheduleGraduationMonth } from '../../redux/scheduleSlice.js';
 import { toast } from "react-toastify";
 import { useSelector, useDispatch } from "react-redux";
 import { getFirstDayOfMonth, getLastDayOfMonth } from '../../utils/constants.js';
+import * as XLSX from 'xlsx';
 
 export default function ScheduleExamMonth() {
   const dispatch = useDispatch();
@@ -14,26 +15,30 @@ export default function ScheduleExamMonth() {
   const [pageSize, setPageSize] = useState(20);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     fetchScheduleClassSubject();
   }, [dispatch, startDate, endDate, currentPage, pageSize]);
 
-  const fetchScheduleClassSubject = async () => {
+  const fetchScheduleClassSubject = async (customPage = currentPage, customLimit = pageSize) => {
     setIsLoading(true);
     setError(null);
     try {
-      let res = await dispatch(getScheduleGraduationMonth({ startDate, endDate, page: currentPage, limit: pageSize }));
-      
+      let res = await dispatch(getScheduleGraduationMonth({ startDate, endDate, page: customPage, limit: customLimit }));
+
       if (!res.payload || !res.payload.data) {
         const errorMsg = res.payload?.message || 'Không thể tải dữ liệu';
         setError(errorMsg);
         toast.error(errorMsg);
+        return null;
       }
+      return res.payload.data;
     } catch (err) {
       const errorMsg = 'Đã có lỗi xảy ra khi tải dữ liệu';
       setError(errorMsg);
       toast.error(errorMsg);
+      return null;
     } finally {
       setIsLoading(false);
     }
@@ -41,15 +46,68 @@ export default function ScheduleExamMonth() {
 
   const handleSearch = async () => {
     setCurrentPage(1);
-    // Chỉ gọi hàm fetch nếu không đang loading để tránh trùng lặp
     if (!isLoading) {
-      fetchScheduleClassSubject();
+      fetchScheduleClassSubject(1, pageSize);
     }
   };
 
-  const handleExportExcel = () => {
-    // TODO: Implement Excel export functionality
-    toast.info('Chức năng xuất Excel đang được phát triển');
+  const handleExportExcel = async () => {
+    if (!GraduationMonthTotal || GraduationMonthTotal === 0) {
+      toast.warning("Không có dữ liệu để xuất");
+      return;
+    }
+
+    setIsExporting(true);
+
+    try {
+      // Fetch toàn bộ dữ liệu
+      const fullData = await fetchScheduleClassSubject(1, GraduationMonthTotal);
+
+      if (!fullData || fullData.length === 0) {
+        toast.warning("Không thể lấy dữ liệu đầy đủ");
+        setIsExporting(false);
+        return;
+      }
+
+      // Tạo dữ liệu cho Excel
+      const excelData = fullData.map((row, index) => ({
+        "STT": index + 1,
+        "Thứ": row.DayofWeek || "",
+        "Ngày thi": row.DateNumberDayGraduation || "",
+        "Tên lớp": row.ClassName || "",
+        "Môn thi": row.SubjectName || "",
+        "Thời gian thi": row.TimeExam || "",
+        "Ban coi thi": row.TeacherName || "",
+        "Ghi chú": row.DescriptionExam || "",
+      }));
+
+      // Tạo worksheet
+      const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+      // Set độ rộng cột
+      worksheet['!cols'] = [
+        { wch: 6 },   // STT
+        { wch: 10 },  // Thứ
+        { wch: 15 },  // Ngày thi
+        { wch: 30 },  // Tên lớp
+        { wch: 30 },  // Môn thi
+        { wch: 15 },  // Thời gian thi
+        { wch: 25 },  // Ban coi thi
+        { wch: 30 },  // Ghi chú
+      ];
+
+      // Tạo workbook và xuất file
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Lịch thi");
+      XLSX.writeFile(workbook, `Lich_thi_thang_${new Date().getTime()}.xlsx`);
+
+      toast.success(`Đã xuất ${fullData.length} dòng dữ liệu thành công`);
+    } catch (error) {
+      console.error("Export error:", error);
+      toast.error('Lỗi khi xuất file Excel');
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const totalPages = Math.ceil(GraduationMonthTotal / pageSize);
@@ -275,8 +333,8 @@ export default function ScheduleExamMonth() {
                         key={pageNum}
                         onClick={() => setCurrentPage(pageNum)}
                         className={`px-3 py-1 border rounded text-sm ${currentPage === pageNum
-                            ? 'bg-blue-500 text-white border-blue-500'
-                            : 'border-gray-300 hover:bg-gray-100'
+                          ? 'bg-blue-500 text-white border-blue-500'
+                          : 'border-gray-300 hover:bg-gray-100'
                           }`}
                       >
                         {pageNum}
@@ -333,7 +391,7 @@ export default function ScheduleExamMonth() {
 
         {/* Footer */}
         <div className="mt-8 text-right text-xs text-gray-500">
-          Copyright © 2023 by G&BSoft
+          Copyright © 2025 by G&BSoft
         </div>
       </div>
     </div>

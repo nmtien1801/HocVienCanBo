@@ -8,6 +8,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { TypeUserIDCons } from "../../utils/constants.js";
 import { formatDate } from '../../utils/constants.js';
 import DropdownSearch from '../../components/FormFields/DropdownSearch.jsx';
+import * as XLSX from 'xlsx';
 
 export default function FinalExam1() {
   const dispatch = useDispatch();
@@ -24,6 +25,7 @@ export default function FinalExam1() {
   const [isLoadingClassLearn, setIsLoadingClassLearn] = useState(false);
   const [isLoadingSubjects, setIsLoadingSubjects] = useState(false);
   const [error, setError] = useState(null);
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     const fetchClassLearn = async () => {
@@ -80,7 +82,7 @@ export default function FinalExam1() {
     }
   }, [currentPage, pageSize]);
 
-  const fetchListExamination = async () => {
+  const fetchListExamination = async (customPage = currentPage, customLimit = pageSize) => {
     if (!selectedClass) {
       return;
     }
@@ -88,17 +90,21 @@ export default function FinalExam1() {
     setIsLoading(true);
     setError(null);
     try {
-      let res = await dispatch(getListExamination({ classID: selectedClass, subjectID: selectedSubject, page: currentPage, limit: pageSize }));
+      let res = await dispatch(getListExamination({ classID: selectedClass, subjectID: selectedSubject, page: customPage, limit: customLimit }));
 
       if (!res.payload || !res.payload.data) {
         const errorMsg = res.payload?.message || 'Không thể tải dữ liệu';
         setError(errorMsg);
         toast.error(errorMsg);
+        return null;
+      } else {
+        return res.payload.data;
       }
     } catch (err) {
       const errorMsg = 'Đã có lỗi xảy ra khi tải dữ liệu';
       setError(errorMsg);
       toast.error(errorMsg);
+      return null;
     } finally {
       setIsLoading(false);
     }
@@ -110,12 +116,68 @@ export default function FinalExam1() {
       return;
     }
     setCurrentPage(1);
-    fetchListExamination();
+    fetchListExamination(1, pageSize);
   };
 
-  const handleExportExcel = () => {
-    // TODO: Implement Excel export functionality
-    toast.info('Chức năng xuất Excel đang được phát triển');
+  const handleExportExcel = async () => {
+    if (!ExaminationTotal || ExaminationTotal === 0) {
+      toast.warning("Không có dữ liệu để xuất");
+      return;
+    }
+
+    setIsExporting(true);
+
+    try {
+      // Fetch toàn bộ dữ liệu
+      const fullData = await fetchListExamination(1, ExaminationTotal);
+
+      if (!fullData || fullData.length === 0) {
+        toast.warning("Không thể lấy dữ liệu đầy đủ");
+        setIsExporting(false);
+        return;
+      }
+
+      // Tạo dữ liệu cho Excel
+      const excelData = fullData.map((row, index) => ({
+        "STT": row.STT,
+        "Mã học viên": row.StudentCode,
+        "Họ và Tên": row.StudentName,
+        "Ngày sinh": formatDate(row.Birthday),
+        "Lần thi": row.NumberExam,
+        "SBD": row.PHACH,
+        "Phòng thi": row.RoomName,
+        "Ngày thi": row.TimeStart,
+        "Ghi chú": row.StatusName
+      }));
+
+      // Tạo worksheet
+      const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+      // Set độ rộng cột
+      worksheet['!cols'] = [
+        { wch: 6 },   // STT
+        { wch: 15 },  // Mã học viên
+        { wch: 25 },  // Họ và Tên
+        { wch: 15 },  // Ngày sinh
+        { wch: 10 },  // Lần thi
+        { wch: 10 },  // SBD
+        { wch: 15 },  // Phòng thi
+        { wch: 15 },  // Ngày thi
+        { wch: 20 }   // Ghi chú
+      ];
+
+      // Tạo workbook và xuất file
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "danh sách dự thi cuối môn lần 1");
+      XLSX.writeFile(workbook, `Danh_sach_du_thi_cuoi_mon_lan_1_${new Date().getTime()}.xlsx`);
+
+      toast.success(`Đã xuất ${fullData.length} dòng dữ liệu thành công`);
+    } catch (error) {
+      console.error("Export error:", error);
+      toast.error('Lỗi khi xuất file Excel');
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const totalPages = Math.ceil(ExaminationTotal / pageSize);
@@ -424,7 +486,7 @@ export default function FinalExam1() {
 
         {/* Footer */}
         <div className="mt-8 text-right text-xs text-gray-500">
-          Copyright © 2023 by G&BSoft
+          Copyright © 2025 by G&BSoft
         </div>
       </div>
     </div>

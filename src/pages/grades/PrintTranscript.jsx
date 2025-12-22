@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import { useSelector, useDispatch } from "react-redux";
 import ApiStudent from '../../apis/ApiStudent.js';
 import DropdownSearch from '../../components/FormFields/DropdownSearch.jsx';
+import * as XLSX from 'xlsx';
 
 export default function TimetableClass() {
   const dispatch = useDispatch();
@@ -21,6 +22,7 @@ export default function TimetableClass() {
   const [isLoadingClassLearn, setIsLoadingClassLearn] = useState(false);
   const [isLoadingStudents, setIsLoadingStudents] = useState(false);
   const [error, setError] = useState(null);
+  const [isExporting, setIsExporting] = useState(false);
 
   // tải danh sách Lớp học
   useEffect(() => {
@@ -39,7 +41,7 @@ export default function TimetableClass() {
       }
     };
 
-    if(ClassLearn.length === 0){
+    if (ClassLearn.length === 0) {
       fetchClassLearn();
     }
   }, [dispatch]);
@@ -83,7 +85,7 @@ export default function TimetableClass() {
   }, [currentPage, pageSize]);
 
 
-  const fetchPointSum = async () => {
+  const fetchPointSum = async (customPage = currentPage, customLimit = pageSize) => {
     if (!selectedClass || selectedClass === 0) {
       return;
     }
@@ -91,16 +93,20 @@ export default function TimetableClass() {
     setIsLoading(true);
     setError(null);
     try {
-      let res = await dispatch(printPointSum({ classID: selectedClass, studentID: selectedStudent, page: currentPage, limit: pageSize }));
+      let res = await dispatch(printPointSum({ classID: selectedClass, studentID: selectedStudent, page: customPage, limit: customLimit }));
 
       if (!res.payload || !res.payload.data) {
         const errorMsg = res.payload?.message || 'Không thể tải dữ liệu';
         setError(errorMsg);
+        return null
+      } else {
+        return res.payload.data;
       }
     } catch (err) {
       const errorMsg = 'Đã có lỗi xảy ra khi tải dữ liệu';
       setError(errorMsg);
       toast.error(errorMsg);
+      return null;
     } finally {
       setIsLoading(false);
     }
@@ -113,11 +119,68 @@ export default function TimetableClass() {
       return;
     }
     setCurrentPage(1);
-    fetchPointSum();
+    fetchPointSum(1, pageSize);
   };
 
-  const handleExportExcel = () => {
-    toast.info('Chức năng xuất Excel đang được phát triển');
+  const handleExportExcel = async () => {
+    if (!totalPointSum || totalPointSum === 0) {
+      toast.warning("Không có dữ liệu để xuất");
+      return;
+    }
+
+    setIsExporting(true);
+
+    try {
+      // Fetch toàn bộ dữ liệu
+      const fullData = await fetchPointSum(1, totalPointSum);
+
+      if (!fullData || fullData.length === 0) {
+        toast.warning("Không thể lấy dữ liệu đầy đủ");
+        setIsExporting(false);
+        return;
+      }
+
+      // Tạo dữ liệu cho Excel
+      const excelData = fullData.map((row, index) => ({
+        'STT': index + 1,
+        'Mã học viên': row.StudentID,
+        'Họ và tên': row.StudentName,
+        'Mã môn': row.SubjectCode,
+        'Tên môn': row.SubjectName,
+        'Điểm lần 1': row.Score11,
+        'Điểm lần 2': row.Score22,
+        'Ngày vắng': row.DateOff,
+        'Ghi chú': row.Description
+      }));
+
+      // Tạo worksheet
+      const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+      // Set độ rộng cột
+      worksheet['!cols'] = [
+        { wch: 6 },   // STT
+        { wch: 20 },  // Mã học viên
+        { wch: 30 },  // Họ và tên
+        { wch: 15 },  // Mã môn
+        { wch: 30 },  // Tên môn
+        { wch: 12 },  // Điểm lần 1
+        { wch: 12 },  // Điểm lần 2
+        { wch: 15 },  // Ngày vắng
+        { wch: 40 }   // Ghi chú
+      ];
+
+      // Tạo workbook và xuất file
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "danh sách điểm tổng");
+      XLSX.writeFile(workbook, `Danh_sach_diem_tong_${new Date().getTime()}.xlsx`);
+
+      toast.success(`Đã xuất ${fullData.length} dòng dữ liệu thành công`);
+    } catch (error) {
+      console.error("Export error:", error);
+      toast.error('Lỗi khi xuất file Excel');
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const totalPages = Math.ceil(totalPointSum / pageSize);
@@ -416,7 +479,7 @@ export default function TimetableClass() {
 
         {/* Footer */}
         <div className="mt-8 text-right text-xs text-gray-500">
-          Copyright © 2023 by G&BSoft
+          Copyright © 2025 by G&BSoft
         </div>
       </div>
     </div>

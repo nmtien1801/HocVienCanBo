@@ -25,26 +25,29 @@ const ReportSurvey = () => {
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(20);
     const [isLoading, setIsLoading] = useState(false);
-    console.log('aaaaa ', EvaluationList);
+    const [isExporting, setIsExporting] = useState(false);
 
     // ----------------------------------- FETCH DATA
-    const fetchReport = async () => {
+    const fetchReport = async (customPage = page, customLimit = limit) => {
         setIsLoading(true); // Bật loading
         const res = await dispatch(
             getReportTrackingTeacher({
                 templateSurveyID: selectedTemplateSurvey,
                 teacherID: selectedTeacher,
                 subjectID: selectedSubject,
-                page,
-                limit
+                page: customPage,
+                limit: customLimit
             })
         );
-        console.log('sssss ', res);
 
         if (res.payload?.message) {
             toast.error(res.payload?.message || "Lỗi tải dữ liệu");
+            setIsLoading(false);
+            return null;
         } else {
             setTotalParticipants(res.payload?.data?.totalSurveys);
+            setIsLoading(false);
+            return res.payload.data;
         }
         setIsLoading(false); // Tắt loading dù thành công hay lỗi
     };
@@ -102,17 +105,30 @@ const ReportSurvey = () => {
     };
 
     // xuất excel
-    const handleExportExcel = () => {
-        if (groupedReportList.length === 0) {
+    const handleExportExcel = async () => {
+        if (!SurveyReportTotal || SurveyReportTotal === 0) {
             toast.warning("Không có dữ liệu để xuất");
             return;
         }
 
+        setIsExporting(true);
+
         try {
+            const fullData = await fetchReport(1, SurveyReportTotal);
+
+            if (!fullData || !fullData.data || fullData.data.length === 0) {
+                toast.warning("Không thể lấy dữ liệu đầy đủ");
+                setIsExporting(false);
+                return;
+            }
+
+            // Gộp các câu hỏi trùng nhau từ full data
+            const fullGroupedData = groupDataByQuestion(fullData.data);
+
             const activeCriteria = EvaluationList.filter(c => selectedCriteria.includes(c.EvaluationID));
 
-            // 1. Dữ liệu các hàng câu hỏi (không có cột tổng)
-            const excelData = groupedReportList.map((row, index) => {
+            // 1. Dữ liệu các hàng câu hỏi
+            const excelData = fullGroupedData.map((row, index) => {
                 const rowData = {
                     "STT": index + 1,
                     "Nội dung câu hỏi": row.TitleCriteriaEvaluation,
@@ -132,14 +148,30 @@ const ReportSurvey = () => {
             XLSX.utils.sheet_add_aoa(worksheet, [[
                 "TỔNG SỐ NGƯỜI KHẢO SÁT:",
                 "",
-                totalParticipants
+                fullData.totalSurveys || totalParticipants
             ]], { origin: `A${lastRowIndex + 1}` });
+
+            // 4. Style cho worksheet (optional)
+            const range = XLSX.utils.decode_range(worksheet['!ref']);
+            const totalRowIndex = lastRowIndex;
+
+            // Set width cho các cột
+            worksheet['!cols'] = [
+                { wch: 5 },  // STT
+                { wch: 50 }, // Nội dung câu hỏi
+                ...activeCriteria.map(() => ({ wch: 15 })) // Các cột đánh giá
+            ];
 
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Báo cáo");
-            XLSX.writeFile(workbook, `Bao_cao_${new Date().getTime()}.xlsx`);
+            XLSX.writeFile(workbook, `Bao_cao_khao_sat_${new Date().getTime()}.xlsx`);
+
+            toast.success(`Đã xuất ${fullGroupedData.length} câu hỏi thành công`);
         } catch (error) {
-            toast.error('Lỗi khi xuất file');
+            console.error("Export error:", error);
+            toast.error('Lỗi khi xuất file Excel');
+        } finally {
+            setIsExporting(false);
         }
     };
 
@@ -153,21 +185,18 @@ const ReportSurvey = () => {
     }, [EvaluationList]);
 
     // Gộp các câu hỏi trùng nhau
-    const groupedReportList = useMemo(() => {
-        if (!SurveyReportList || SurveyReportList.length === 0) return [];
+    const groupDataByQuestion = (dataList) => {
+        if (!dataList || dataList.length === 0) return [];
 
-        const groups = SurveyReportList.reduce((acc, current) => {
-            // Lấy tiêu đề làm khóa để gộp
+        const groups = dataList.reduce((acc, current) => {
             const key = current.TitleCriteriaEvaluation;
 
             if (!acc[key]) {
-                // Nếu chưa có thì khởi tạo
                 acc[key] = {
                     ...current,
                     lstEvalutionTracking: JSON.parse(JSON.stringify(current.lstEvalutionTracking || []))
                 };
             } else {
-                // Nếu đã có thì cộng dồn NumberTracking của từng EvaluationID
                 current.lstEvalutionTracking?.forEach(currEval => {
                     const targetEval = acc[key].lstEvalutionTracking.find(e => e.EvaluationID === currEval.EvaluationID);
                     if (targetEval) {
@@ -179,6 +208,11 @@ const ReportSurvey = () => {
         }, {});
 
         return Object.values(groups);
+    };
+
+    // Gộp các câu hỏi trùng nhau cho trang hiện tại
+    const groupedReportList = useMemo(() => {
+        return groupDataByQuestion(SurveyReportList);
     }, [SurveyReportList]);
 
     // Tính tổng số trang

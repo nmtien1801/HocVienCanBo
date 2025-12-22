@@ -363,7 +363,7 @@ export default function Dashboard() {
 
                 {/* Footer */}
                 <div className="mt-6 lg:mt-8 text-center lg:text-right text-[10px] lg:text-xs text-gray-500">
-                    Copyright © 2023 by G&BSoft
+                    Copyright © 2025 by G&BSoft
                 </div>
 
                 {showSurvey && (

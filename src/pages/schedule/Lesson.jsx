@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import { useSelector, useDispatch } from "react-redux";
 import { TypeUserIDCons } from "../../utils/constants";
 import DropdownSearch from '../../components/FormFields/DropdownSearch.jsx';
+import * as XLSX from 'xlsx';
 
 export default function TimetableClass() {
   const dispatch = useDispatch();
@@ -22,6 +23,7 @@ export default function TimetableClass() {
   const [isLoadingClassLearn, setIsLoadingClassLearn] = useState(false);
   const [isLoadingSubjects, setIsLoadingSubjects] = useState(false);
   const [error, setError] = useState(null);
+  const [isExporting, setIsExporting] = useState(false);
 
   // -------------------------------------- list data table -------------------------------------
   useEffect(() => {
@@ -72,7 +74,7 @@ export default function TimetableClass() {
     }
   }, [dispatch]);
 
-  const fetchScheduleClass = async () => {
+  const fetchScheduleClass = async (customPage = currentPage, customLimit = pageSize) => {
     if (!selectedClass) {
       return;
     }
@@ -80,17 +82,21 @@ export default function TimetableClass() {
     setIsLoading(true);
     setError(null);
     try {
-      let res = await dispatch(getScheduleLesson({ classLearnID: selectedClass, subjectID: selectedSubject, page: currentPage, limit: pageSize }));
+      let res = await dispatch(getScheduleLesson({ classLearnID: selectedClass, subjectID: selectedSubject, page: customPage, limit: customLimit }));
 
       if (!res.payload || !res.payload.data) {
         const errorMsg = res.payload?.message || 'Không thể tải dữ liệu';
         setError(errorMsg);
         toast.error(errorMsg);
+        return null;
+      } else {
+        return res.payload.data;
       }
     } catch (err) {
       const errorMsg = 'Đã có lỗi xảy ra khi tải dữ liệu';
       setError(errorMsg);
       toast.error(errorMsg);
+      return null;
     } finally {
       setIsLoading(false);
     }
@@ -103,12 +109,64 @@ export default function TimetableClass() {
       return;
     }
     setCurrentPage(1);
-    fetchScheduleClass();
+    fetchScheduleClass(1, pageSize);
   };
 
-  const handleExportExcel = () => {
-    // TODO: Implement Excel export functionality
-    toast.info('Chức năng xuất Excel đang được phát triển');
+  const handleExportExcel = async () => {
+    if (!totalScheduleLesson || totalScheduleLesson === 0) {
+      toast.warning("Không có dữ liệu để xuất");
+      return;
+    }
+
+    setIsExporting(true);
+
+    try {
+      // Fetch toàn bộ dữ liệu
+      const fullData = await fetchScheduleClass(1, totalScheduleLesson);
+
+      if (!fullData || fullData.length === 0) {
+        toast.warning("Không thể lấy dữ liệu đầy đủ");
+        setIsExporting(false);
+        return;
+      }
+
+      // Tạo dữ liệu cho Excel
+      const excelData = fullData.map((row, index) => ({
+        "STT": index + 1,
+        "Ngày học": row.DateAir || "",
+        "Buổi học": row.Period || "",
+        "Bài giảng": row.LessonName || "",
+        "Giảng viên": row.TeacherName || "",
+        "Số tiết": row.NumberCaculator || 0,
+        "Phòng học": row.RoomID || ""
+      }));
+
+      // Tạo worksheet
+      const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+      // Set độ rộng cột
+      worksheet['!cols'] = [
+        { wch: 5 },   // STT
+        { wch: 15 },  // Ngày học
+        { wch: 10 },  // Buổi học
+        { wch: 30 },  // Bài giảng
+        { wch: 25 },  // Giảng viên
+        { wch: 10 },  // Số tiết
+        { wch: 15 }   // Phòng học
+      ];
+
+      // Tạo workbook và xuất file
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Danh sách bài giảng");
+      XLSX.writeFile(workbook, `Danh_sach_bai_giang_${new Date().getTime()}.xlsx`);
+
+      toast.success(`Đã xuất ${fullData.length} dòng dữ liệu thành công`);
+    } catch (error) {
+      console.error("Export error:", error);
+      toast.error('Lỗi khi xuất file Excel');
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   // --------------------------------------------- phân trang ----------------------------------
@@ -419,7 +477,7 @@ export default function TimetableClass() {
 
         {/* Footer */}
         <div className="mt-8 text-right text-xs text-gray-500">
-          Copyright © 2023 by G&BSoft
+          Copyright © 2025 by G&BSoft
         </div>
       </div>
     </div>
