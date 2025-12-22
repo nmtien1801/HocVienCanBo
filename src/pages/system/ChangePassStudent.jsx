@@ -46,7 +46,7 @@ export default function ChangePassStudent() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-4 px-4 lg:py-8 lg:px-6">
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-6xl mx-auto">
 
         <h1 className="text-xl md:text-2xl text-gray-600 mb-6 md:mb-8">
           Đặt lại mật khẩu học viên

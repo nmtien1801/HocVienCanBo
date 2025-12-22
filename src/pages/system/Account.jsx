@@ -1,12 +1,53 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from "react-redux";
 import { TypeUserIDCons, formatDate, formatToISODate, getGenderDisplay } from "../../utils/constants";
+import { UpdateUser, UpdateUserTeacher } from '../../redux/authSlice';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
+
+// Component tái sử dụng cho Input Field
+const SimpleInput = ({ label, name, value, onChange, type = "text", isCheckbox = false, checked, disabled = false }) => (
+  <div className="mb-6 flex flex-col md:flex-row md:items-center">
+    <label className="text-gray-600 text-sm mb-1 md:mb-0 md:w-48 md:text-right md:pr-6">
+      {label}
+    </label>
+    <div className="flex-1 w-full relative">
+      {isCheckbox ? (
+        <div className="flex items-center md:justify-start">
+          <input
+            type="checkbox"
+            name={name}
+            checked={checked}
+            onChange={onChange}
+            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            id={name}
+          />
+          <label htmlFor={name} className="ml-2 text-sm text-gray-600">
+            Đang hoạt động
+          </label>
+        </div>
+      ) : (
+        <input
+          type={type}
+          name={name}
+          value={value}
+          onChange={onChange}
+          disabled={disabled}
+          className={`w-full border border-gray-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${disabled ? 'bg-gray-100' : ''}`}
+        />
+      )}
+    </div>
+  </div>
+);
 
 const TeacherLayout = ({ userInfo }) => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     maNguoiDung: userInfo?.Code || '',
     hoVaTen: userInfo?.Name || '',
-    nhom: '',
+    nhom: userInfo?.GroupName || '',
     dangHoatDong: userInfo?.Status === 1 || false,
   });
 
@@ -18,53 +59,26 @@ const TeacherLayout = ({ userInfo }) => {
     }));
   };
 
-  const handleSave = () => {
-    console.log('Lưu dữ liệu:', formData);
+  const handleSave = async () => {
+    const dataToSave = {
+      FullName: formData.hoVaTen,
+    };
+
+    let res = await dispatch(UpdateUserTeacher(dataToSave));
+    if (res.payload.message) {
+      toast.error(res.payload.message);
+    } else {
+      toast.success('Cập nhật thông tin thành công!');
+    }
   };
 
   const handleCancel = () => {
-    console.log('Hủy bỏ');
+    navigate('/dashboard');
   };
-
-  // Component tái sử dụng cho Input Field
-  const SimpleInput = ({ label, name, value, type = "text", isCheckbox = false, checked, disabled = false }) => (
-    <div className="mb-6 flex flex-col md:flex-row md:items-center">
-      <label className="text-gray-600 text-sm mb-1 md:mb-0 md:w-48 md:text-right md:pr-6">
-        {label}
-      </label>
-      <div className="flex-1 w-full relative">
-        {isCheckbox ? (
-          <div className="flex items-center md:justify-start">
-            <input
-              type="checkbox"
-              name={name}
-              checked={checked}
-              onChange={handleInputChange}
-              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              id={name}
-            />
-            <label htmlFor={name} className="ml-2 text-sm text-gray-600">
-              Đang hoạt động
-            </label>
-          </div>
-        ) : (
-          <input
-            type={type}
-            name={name}
-            value={value}
-            onChange={handleInputChange}
-            disabled={disabled}
-            className={`w-full border border-gray-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${disabled ? 'bg-gray-100' : ''}`}
-          />
-        )}
-      </div>
-    </div>
-  );
-
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         {/* Header */}
         <h1 className="text-xl md:text-2xl text-red-600 mb-6 md:mb-8 font-medium">Thông cá nhân người dùng</h1>
 
@@ -73,13 +87,13 @@ const TeacherLayout = ({ userInfo }) => {
           <div className="p-4 sm:p-6 md:p-8">
 
             {/* Mã người dùng */}
-            <SimpleInput label="Mã người dùng" name="maNguoiDung" value={formData.maNguoiDung} disabled={true} />
-
-            {/* Họ và tên */}
-            <SimpleInput label="Họ và tên" name="hoVaTen" value={formData.hoVaTen} />
+            <SimpleInput label="Mã người dùng" name="maNguoiDung" value={formData.maNguoiDung} disabled={true} onChange={handleInputChange}/>
 
             {/* Nhóm */}
-            <SimpleInput label="Nhóm" name="nhom" value={formData.nhom} />
+            <SimpleInput label="Nhóm" name="nhom" value={formData.nhom} disabled={true} onChange={handleInputChange}/>
+
+            {/* Họ và tên */}
+            <SimpleInput label="Họ và tên" name="hoVaTen" value={formData.hoVaTen} onChange={handleInputChange}/>
 
             {/* Trạng thái */}
             <SimpleInput
@@ -87,6 +101,7 @@ const TeacherLayout = ({ userInfo }) => {
               name="dangHoatDong"
               checked={formData.dangHoatDong}
               isCheckbox={true}
+              onChange={handleInputChange}
             />
 
             {/* Buttons */}
@@ -94,14 +109,14 @@ const TeacherLayout = ({ userInfo }) => {
               <div className="md:w-48 mb-4 md:mb-0"></div>
               <div className="flex gap-3 w-full md:w-auto md:justify-start">
                 <button
-                  onClick={handleCancel}
-                  className="flex-1 md:flex-none px-6 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded text-sm font-medium transition-colors"
+                  onClick={handleSave}
+                  className="flex-1 md:flex-none px-6 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded text-sm font-medium transition-colors cursor-pointer"
                 >
                   Lưu lại
                 </button>
                 <button
-                  onClick={handleSave}
-                  className="flex-1 md:flex-none px-6 py-2 bg-[#f0ad4e] hover:bg-[#e69c3b] text-white rounded text-sm font-medium transition-colors"
+                  onClick={handleCancel}
+                  className="flex-1 md:flex-none px-6 py-2 bg-[#f0ad4e] hover:bg-[#e69c3b] text-white rounded text-sm font-medium transition-colors cursor-pointer"
                 >
                   Bỏ qua
                 </button>
@@ -120,6 +135,9 @@ const TeacherLayout = ({ userInfo }) => {
 };
 
 const StudentLayout = ({ userInfo }) => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     maHocVien: userInfo?.StudentCode || '',
     lop: userInfo?.ClassLearn || '',
@@ -153,16 +171,23 @@ const StudentLayout = ({ userInfo }) => {
     }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const dataToSave = {
-      ...formData,
-      Birthday: formatToISODate(formData.ngaySinh),
+      CompanyName: formData.tenDonViXuatHD,
+      CompanyAddress: formData.diaChiXuatHD,
+      CompanyTaxCode: formData.maSoThueXuatHD
     };
-    console.log('Lưu dữ liệu học viên:', dataToSave);
+
+    let res = await dispatch(UpdateUser(dataToSave));
+    if (res.payload.message) {
+      toast.error(res.payload.message);
+    } else {
+      toast.success('Cập nhật thông tin thành công!');
+    }
   };
 
   const handleSkip = () => {
-    console.log('Bỏ qua');
+    navigate('/dashboard');
   };
 
   const inputStyle = "w-full border border-gray-300 rounded px-4 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent";
@@ -281,13 +306,13 @@ const StudentLayout = ({ userInfo }) => {
               <div className="flex gap-3 w-full md:w-auto ml-0 md:ml-48">
                 <button
                   onClick={handleSave}
-                  className="flex-1 md:flex-none px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm font-medium transition-colors"
+                  className="flex-1 md:flex-none px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm font-medium transition-colors cursor-pointer"
                 >
                   Lưu lại
                 </button>
                 <button
                   onClick={handleSkip}
-                  className="flex-1 md:flex-none px-6 py-2 bg-[#f0ad4e] hover:bg-[#e69c3b] text-white rounded text-sm font-medium transition-colors"
+                  className="flex-1 md:flex-none px-6 py-2 bg-[#f0ad4e] hover:bg-[#e69c3b] text-white rounded text-sm font-medium transition-colors cursor-pointer"
                 >
                   Bỏ qua
                 </button>

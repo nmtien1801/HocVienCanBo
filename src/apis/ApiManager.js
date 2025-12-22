@@ -19,10 +19,20 @@ api.interceptors.request.use((config) => {
 
   config.headers["Authorization"] = `Bearer ${token}`;
   if (headerValue) {
-    config.headers["UserID"] = headerValue.UserID || headerValue.StudentID || headerValue.StudentRegisterID;
+    config.headers["UserID"] =
+      headerValue.UserID ||
+      headerValue.StudentID ||
+      headerValue.StudentRegisterID;
     config.headers["TypeUserID"] = headerValue.TypeUserID;
     config.headers["IsOutside"] = headerValue.IsOutside;
-    config.headers["Username"] = headerValue.Code || headerValue.StudentCode;
+    config.headers["UserName"] =
+      headerValue.Code ||
+      headerValue.StudentCode ||
+      btoa(
+        unescape(
+          encodeURIComponent(headerValue.Name || headerValue.StudentName)
+        )
+      );
     config.headers["Fullname"] = btoa(
       unescape(encodeURIComponent(headerValue.Name || headerValue.StudentName))
     );
@@ -38,7 +48,13 @@ api.interceptors.response.use(
     switch (status) {
       case 401: {
         const path = window.location.pathname;
-        const publicPaths = ["/", "/loginTC", "/studentregister", "/loginHBD", "/studentregisterHBD"];
+        const publicPaths = [
+          "/",
+          "/loginTC",
+          "/studentregister",
+          "/loginHBD",
+          "/studentregisterHBD",
+        ];
 
         // ✅ Nếu đang ở trang public, bỏ qua
         if (publicPaths.includes(path)) {

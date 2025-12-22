@@ -40,6 +40,22 @@ export const GetAccount = createAsyncThunk(
   }
 );
 
+export const UpdateUser = createAsyncThunk(
+  "auth/UpdateUser",
+  async (data, thunkAPI) => {
+    const response = await ApiAuth.UpdateUserApi(data);
+    return response;
+  }
+);
+
+export const UpdateUserTeacher = createAsyncThunk(
+  "auth/UpdateUserTeacher",
+  async (data, thunkAPI) => {
+    const response = await ApiAuth.UpdateUserTeacherApi(data);
+    return response;
+  }
+);
+
 export const logout = createAsyncThunk(
   "auth/Logout",
   async (_, { dispatch }) => {
@@ -126,6 +142,38 @@ const authSlice = createSlice({
       state.hasCheckedAuth = true;
       state.type = "";
     });
+
+    // UpdateUser
+    builder
+      .addCase(UpdateUser.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(UpdateUser.fulfilled, (state, action) => {
+        state.isLoading = false;
+        if (action.payload.data) {
+          state.userInfo = action.payload.data || {};
+          localStorage.setItem("fr", JSON.stringify(action.payload.data));
+        }
+      })
+      .addCase(UpdateUser.rejected, (state, action) => {
+        state.isLoading = false;
+      });
+
+    // UpdateUserTeacher
+    builder
+      .addCase(UpdateUserTeacher.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(UpdateUserTeacher.fulfilled, (state, action) => {
+        state.isLoading = false;
+        if (action.payload.data) {
+          state.userInfo = action.payload.data || {};
+          localStorage.setItem("fr", JSON.stringify(action.payload.data));
+        }
+      })
+      .addCase(UpdateUserTeacher.rejected, (state, action) => {
+        state.isLoading = false;
+      });
   },
 });
 

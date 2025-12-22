@@ -10,6 +10,9 @@ const ApiAuth = {
     // HDB
     LoginHDBApi: (data) => ApiManager.post(`/user-hbd/login`, data),
     ChangePasswordHBDApi: (data) => ApiManager.post(`/user-hbd/change-password`, data),
+
+    UpdateUserApi: (data) => ApiManager.post(`/student/update-student`, data),
+    UpdateUserTeacherApi: (data) => ApiManager.post(`/useradmin/update-user`, data),
 }
 
 export default ApiAuth;

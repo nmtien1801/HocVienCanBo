@@ -36,7 +36,7 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
 
   const systemItems = [
     { label: 'Trang chủ', path: '/dashboard' },
-    role.canAccess ? { label: 'Đổi mật khẩu học viên', path: '/change-pass-student' } : null,
+    role.canAccess ? { label: 'Làm mới khẩu học viên', path: '/change-pass-student' } : null,
     { label: 'Đổi mật khẩu tài khoản', path: '/change-pass-tc' },
     { label: 'Thông tin tài khoản', path: '/account' },
     userInfo?.TypeUserID === TypeUserIDCons.Administrator

@@ -477,7 +477,7 @@ export default function StudentRegisterHBD() {
                         HỌC VIỆN CÁN BỘ
                     </h2>
                     <p className="text-sm text-gray-500">
-                        ©2024 All Rights Reserved. Privacy and Terms
+                        ©2025 All Rights Reserved. Privacy and Terms
                     </p>
                 </div>
             </div>
