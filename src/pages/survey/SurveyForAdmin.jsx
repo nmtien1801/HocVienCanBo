@@ -3,7 +3,6 @@ import { useSelector, useDispatch } from "react-redux";
 import { getSurveyForAdministrator } from "../../redux/surveySlice.js";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import ApiSurvey from '../../apis/ApiSurvey.js'
 import DropdownSearch from '../../components/FormFields/DropdownSearch.jsx';
 import { getTemplateTrackingTeacher } from '../../redux/reportSlice.js'
 
@@ -17,6 +16,7 @@ export default function SurveyTeacher() {
     const [activeTab, setActiveTab] = useState("surveyedOther");
     const [currentPage, setCurrentPage] = useState(1);
     const [selectedTemplateSurvey, setSelectedTemplateSurvey] = useState(0);
+    const [dropdownKey, setDropdownKey] = useState(Date.now());
 
     const pageSize = 20;
 
@@ -32,7 +32,6 @@ export default function SurveyTeacher() {
         };
 
         fetchTemplateList();
-        // Reset template khi đổi tab
         setSelectedTemplateSurvey(0);
     }, [dispatch, activeTab]);
 
@@ -65,6 +64,7 @@ export default function SurveyTeacher() {
         setActiveTab(tabName);
         setCurrentPage(1);
         setSelectedTemplateSurvey(0);
+        setDropdownKey(Date.now());
     };
 
     // --------------------------------------- Handle Template Change
@@ -77,27 +77,9 @@ export default function SurveyTeacher() {
     // --------------------------------------- Handle Detail Survey
     const handleDetailSurvey = async (item) => {
         try {
-            // Nếu đã có SurveyID thì điều hướng trực tiếp
             if (item.SurveyID !== null) {
-                navigate(`/survey-detail?id=${item.SurveyID}&submit=${item.StatusID_Survey}`);
+                navigate(`/survey-detail?id=${item.SurveyID}&submit=true`);
                 return;
-            }
-
-            // Nếu chưa có SurveyID thì tạo mới
-            const payload = {
-                ...item,
-                Title: item.TemplateSurveyName
-            };
-
-            const res = await ApiSurvey.CreateSurveyTeacherApi(payload);
-
-            if (res?.message) {
-                toast.error(res.message);
-                return;
-            }
-
-            if (res?.SurveyID) {
-                navigate(`/survey-detail?id=${res.SurveyID}&submit=${item.StatusID_Survey}`);
             }
         } catch (error) {
             toast.error("Có lỗi xảy ra khi xử lý khảo sát");
@@ -131,6 +113,7 @@ export default function SurveyTeacher() {
                                 Mẫu khảo sát
                             </label>
                             <DropdownSearch
+                                key={dropdownKey}
                                 options={TemplateTrackingTeacherList || []}
                                 placeholder="------ chọn mẫu khảo sát ------"
                                 labelKey="Title"
