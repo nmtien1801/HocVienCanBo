@@ -125,7 +125,7 @@ export default function SurveyTeacher() {
                                             <div className="flex-1">
                                                 <h3 className="font-semibold text-[#337ab7] text-sm mb-1 transition-colors group-hover:text-gray-800">
                                                     {item.TemplateSurveyName} - {item.SubjectCode} - {item.SubjectName}{" "}
-                                                    <span className="text-red-600 font-semibold">(Bắt buộc)</span>
+                                                    <span className="text-red-600 font-semibold">{activeTab === "surveyed" ? "(đã khảo sát)" : "(chưa khảo sát)"}</span>
                                                 </h3>
                                                 <div className="font-semibold text-[#337ab7] text-sm transition-colors group-hover:text-gray-800">
                                                     Giảng viên: {item.TeacherName}

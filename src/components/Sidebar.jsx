@@ -3,9 +3,11 @@ import { NavLink } from 'react-router-dom';
 import { Home, FileEdit, BarChart3, TrendingUp, Calendar, ChevronDown, User, X, ClipboardList } from 'lucide-react';
 import { useSelector } from "react-redux";
 import { TypeUserIDCons } from "../utils/constants";
+import { useNavigate } from 'react-router-dom';
 
 export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
   const { userInfo } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
   const [expandedMenu, setExpandedMenu] = useState('system');
   const [role, setRole] = useState({ role: "", canAccess: false });
 
@@ -108,7 +110,7 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
               {/* Desktop/Mobile Header with Logo */}
               <div className="bg-[#026aa8] p-4 flex items-center justify-between shadow-md">
                 <div className="flex items-center gap-3">
-                  <img src="/logo.png" alt="logo" className="w-10 h-10 object-contain rounded-lg" />
+                  <img src="/logo.png" alt="logo" className="w-10 h-10 object-contain rounded-lg cursor-pointer" onClick={() => navigate("/dashboard")} />
                   <span className="font-bold text-base lg:text-lg whitespace-nowrap">
                     HỌC VIỆN CÁN BỘ
                   </span>

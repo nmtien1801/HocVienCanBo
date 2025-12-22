@@ -144,7 +144,7 @@ export default function ScheduleDay() {
 
         {/* Header Section */}
         <div className="flex items-center mb-4 w-full justify-center flex-shrink-0">
-          <img src="/logo.png" alt="Logo" className="h-24 mr-4" onClick={() => navigate('/dashboard')} />
+          <img src="/logo.png" alt="Logo" className="h-24 mr-4 cursor-pointer" onClick={() => navigate('/dashboard')} />
           <div className="flex flex-col items-center">
             <p className="text-3xl font-medium text-red-600 mb-0 leading-tight">
               HỌC VIỆN CÁN BỘ THÀNH PHỐ HỒ CHÍ MINH

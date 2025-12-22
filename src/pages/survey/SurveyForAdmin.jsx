@@ -173,7 +173,6 @@ export default function SurveyTeacher() {
                                             <h3 className="font-semibold text-[#337ab7] text-sm mb-1 transition-colors group-hover:text-gray-800">
                                                 {item.Title}
                                                 {" "}
-                                                <span className="text-red-600 font-semibold">(Bắt buộc)</span>
                                             </h3>
                                             {item.TeacherName ? (
                                                 <div className="font-semibold text-[#337ab7] text-sm transition-colors group-hover:text-gray-800">
