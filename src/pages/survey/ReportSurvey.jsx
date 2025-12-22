@@ -25,31 +25,28 @@ const ReportSurvey = () => {
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(20);
     const [isLoading, setIsLoading] = useState(false);
+    console.log('aaaaa ', EvaluationList);
 
     // ----------------------------------- FETCH DATA
     const fetchReport = async () => {
         setIsLoading(true); // Bật loading
-        try {
-            const res = await dispatch(
-                getReportTrackingTeacher({
-                    templateSurveyID: selectedTemplateSurvey,
-                    teacherID: selectedTeacher,
-                    subjectID: selectedSubject,
-                    page,
-                    limit
-                })
-            );
+        const res = await dispatch(
+            getReportTrackingTeacher({
+                templateSurveyID: selectedTemplateSurvey,
+                teacherID: selectedTeacher,
+                subjectID: selectedSubject,
+                page,
+                limit
+            })
+        );
+        console.log('sssss ', res);
 
-            if (res.payload?.Message) {
-                toast.error(res.payload?.Message || "Lỗi tải dữ liệu");
-            } else {
-                setTotalParticipants(res.payload.data.totalSurveys);
-            }
-        } catch (error) {
-            toast.error("Đã có lỗi xảy ra");
-        } finally {
-            setIsLoading(false); // Tắt loading dù thành công hay lỗi
+        if (res.payload?.message) {
+            toast.error(res.payload?.message || "Lỗi tải dữ liệu");
+        } else {
+            setTotalParticipants(res.payload?.data?.totalSurveys);
         }
+        setIsLoading(false); // Tắt loading dù thành công hay lỗi
     };
 
     // Gọi lại API khi filter hoặc phân trang thay đổi
@@ -189,7 +186,7 @@ const ReportSurvey = () => {
 
     return (
         <div className="p-6 bg-gray-50 min-h-screen">
-            <div className="max-w-7xl mx-auto">
+            <div className="max-w-0xl mx-auto">
                 <div className="flex items-center justify-between mb-8">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">

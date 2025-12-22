@@ -23,10 +23,10 @@ export const getSurveySubjectByStudentID = createAsyncThunk(
 
 export const getSurveyForAdministrator = createAsyncThunk(
   "survey/getSurveyForAdministrator",
-  async ({ typeTemplate, templateSurveyI, page, limit }, thunkAPI) => {
+  async ({ typeTemplate, templateSurveyID, page, limit }, thunkAPI) => {
     const response = await ApiSurvey.getSurveyForAdministratorApi(
       typeTemplate,
-      templateSurveyI,
+      templateSurveyID,
       page,
       limit
     );

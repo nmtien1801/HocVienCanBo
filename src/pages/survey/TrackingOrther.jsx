@@ -23,25 +23,20 @@ const TrackingOrder = () => {
     // ----------------------------------- FETCH DATA
     const fetchReport = async () => {
         setIsLoading(true); // Bật loading
-        try {
-            const res = await dispatch(
-                getReportTrackingOrder({
-                    templateSurveyID: selectedTemplateSurvey,
-                    page,
-                    limit
-                })
-            );
+        const res = await dispatch(
+            getReportTrackingOrder({
+                templateSurveyID: selectedTemplateSurvey,
+                page,
+                limit
+            })
+        );
 
-            if (res.payload?.Message) {
-                toast.error(res.payload?.Message || "Lỗi tải dữ liệu");
-            } else {
-                setTotalParticipants(res.payload.data.totalSurveys);
-            }
-        } catch (error) {
-            toast.error("Đã có lỗi xảy ra");
-        } finally {
-            setIsLoading(false); // Tắt loading dù thành công hay lỗi
+        if (res.payload?.message) {
+            toast.error(res.payload?.message || "Lỗi tải dữ liệu");
+        } else {
+            setTotalParticipants(res.payload.data.totalSurveys);
         }
+        setIsLoading(false); 
     };
 
     // Gọi lại API khi filter hoặc phân trang thay đổi
@@ -161,7 +156,7 @@ const TrackingOrder = () => {
 
     return (
         <div className="p-6 bg-gray-50 min-h-screen">
-            <div className="max-w-7xl mx-auto">
+            <div className="max-w-0xl mx-auto">
                 <div className="flex items-center justify-between mb-8">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">

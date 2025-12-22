@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Loader2, AlertCircle } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Loader2, AlertCircle } from 'lucide-react';
 import { toast } from "react-toastify";
 import { getCriteriaEvaluation } from '../../redux/CriteriaEvaluationSlice.js';
 import ApiCriteriaEvaluation from '../../apis/ApiCriteriaEvaluation.js';
 import { useSelector, useDispatch } from "react-redux";
 import QuestionModal from './QuestionModal.jsx'
-import {StatusID} from '../../utils/constants.js'
+import { StatusID } from '../../utils/constants.js'
 
 const TypeCriteriaMapping = {
     1: 'Câu hỏi khảo sát',
@@ -286,13 +286,10 @@ const ManagerQuestion = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 p-4 md:p-6">
-            <div className="max-w-7xl mx-auto">
+            <div className="max-w-0xl mx-auto">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-4">
-                        <button onClick={() => navigate(-1)} className="p-2 rounded bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 transition">
-                            <ArrowLeft className="w-5 h-5" />
-                        </button>
                         <h1 className="text-2xl md:text-3xl font-xl text-gray-700">Quản lý Ngân hàng Câu hỏi</h1>
                     </div>
                     <button

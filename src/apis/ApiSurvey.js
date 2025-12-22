@@ -13,7 +13,7 @@ const ApiSurvey = {
     getTemplateSurveyForClientApi: () => ApiManager.get(`/template-survey/get-list-for-client`),
     CreateSurveyClientApi: (model) => ApiManager.post(`/survey/create-client`, model),
 
-    getSurveyForAdministratorApi: (typeTemplate, templateSurveyI, page, limit) => ApiManager.get(`/survey/get-list-survey-for-administrator?typeTemplate=${typeTemplate}&templateSurveyI=${templateSurveyI}&page=${page}&limit=${limit}`),
+    getSurveyForAdministratorApi: (typeTemplate, templateSurveyID, page, limit) => ApiManager.get(`/survey/get-list-survey-for-administrator?typeTemplate=${typeTemplate}&templateSurveyID=${templateSurveyID}&page=${page}&limit=${limit}`),
 }
 
 export default ApiSurvey;

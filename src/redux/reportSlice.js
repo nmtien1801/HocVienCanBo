@@ -77,9 +77,9 @@ const reportSlice = createSlice({
         state.SurveyReportTotal = 0;
       })
       .addCase(getReportTrackingTeacher.fulfilled, (state, action) => {
-        state.EvaluationList = action.payload.data.lstEvalution || [];
-        state.SurveyReportList = action.payload.data.data || [];
-        state.SurveyReportTotal = action.payload.data.totals || 0;
+        state.EvaluationList = action.payload?.data?.lstEvalution || [];
+        state.SurveyReportList = action.payload?.data?.data || [];
+        state.SurveyReportTotal = action.payload?.data?.totals || 0;
       })
       .addCase(getReportTrackingTeacher.rejected, (state, action) => {});
 
@@ -111,9 +111,9 @@ const reportSlice = createSlice({
         state.TrackingOrderTotal = 0;
       })
       .addCase(getReportTrackingOrder.fulfilled, (state, action) => {
-        state.EvaluationOrderList = action.payload.data.lstEvalution || [];
-        state.TrackingOrderList = action.payload.data.data || [];
-        state.TrackingOrderTotal = action.payload.data.totals || 0;
+        state.EvaluationOrderList = action.payload?.data?.lstEvalution || [];
+        state.TrackingOrderList = action.payload?.data?.data || [];
+        state.TrackingOrderTotal = action.payload?.data?.totals || 0;
       })
       .addCase(getReportTrackingOrder.rejected, (state, action) => {});
   },

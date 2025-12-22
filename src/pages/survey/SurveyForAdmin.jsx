@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { getSurveyForAdministrator } from "../../redux/surveySlice.js";
+import { getSurveyForAdministrator, resetSurvey } from "../../redux/surveySlice.js";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import DropdownSearch from '../../components/FormFields/DropdownSearch.jsx';
 import { getTemplateTrackingTeacher } from '../../redux/reportSlice.js'
+import { formatDate } from "../../utils/constants.js";
 
 export default function SurveyTeacher() {
     const dispatch = useDispatch();
@@ -43,7 +44,7 @@ export default function SurveyTeacher() {
                 const res = await dispatch(
                     getSurveyForAdministrator({
                         typeTemplate: type,
-                        templateSurveyI: selectedTemplateSurvey,
+                        templateSurveyID: selectedTemplateSurvey,
                         page: currentPage,
                         limit: pageSize
                     })
@@ -65,6 +66,7 @@ export default function SurveyTeacher() {
         setCurrentPage(1);
         setSelectedTemplateSurvey(0);
         setDropdownKey(Date.now());
+        dispatch(resetSurvey());
     };
 
     // --------------------------------------- Handle Template Change
@@ -100,7 +102,7 @@ export default function SurveyTeacher() {
     // --------------------------------------- Render
     return (
         <div className="min-h-screen bg-gray-50 py-4 px-4 lg:py-8 lg:px-6">
-            <div className="max-w-7xl mx-auto">
+            <div className="max-w-0xl mx-auto">
                 {/* Header với Select */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
                     <h1 className="text-xl md:text-2xl text-gray-600">
@@ -173,11 +175,14 @@ export default function SurveyTeacher() {
                                                 {" "}
                                                 <span className="text-red-600 font-semibold">(Bắt buộc)</span>
                                             </h3>
-                                            {item.TeacherName && (
+                                            {item.TeacherName ? (
                                                 <div className="font-semibold text-[#337ab7] text-sm transition-colors group-hover:text-gray-800">
-                                                    Giảng viên: {item.TeacherName}
+                                                    Giảng viên: {item.TeacherName} - <span className="text-red-600 font-semibold">Ngày tạo: {formatDate(item.DateCreated)}</span>
                                                 </div>
-                                            )}
+
+                                            ) : <div className="font-semibold text-[#337ab7] text-sm transition-colors group-hover:text-gray-800">
+                                                Người khảo sát: {item.StudentName || item.Name || item.FullName} - <span className="text-red-600 font-semibold">Ngày tạo: {formatDate(item.DateCreated)}</span>
+                                            </div>}
                                         </div>
                                     </div>
                                 ))
