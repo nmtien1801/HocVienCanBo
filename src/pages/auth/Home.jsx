@@ -91,32 +91,54 @@ export default function Home() {
                 </div>
 
                 {/* Contact Information */}
-                <div className="text-white text-sm space-y-6 max-w-4xl bg-black/30 backdrop-blur-sm rounded-xl p-8 shadow-2xl">
-                    <div className="space-y-2">
-                        <p className="font-semibold text-base">
-                            Cơ sở 1: <span className="font-normal">324 Chu Văn An, Phường 12, Quận Bình Thạnh, TP.HCM</span>
-                        </p>
-                        <p>
-                            Điện thoại: <span className="font-semibold">(028) 38412405</span> - Fax: <span className="font-semibold">(028) 38412495</span>
-                        </p>
-                        <p>
-                            Email: <span className="font-semibold">hocviencanbo@tphcm.gov.vn</span>
-                        </p>
-                    </div>
+                <div className="text-white text-sm max-w-4xl bg-black/30 backdrop-blur-sm rounded-xl p-8 shadow-2xl">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+                        {/* Cơ sở chính */}
+                        <div className="space-y-2">
+                            <p className="font-semibold text-base text-blue-400">Cơ sở chính</p>
+                            <p className="font-normal">324 Chu Văn An, phường Bình Thạnh</p>
+                            <p>
+                                Điện thoại: <span className="font-semibold">(028) 38.412.405</span>
+                            </p>
+                            <p>
+                                Fax: <span className="font-semibold">(028) 38.412.495</span>
+                            </p>
+                            <p>
+                                Email: <span className="font-semibold text-blue-300">hocviencanbo@tphcm.gov.vn</span>
+                            </p>
+                        </div>
 
-                    <div className="space-y-2 pt-4 border-t border-white/30">
-                        <p className="font-semibold text-base">
-                            Cơ sở 2: <span className="font-normal">146 Võ Thị Sáu, Phường 3, Quận 3, TP.HCM</span>
-                        </p>
-                        <p>
-                            Điện thoại: <span className="font-semibold">(028) 38412405</span> - Fax: <span className="font-semibold">(028) 38412495</span>
-                        </p>
-                        <p>
-                            Email: <span className="font-semibold">hocviencanbo@tphcm.gov.vn</span>
-                        </p>
+                        {/* Cơ sở phụ */}
+                        <div className="space-y-2">
+                            <p className="font-semibold text-base text-blue-400">Cơ sở phụ</p>
+                            <p className="font-normal">Trung tâm Đào tạo, bồi dưỡng nghiệp vụ và ngoại ngữ 146 Võ Thị Sáu, phường Xuân Hòa</p>
+                            <p>
+                                Điện thoại: <span className="font-semibold">(028) 38.295.589</span>
+                            </p>
+                        </div>
+
+                        {/* Cơ sở 2 */}
+                        <div className="space-y-2 pt-4 border-t border-white/10">
+                            <p className="font-semibold text-base text-blue-400">Cơ sở 2</p>
+                            <p className="font-normal">đường 30/4, phường Thủ Dầu Một</p>
+                            <p>
+                                Điện thoại: <span className="font-semibold">(0274) 3.822.511</span>
+                            </p>
+                        </div>
+
+                        {/* Cơ sở 3 */}
+                        <div className="space-y-2 pt-4 border-t border-white/10">
+                            <p className="font-semibold text-base text-blue-400">Cơ sở 3</p>
+                            <p className="font-normal">số 13 đường Trường Chinh, phường Bà Rịa</p>
+                            <p>
+                                Điện thoại: <span className="font-semibold">(0254) 3.852.966</span>
+                            </p>
+                        </div>
+
                     </div>
                 </div>
             </div>
+            
             {showSurvey && (
                 <SurveyNotification
                     surveys={TemplateSurveyForClientList}
