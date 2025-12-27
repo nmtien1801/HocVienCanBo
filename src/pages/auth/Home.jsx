@@ -91,8 +91,8 @@ export default function Home() {
                 </div>
 
                 {/* Contact Information */}
-                <div className="text-white text-sm max-w-4xl bg-black/30 backdrop-blur-sm rounded-xl p-8 shadow-2xl">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+                <div className="text-white text-sm max-w-4xl bg-black/30 backdrop-blur-sm rounded-xl p-7 shadow-2xl">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-5">
                         {/* Cơ sở chính */}
                         <div className="space-y-2">
                             <p className="font-semibold text-base text-blue-400">Cơ sở chính</p>
@@ -101,10 +101,7 @@ export default function Home() {
                                 Điện thoại: <span className="font-semibold">(028) 38.412.405</span>
                             </p>
                             <p>
-                                Fax: <span className="font-semibold">(028) 38.412.495</span>
-                            </p>
-                            <p>
-                                Email: <span className="font-semibold text-blue-300">hocviencanbo@tphcm.gov.vn</span>
+                                Email: <span className="font-semibold text-blue-300">hocviencanbo@tphcm.gov.vn</span> - Fax: <span className="font-semibold">(028) 38.412.495</span>
                             </p>
                         </div>
 
@@ -138,7 +135,7 @@ export default function Home() {
                     </div>
                 </div>
             </div>
-            
+
             {showSurvey && (
                 <SurveyNotification
                     surveys={TemplateSurveyForClientList}
