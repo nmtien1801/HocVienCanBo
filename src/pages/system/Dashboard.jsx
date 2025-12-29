@@ -21,6 +21,7 @@ export default function Dashboard() {
     // state khảo sát chưa điền
     const [showSurvey, setShowSurvey] = useState(true);
     const { SurveyForTeacherStudentList } = useSelector((state) => state.survey);
+console.log('ssssss ', dashboardTotal);
 
 
     useEffect(() => {
@@ -159,7 +160,7 @@ export default function Dashboard() {
                     <div className="bg-white rounded-lg shadow-sm p-4 lg:p-6 hover:shadow-md transition-shadow">
                         <div className="flex items-center gap-2 lg:gap-3 mb-3 lg:mb-4">
                             <BookCheck className="text-green-500 flex-shrink-0" size={20} />
-                            <span className="text-gray-600 text-xs lg:text-sm font-medium">Số môn đã học</span>
+                            <span className="text-gray-600 text-xs lg:text-sm font-medium">{role ? 'Tổng số giáo viên' : 'Số môn đã học'}</span>
                         </div>
                         <div className="flex items-center justify-between border-l-4 border-green-400 pl-3 lg:pl-4">
                             <p className="text-2xl lg:text-4xl font-semibold text-green-500">
@@ -172,7 +173,7 @@ export default function Dashboard() {
                     <div className="bg-white rounded-lg shadow-sm p-4 lg:p-6 hover:shadow-md transition-shadow">
                         <div className="flex items-center gap-2 lg:gap-3 mb-3 lg:mb-4">
                             <BookX className="text-red-500 flex-shrink-0" size={20} />
-                            <span className="text-gray-600 text-xs lg:text-sm font-medium">Số môn chưa học</span>
+                            <span className="text-gray-600 text-xs lg:text-sm font-medium">{role ? 'Tổng số cơ sở' : 'Số môn chưa học'}</span>
                         </div>
                         <div className="flex items-center justify-between border-l-4 border-red-400 pl-3 lg:pl-4">
                             <p className="text-2xl lg:text-4xl font-semibold text-red-500">
