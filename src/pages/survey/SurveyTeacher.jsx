@@ -85,7 +85,7 @@ export default function SurveyTeacher() {
                             <nav className="-mb-px flex space-x-8">
                                 <button
                                     onClick={() => setActiveTab("not-surveyed")}
-                                    className={`py-4 px-1 border-b-2 text-lg transition-all whitespace-nowrap ${activeTab === "not-surveyed"
+                                    className={`py-4 px-1 border-b-2 text-lg transition-all whitespace-nowrap cursor-pointer ${activeTab === "not-surveyed"
                                             ? "border-[#337ab7] text-[#337ab7] font-bold" // Thêm font-bold ở đây
                                             : "border-transparent text-gray-500 font-medium hover:text-gray-700 hover:border-gray-300"
                                         }`}
@@ -95,7 +95,7 @@ export default function SurveyTeacher() {
 
                                 <button
                                     onClick={() => setActiveTab("surveyed")}
-                                    className={`py-4 px-1 border-b-2 text-lg transition-all whitespace-nowrap ${activeTab === "surveyed"
+                                    className={`py-4 px-1 border-b-2 text-lg transition-all whitespace-nowrap cursor-pointer ${activeTab === "surveyed"
                                             ? "border-[#337ab7] text-[#337ab7] font-bold" // Thêm font-bold ở đây
                                             : "border-transparent text-gray-500 font-medium hover:text-gray-700 hover:border-gray-300"
                                         }`}

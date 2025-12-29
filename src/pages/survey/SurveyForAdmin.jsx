@@ -133,7 +133,7 @@ export default function SurveyTeacher() {
                             <nav className="-mb-px flex space-x-8">
                                 <button
                                     onClick={() => handleTabChange("surveyedOther")}
-                                    className={`py-4 px-1 border-b-2 text-lg transition-all whitespace-nowrap ${activeTab === "surveyedOther"
+                                    className={`py-4 px-1 border-b-2 text-lg transition-all whitespace-nowrap cursor-pointer ${activeTab === "surveyedOther"
                                         ? "border-[#337ab7] text-[#337ab7] font-bold"
                                         : "border-transparent text-gray-500 font-medium hover:text-gray-700 hover:border-gray-300"
                                         }`}
@@ -143,7 +143,7 @@ export default function SurveyTeacher() {
 
                                 <button
                                     onClick={() => handleTabChange("surveyedTeacher")}
-                                    className={`py-4 px-1 border-b-2 text-lg transition-all whitespace-nowrap ${activeTab === "surveyedTeacher"
+                                    className={`py-4 px-1 border-b-2 text-lg transition-all whitespace-nowrap cursor-pointer ${activeTab === "surveyedTeacher"
                                         ? "border-[#337ab7] text-[#337ab7] font-bold"
                                         : "border-transparent text-gray-500 font-medium hover:text-gray-700 hover:border-gray-300"
                                         }`}
