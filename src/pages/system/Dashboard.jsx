@@ -9,6 +9,7 @@ import ImageLoader from "../../components/ImageLoader.jsx";
 import { TypeUserIDCons } from "../../utils/constants";
 import SurveyNotification from '../../components/NotifySurvey.jsx';
 import { getTemplateSurveyForTeacherStudent } from '../../redux/surveySlice.js'
+import { set } from "date-fns";
 
 export default function Dashboard() {
     const dispatch = useDispatch();
@@ -16,6 +17,7 @@ export default function Dashboard() {
     const { dashboardTotal, scheduleByMonth, scheduleByExamination, listInformation } = useSelector((state) => state.dashboard);
     const { userInfo } = useSelector((state) => state.auth);
     const [dataSchedule, setDataSchedule] = useState([]); // lịch học lớp của bạn
+    const [permission, setPermission] = useState(false); // lịch học lớp của bạn
     let role = userInfo?.TypeUserID !== TypeUserIDCons.Student && userInfo?.TypeStudentID !== TypeUserIDCons.Student
 
     // state khảo sát chưa điền
@@ -26,6 +28,11 @@ export default function Dashboard() {
         // Fetch danh sách khảo sát chưa điền
         const fetchPendingSurveys = async () => {
             const res = await dispatch(getTemplateSurveyForTeacherStudent());
+            if (userInfo.TypeUserID === res.Permission) {
+                setPermission(true);
+            } else {
+                setPermission(false);
+            }
 
             if (res.message) {
                 toast.error(res.message);
@@ -365,11 +372,11 @@ export default function Dashboard() {
                     Copyright © 2025 by G&BSoft
                 </div>
 
-                {showSurvey && (
+                {(permission && showSurvey) && (
                     <SurveyNotification
                         surveys={SurveyForTeacherStudentList}
                         onClose={() => setShowSurvey(false)}
-                        onNavigate={( stateData) =>
+                        onNavigate={(stateData) =>
                             navigate(`/survey-other-detail`, { state: { apiResponse: stateData } })
                         }
                     />
