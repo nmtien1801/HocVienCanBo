@@ -186,7 +186,7 @@ export default function SurveyDetailClient() {
         let res = await ApiSurvey.UpdateSurveyAnswerClientApi(postModel);
         if (res === true) {
             toast.success("Đã gửi khảo sát thành công!");
-            navigate('/dashboard');
+            navigate('/home');
         } else {
             toast.error(res.message || "Gửi khảo sát thất bại.");
         }

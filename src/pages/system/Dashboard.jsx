@@ -21,8 +21,6 @@ export default function Dashboard() {
     // state khảo sát chưa điền
     const [showSurvey, setShowSurvey] = useState(true);
     const { SurveyForTeacherStudentList } = useSelector((state) => state.survey);
-console.log('ssssss ', dashboardTotal);
-
 
     useEffect(() => {
         // Fetch danh sách khảo sát chưa điền
