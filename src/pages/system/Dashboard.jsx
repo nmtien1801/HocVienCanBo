@@ -27,7 +27,7 @@ export default function Dashboard() {
     useEffect(() => {
         if (SurveyForTeacherStudentList && SurveyForTeacherStudentList.length > 0 && userInfo?.TypeUserID) {
             const hasPermission = SurveyForTeacherStudentList.some(item =>
-                item.Permission === userInfo.TypeUserID || item.TypeUserID === userInfo.TypeUserID
+                item.Permission === userInfo.TypeUserID || item.Permission === 4
             );
 
             setPermission(hasPermission);
