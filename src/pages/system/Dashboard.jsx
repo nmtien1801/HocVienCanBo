@@ -25,14 +25,21 @@ export default function Dashboard() {
     const { SurveyForTeacherStudentList } = useSelector((state) => state.survey);
 
     useEffect(() => {
+        if (SurveyForTeacherStudentList && SurveyForTeacherStudentList.length > 0 && userInfo?.TypeUserID) {
+            const hasPermission = SurveyForTeacherStudentList.some(item =>
+                item.Permission === userInfo.TypeUserID || item.TypeUserID === userInfo.TypeUserID
+            );
+
+            setPermission(hasPermission);
+        } else {
+            setPermission(false);
+        }
+    }, [SurveyForTeacherStudentList, userInfo]);
+
+    useEffect(() => {
         // Fetch danh sách khảo sát chưa điền
         const fetchPendingSurveys = async () => {
             const res = await dispatch(getTemplateSurveyForTeacherStudent());
-            if (userInfo.TypeUserID === res.Permission) {
-                setPermission(true);
-            } else {
-                setPermission(false);
-            }
 
             if (res.message) {
                 toast.error(res.message);
