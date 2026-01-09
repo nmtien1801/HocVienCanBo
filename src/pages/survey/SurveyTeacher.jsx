@@ -90,7 +90,7 @@ export default function SurveyTeacher() {
 
                                 <button
                                     onClick={() => setActiveTab(true)}
-                                    className={`py-4 px-1 border-b-2 text-lg transition-all whitespace-nowrap cursor-pointer ${activeTab === "surveyed"
+                                    className={`py-4 px-1 border-b-2 text-lg transition-all whitespace-nowrap cursor-pointer ${activeTab === true
                                         ? "border-[#337ab7] text-[#337ab7] font-bold" // Thêm font-bold ở đây
                                         : "border-transparent text-gray-500 font-medium hover:text-gray-700 hover:border-gray-300"
                                         }`}
@@ -104,7 +104,7 @@ export default function SurveyTeacher() {
                         <div className="p-6 space-y-4">
                             {SurveysByStudentList.length === 0 ? (
                                 <div className="text-center text-gray-500 py-8 text-sm italic">
-                                    Không có dữ liệu {activeTab === "surveyed" ? "đã khảo sát" : "chưa khảo sát"}.
+                                    Không có dữ liệu {activeTab === true ? "đã khảo sát" : "chưa khảo sát"}.
                                 </div>
                             ) : (
                                 SurveysByStudentList.map((item, index) => {
@@ -120,7 +120,7 @@ export default function SurveyTeacher() {
                                             <div className="flex-1">
                                                 <h3 className="font-semibold text-[#337ab7] text-sm mb-1 transition-colors group-hover:text-gray-800">
                                                     {item.TemplateSurveyName} - {item.SubjectCode} - {item.SubjectName}{" "}
-                                                    <span className="text-red-600 font-semibold">{activeTab === "surveyed" ? "(đã khảo sát)" : "(chưa khảo sát)"}</span>
+                                                    <span className="text-red-600 font-semibold">{activeTab === true ? "(đã khảo sát)" : "(chưa khảo sát)"}</span>
                                                 </h3>
                                                 <div className="font-semibold text-[#337ab7] text-sm transition-colors group-hover:text-gray-800">
                                                     Giảng viên: {item.TeacherName}
