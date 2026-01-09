@@ -154,6 +154,42 @@ const TrackingOrder = () => {
         }
     };
 
+    // Xuất các comment trong modal ra Excel
+    const exportCommentsToExcel = async () => {
+        if (!currentComments || currentComments.length === 0) {
+            toast.warning("Không có phản hồi để xuất");
+            return;
+        }
+
+        setIsExporting(true);
+        try {
+            const data = currentComments.map((c, i) => ({
+                STT: i + 1,
+                "Nội dung phản hồi": typeof c === 'object' ? (c.ContentAnswer || '') : c,
+                "Người khảo sát": (c && c.UserComment) || '',
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(data);
+            worksheet['!cols'] = [
+                { wch: 5 },
+                { wch: 80 },
+                { wch: 30 },
+            ];
+
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'PhanHoi');
+
+            const safeTitle = (selectedQuestionTitle || 'phan_hoi').replace(/[\\/:*?"<>|]/g, '_').slice(0, 80);
+            XLSX.writeFile(workbook, `${safeTitle}_phan_hoi_${new Date().getTime()}.xlsx`);
+            toast.success(`Đã xuất ${data.length} phản hồi thành công`);
+        } catch (err) {
+            console.error('Export comments error:', err);
+            toast.error('Lỗi khi xuất phản hồi');
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
     // --------------------------------------------------------- LOGIC HIỂN THỊ CỘT
     const [selectedCriteria, setSelectedCriteria] = useState([]);
 
@@ -445,7 +481,6 @@ const TrackingOrder = () => {
                         <div className="p-5 border-b border-gray-100 flex justify-between items-start bg-gray-50/50">
                             <div className="pr-8">
                                 <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                                    <Users className="text-blue-600" size={20} />
                                     Chi tiết ý kiến phản hồi
                                 </h3>
                                 <p className="text-sm text-gray-50 font-medium bg-blue-600 px-2 py-0.5 rounded mt-2 inline-block">
@@ -504,6 +539,22 @@ const TrackingOrder = () => {
                             <span className="text-xs text-gray-500 font-medium uppercase tracking-wider">
                                 Tổng số: {currentComments?.length || 0} phản hồi
                             </span>
+                            <div>
+                                <button
+                                    onClick={exportCommentsToExcel}
+                                    disabled={isExporting || !(currentComments && currentComments.length > 0)}
+                                    className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                                >
+                                    {isExporting ? (
+                                        <>
+                                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                            <span>Đang xuất...</span>
+                                        </>
+                                    ) : (
+                                        <span>Xuất Excel</span>
+                                    )}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
