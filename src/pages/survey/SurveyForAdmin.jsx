@@ -7,7 +7,7 @@ import DropdownSearch from '../../components/FormFields/DropdownSearch.jsx';
 import { getTemplateTrackingTeacher } from '../../redux/reportSlice.js'
 import { formatDate } from "../../utils/constants.js";
 
-export default function SurveyTeacher() {
+export default function SurveyForAdmin() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
