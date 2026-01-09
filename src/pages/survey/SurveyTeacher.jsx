@@ -15,7 +15,7 @@ export default function SurveyTeacher() {
 
     // --- 1. State cho phân trang ---
     const [currentPage, setCurrentPage] = useState(1);
-    const pageSize = 1;
+    const pageSize = 20;
 
     // --------------------------------------- Initial
     useEffect(() => {
