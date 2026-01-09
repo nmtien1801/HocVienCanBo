@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { BarChart3, CheckCircle2, Search, FileDown, Users, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
+import { BarChart3, CheckCircle2, Search, FileDown, Users, Filter, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { getReportTrackingOrder } from '../../redux/reportSlice.js';
 import { useSelector, useDispatch } from "react-redux";
@@ -18,6 +18,10 @@ const TrackingOrder = () => {
     const [limit, setLimit] = useState(20);
     const [isLoading, setIsLoading] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
+
+    const [showCommentModal, setShowCommentModal] = useState(false); // modal câu hỏi tự luận
+    const [currentComments, setCurrentComments] = useState([]);
+    const [selectedQuestionTitle, setSelectedQuestionTitle] = useState("");
 
     // ----------------------------------- FETCH DATA
     const fetchReport = async (customPage = page, customLimit = limit) => {
@@ -69,6 +73,13 @@ const TrackingOrder = () => {
     const handleSearch = () => {
         setPage(1);
         fetchReport();
+    };
+
+    // Hàm mở modal tự luận
+    const handleOpenComments = (row) => {
+        setCurrentComments(row.lstComment || []);
+        setSelectedQuestionTitle(row.TitleCriteriaEvaluation);
+        setShowCommentModal(true);
     };
 
     // ----------------------------------- EXPORT EXCEL FULL DATA
@@ -297,15 +308,43 @@ const TrackingOrder = () => {
                                                 {groupedReportList.map((row, index) => (
                                                     <tr key={row.EvaluationID || index} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                                                         <td className="p-4 text-sm text-gray-600">{(page - 1) * limit + index + 1}</td>
-                                                        <td className="p-4 text-sm text-gray-800 font-medium">{row.TitleCriteriaEvaluation}</td>
-                                                        {EvaluationOrderList.filter(c => selectedCriteria.includes(c.EvaluationID)).map(c => {
-                                                            const evaluationData = row.lstEvalutionTracking?.find(e => e.EvaluationID === c.EvaluationID);
-                                                            return (
-                                                                <td key={c.EvaluationID} className="p-4 text-sm text-center text-gray-600">
-                                                                    {evaluationData ? evaluationData.NumberTracking : 0}
-                                                                </td>
-                                                            );
-                                                        })}
+                                                        <td className="p-4 text-sm font-medium">
+                                                            {row.TypeCriteria === 2 ? (
+                                                                /* Nếu là tự luận -> Cho phép bấm vào để xem chi tiết */
+                                                                <button
+                                                                    onClick={() => handleOpenComments(row)}
+                                                                    className="text-blue-600 hover:text-blue-800 hover:underline text-left flex items-center gap-1 group/link"
+                                                                    title="Bấm để xem danh sách ý kiến phản hồi"
+                                                                >
+                                                                    {row.TitleCriteriaEvaluation}
+                                                                </button>
+                                                            ) : (
+                                                                /* Nếu là trắc nghiệm -> Chỉ hiện text bình thường */
+                                                                <span className="text-gray-800">{row.TitleCriteriaEvaluation}</span>
+                                                            )}
+                                                        </td>
+
+                                                        {row.TypeCriteria === 2 ? (
+                                                            /* TRƯỜNG HỢP CÂU HỎI TỰ LUẬN: Merge các cột đánh giá */
+                                                            <td
+                                                                colSpan={selectedCriteria.length}
+                                                                className="p-4 text-sm text-center text-blue-600 bg-blue-50/40 italic font-semibold"
+                                                            >
+                                                                Có {row.lstComment.length} người khảo sát nội dung này
+                                                            </td>
+                                                        ) : (
+                                                            /* TRƯỜNG HỢP CÂU HỎI TRẮC NGHIỆM */
+                                                            <>
+                                                                {EvaluationOrderList.filter(c => selectedCriteria.includes(c.EvaluationID)).map(c => {
+                                                                    const evaluationData = row.lstEvalutionTracking?.find(e => e.EvaluationID === c.EvaluationID);
+                                                                    return (
+                                                                        <td key={c.EvaluationID} className="p-4 text-sm text-center text-gray-600">
+                                                                            {evaluationData ? evaluationData.NumberTracking : 0}
+                                                                        </td>
+                                                                    );
+                                                                })}
+                                                            </>
+                                                        )}
                                                     </tr>
                                                 ))}
 
@@ -396,6 +435,79 @@ const TrackingOrder = () => {
                     )}
                 </div>
             </div>
+
+            {/* MODAL CHI TIẾT CÂU TRẢ LỜI TỰ LUẬN */}
+            {showCommentModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden border border-gray-200">
+
+                        {/* Header Modal */}
+                        <div className="p-5 border-b border-gray-100 flex justify-between items-start bg-gray-50/50">
+                            <div className="pr-8">
+                                <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                                    <Users className="text-blue-600" size={20} />
+                                    Chi tiết ý kiến phản hồi
+                                </h3>
+                                <p className="text-sm text-gray-50 font-medium bg-blue-600 px-2 py-0.5 rounded mt-2 inline-block">
+                                    {selectedQuestionTitle}
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => setShowCommentModal(false)}
+                                className="p-2 hover:bg-gray-200 text-gray-500 hover:text-gray-700 rounded-full transition-all"
+                            >
+                                <X size={24} className="rotate-90 md:rotate-0" />
+                            </button>
+                        </div>
+
+                        {/* Body: Danh sách câu trả lời */}
+                        <div className="p-6 overflow-y-auto space-y-4 bg-white">
+                            {currentComments && currentComments.length > 0 ? (
+                                currentComments.map((comment, i) => (
+                                    <div key={comment.SurveyID || i} className="group flex gap-4 p-4 bg-gray-50 hover:bg-blue-50/50 rounded-xl border border-gray-100 hover:border-blue-200 transition-all duration-200">
+                                        {/* Số thứ tự */}
+                                        <div className="flex-shrink-0 w-8 h-8 bg-white border border-gray-200 text-gray-600 group-hover:text-blue-600 group-hover:border-blue-300 rounded-lg flex items-center justify-center text-xs font-bold shadow-sm">
+                                            {i + 1}
+                                        </div>
+
+                                        {/* Nội dung phản hồi */}
+                                        <div className="flex-1">
+                                            <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+                                                {/* Fix lỗi render Object bằng cách truy cập đúng key */}
+                                                {typeof comment === 'object'
+                                                    ? (comment.ContentAnswer || "Không có nội dung câu trả lời")
+                                                    : comment}
+                                            </div>
+
+                                            {comment.UserComment && (
+                                                <div className="mt-2 pt-2 border-t border-dashed border-gray-200">
+                                                    <p className="text-xs text-blue-600 font-medium italic">
+                                                        Người khảo sát: <span className="text-gray-500 font-normal">{comment.UserComment}</span>
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="text-center py-20">
+                                    <div className="bg-gray-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <Search className="text-gray-300" size={30} />
+                                    </div>
+                                    <p className="text-gray-400 font-medium">Chưa có dữ liệu phản hồi cho câu hỏi này.</p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Footer Modal */}
+                        <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-between items-center">
+                            <span className="text-xs text-gray-500 font-medium uppercase tracking-wider">
+                                Tổng số: {currentComments?.length || 0} phản hồi
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
