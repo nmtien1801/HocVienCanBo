@@ -1,7 +1,7 @@
 import { ApiManager } from "./ApiManager";
 
 const ApiSurvey = {
-    getSurveySubjectByStudentIDApi: (page, limit) => ApiManager.get(`/survey/get-list-survey-subject-by-studentid?page=${page}&limit=${limit}`),
+    getSurveySubjectByStudentIDApi: (page, limit, StatusID_Survey) => ApiManager.get(`/survey/get-list-survey-subject-by-studentid?page=${page}&limit=${limit}&StatusID_Survey=${StatusID_Survey}`),
     getSurveyByIDApi: (surveyID) => ApiManager.get(`/survey/get-by-id?surveyID=${surveyID}`),
     CreateSurveyTeacherApi: (model) => ApiManager.post(`/survey/create-teacher`, model),
     UpdateTemplateSurveyApi: (model) => ApiManager.post(`/survey/update-teacher`, model),

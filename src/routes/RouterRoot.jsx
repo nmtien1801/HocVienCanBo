@@ -88,7 +88,7 @@ const SurveyProtectedRoute = ({ children, SurveysByStudentList }) => {
 
   // Kiểm tra có survey nào chưa hoàn thành không
   const hasIncompleteSurvey = SurveysByStudentList.some(item => {
-    return item && item.StatusID_Survey === null;
+    return item && item.StatusID_Survey === false;
   });
 
   // Nếu có survey chưa hoàn thành
@@ -106,7 +106,6 @@ function RouterRoot() {
   const dispatch = useDispatch();
   const { userInfo, isLoading, hasCheckedAuth } = useSelector((state) => state.auth);
   const { SurveysByStudentList } = useSelector((state) => state.survey);
-  const [listSurvey, setListSurvey] = useState([]);
 
   useEffect(() => {
     // Chỉ gọi API khi user đã login và đã check auth xong
@@ -115,15 +114,11 @@ function RouterRoot() {
     }
 
     const fetchSurveyByID = async () => {
-      const res = await dispatch(
-        getSurveySubjectByStudentID({ page: 1, limit: 20 })
-      );
+      const res = await dispatch(getSurveySubjectByStudentID({ page: 1, limit: 20, StatusID_Survey: false }));
 
       if (!res.payload || !res.payload.data) {
         toast.error(res.payload?.message);
-      } else {
-        setListSurvey(res.payload.data);
-      }
+      } 
     };
 
     fetchSurveyByID();

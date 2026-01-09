@@ -12,10 +12,11 @@ const initialState = {
 
 export const getSurveySubjectByStudentID = createAsyncThunk(
   "survey/getSurveySubjectByStudentID",
-  async ({ page, limit }, thunkAPI) => {
+  async ({ page, limit, StatusID_Survey }, thunkAPI) => {
     const response = await ApiSurvey.getSurveySubjectByStudentIDApi(
       page,
-      limit
+      limit,
+      StatusID_Survey
     );
     return response.data;
   }

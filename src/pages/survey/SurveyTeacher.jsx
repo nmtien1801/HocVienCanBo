@@ -11,18 +11,18 @@ export default function SurveyTeacher() {
 
     const { SurveysByStudentList, SurveysByStudentTotal } = useSelector((state) => state.survey);
 
-    const [activeTab, setActiveTab] = useState("not-surveyed");
+    const [activeTab, setActiveTab] = useState(false);
 
     // --- 1. State cho phân trang ---
     const [currentPage, setCurrentPage] = useState(1);
-    const pageSize = 20;
+    const pageSize = 1;
 
     // --------------------------------------- Initial
     useEffect(() => {
         // lấy phiếu khảo sát của học viên (bắt buộc nộp)
         const fetchSurveyByID = async () => {
             const res = await dispatch(
-                getSurveySubjectByStudentID({ page: currentPage, limit: pageSize })
+                getSurveySubjectByStudentID({ page: currentPage, limit: pageSize, StatusID_Survey: activeTab })
             );
 
             if (!res.payload || !res.payload.data) {
@@ -31,12 +31,7 @@ export default function SurveyTeacher() {
         };
 
         fetchSurveyByID();
-    }, [dispatch, currentPage]); // Thêm currentPage vào dependency
-
-    // Lọc theo tab
-    const displayList = SurveysByStudentList.filter((item) =>
-        activeTab === "surveyed" ? item.StatusID_Survey : !item.StatusID_Survey
-    );
+    }, [dispatch, currentPage, activeTab]);
 
     // -------------------------------------------------- Action
     const handleDetailSurvey = async (item) => {
@@ -84,20 +79,20 @@ export default function SurveyTeacher() {
                         <div className="px-6 border-b border-gray-200">
                             <nav className="-mb-px flex space-x-8">
                                 <button
-                                    onClick={() => setActiveTab("not-surveyed")}
-                                    className={`py-4 px-1 border-b-2 text-lg transition-all whitespace-nowrap cursor-pointer ${activeTab === "not-surveyed"
-                                            ? "border-[#337ab7] text-[#337ab7] font-bold" // Thêm font-bold ở đây
-                                            : "border-transparent text-gray-500 font-medium hover:text-gray-700 hover:border-gray-300"
+                                    onClick={() => setActiveTab(false)}
+                                    className={`py-4 px-1 border-b-2 text-lg transition-all whitespace-nowrap cursor-pointer ${activeTab === false
+                                        ? "border-[#337ab7] text-[#337ab7] font-bold" // Thêm font-bold ở đây
+                                        : "border-transparent text-gray-500 font-medium hover:text-gray-700 hover:border-gray-300"
                                         }`}
                                 >
                                     Chưa khảo sát
                                 </button>
 
                                 <button
-                                    onClick={() => setActiveTab("surveyed")}
+                                    onClick={() => setActiveTab(true)}
                                     className={`py-4 px-1 border-b-2 text-lg transition-all whitespace-nowrap cursor-pointer ${activeTab === "surveyed"
-                                            ? "border-[#337ab7] text-[#337ab7] font-bold" // Thêm font-bold ở đây
-                                            : "border-transparent text-gray-500 font-medium hover:text-gray-700 hover:border-gray-300"
+                                        ? "border-[#337ab7] text-[#337ab7] font-bold" // Thêm font-bold ở đây
+                                        : "border-transparent text-gray-500 font-medium hover:text-gray-700 hover:border-gray-300"
                                         }`}
                                 >
                                     Đã khảo sát
@@ -107,13 +102,13 @@ export default function SurveyTeacher() {
 
                         {/* Danh sách */}
                         <div className="p-6 space-y-4">
-                            {displayList.length === 0 ? (
+                            {SurveysByStudentList.length === 0 ? (
                                 <div className="text-center text-gray-500 py-8 text-sm italic">
                                     Không có dữ liệu {activeTab === "surveyed" ? "đã khảo sát" : "chưa khảo sát"}.
                                 </div>
                             ) : (
-                                displayList.map((item, index) => {
-                                    const isLast = index === displayList.length - 1;
+                                SurveysByStudentList.map((item, index) => {
+                                    const isLast = index === SurveysByStudentList.length - 1;
 
                                     return (
                                         <div
@@ -138,7 +133,7 @@ export default function SurveyTeacher() {
                         </div>
 
                         {/* --- 4. Giao diện Phân trang (Pagination) --- */}
-                        {SurveysByStudentTotal > pageSize && (
+                        {SurveysByStudentTotal > 0 && SurveysByStudentTotal > pageSize && SurveysByStudentList.length > 0 && (
                             <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
                                 <div className="text-sm text-gray-500">
                                     Trang <span className="font-medium">{currentPage}</span> / <span className="font-medium">{totalPages}</span>
