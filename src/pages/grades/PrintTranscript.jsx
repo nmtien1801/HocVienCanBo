@@ -147,8 +147,8 @@ export default function TimetableClass() {
         'Họ và tên': row.StudentName,
         'Mã môn': row.SubjectCode,
         'Tên môn': row.SubjectName,
-        'Điểm lần 1': row.Score11,
-        'Điểm lần 2': row.Score22,
+        'Điểm lần 1': row.Score1,
+        'Điểm lần 2': row.Score2,
         'Ngày vắng': row.DateOff,
         'Ghi chú': row.Description
       }));
@@ -301,12 +301,12 @@ export default function TimetableClass() {
     return pointSum.filter(row => row && row.StudentID).map((row, index) => (
       <tr key={index} className={`border-b border-gray-200 hover:bg-gray-50 ${index % 2 === 1 ? 'bg-gray-50' : 'bg-white'}`}>
         <td className="px-4 py-3 border-r border-gray-200 text-center">{row.STT}</td>
-        <td className="px-4 py-3 border-r border-gray-200 text-center">{row.StudentID}</td>
+        <td className="px-4 py-3 border-r border-gray-200 text-center">{row.StudentCode}</td>
         <td className="px-4 py-3 border-r border-gray-200">{row.StudentName}</td>
         <td className="px-4 py-3 border-r border-gray-200 text-center">{row.SubjectCode}</td>
         <td className="px-4 py-3 border-r border-gray-200 text-center">{row.SubjectName}</td>
-        <td className="px-4 py-3 border-r border-gray-200 text-center">{row.Score11}</td>
-        <td className="px-4 py-3 border-r border-gray-200 text-center">{row.Score22}</td>
+        <td className="px-4 py-3 border-r border-gray-200 text-center">{row.Score1}</td>
+        <td className="px-4 py-3 border-r border-gray-200 text-center">{row.Score2}</td>
         <td className="px-4 py-3 border-r border-gray-200 text-center">{row.DateOff}</td>
         <td className="px-4 py-3 text-center">{row.Description}</td>
       </tr>

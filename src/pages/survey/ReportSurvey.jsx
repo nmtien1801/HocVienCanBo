@@ -20,6 +20,8 @@ const ReportSurvey = () => {
     const [selectedTeacher, setSelectedTeacher] = useState(0);
     const [selectedTemplateSurvey, setSelectedTemplateSurvey] = useState(0);
     const [totalParticipants, setTotalParticipants] = useState(0);
+    const [isTypeCriteria, setIsTypeCriteria] = useState(true); // true: trắc nghiệm, false: tự luận
+console.log('sssss ', SurveyReportList);
 
     // ---------------------------------------------------  PHÂN TRANG
     const [page, setPage] = useState(1);
