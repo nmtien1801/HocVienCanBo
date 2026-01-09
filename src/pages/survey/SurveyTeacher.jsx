@@ -34,6 +34,11 @@ export default function SurveyTeacher() {
     }, [dispatch, currentPage, activeTab]);
 
     // -------------------------------------------------- Action
+    const handleTabChange = (status) => {
+        setActiveTab(status);
+        setCurrentPage(1); // RESET về trang 1 khi đổi tab để tránh lỗi lệch trang
+    };
+    
     const handleDetailSurvey = async (item) => {
         if (item.SurveyID !== null) {
             navigate(`/survey-detail?id=${item.SurveyID}&submit=${item.StatusID_Survey}`)
@@ -79,7 +84,7 @@ export default function SurveyTeacher() {
                         <div className="px-6 border-b border-gray-200">
                             <nav className="-mb-px flex space-x-8">
                                 <button
-                                    onClick={() => setActiveTab(false)}
+                                    onClick={() => handleTabChange(false)}
                                     className={`py-4 px-1 border-b-2 text-lg transition-all whitespace-nowrap cursor-pointer ${activeTab === false
                                         ? "border-[#337ab7] text-[#337ab7] font-bold" // Thêm font-bold ở đây
                                         : "border-transparent text-gray-500 font-medium hover:text-gray-700 hover:border-gray-300"
@@ -89,7 +94,7 @@ export default function SurveyTeacher() {
                                 </button>
 
                                 <button
-                                    onClick={() => setActiveTab(true)}
+                                    onClick={() => handleTabChange(true)}
                                     className={`py-4 px-1 border-b-2 text-lg transition-all whitespace-nowrap cursor-pointer ${activeTab === true
                                         ? "border-[#337ab7] text-[#337ab7] font-bold" // Thêm font-bold ở đây
                                         : "border-transparent text-gray-500 font-medium hover:text-gray-700 hover:border-gray-300"
