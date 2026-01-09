@@ -170,44 +170,65 @@ const ReportSurvey = () => {
                 return;
             }
 
-            // Gộp các câu hỏi trùng nhau từ full data
             const fullGroupedData = groupDataByQuestion(fullData.data);
-
             const activeCriteria = EvaluationList.filter(c => selectedCriteria.includes(c.EvaluationID));
 
-            // 1. Dữ liệu các hàng câu hỏi
-            const excelData = fullGroupedData.map((row, index) => {
-                const rowData = {
-                    "STT": index + 1,
-                    "Nội dung câu hỏi": row.TitleCriteriaEvaluation,
-                };
-                activeCriteria.forEach(c => {
-                    const evalData = row.lstEvalutionTracking?.find(e => e.EvaluationID === c.EvaluationID);
-                    rowData[c.EvaluationName] = evalData ? evalData.NumberTracking : 0;
-                });
-                return rowData;
+            // 1. Chuẩn bị dữ liệu thô (mảng các mảng) thay vì JSON để dễ kiểm soát merge
+            // Header
+            const header = ["STT", "Nội dung câu hỏi", ...activeCriteria.map(c => c.EvaluationName)];
+            const rows = [header];
+            const merges = [];
+
+            // 2. Duyệt dữ liệu và tính toán vị trí merge
+            fullGroupedData.forEach((row, index) => {
+                const rowIndex = rows.length; // Vị trí dòng hiện tại trong file Excel (0-indexed)
+                const rowData = [
+                    index + 1,
+                    row.TitleCriteriaEvaluation
+                ];
+
+                if (row.TypeCriteria === 2) {
+                    // Nếu là tự luận: Thêm nội dung vào cột thứ 3, các cột sau để trống
+                    rowData.push(`Có ${row.lstComment?.length || 0} người khảo sát nội dung này`);
+
+                    // Thêm lệnh merge: từ cột 2 (C) đến cột cuối cùng của hàng này
+                    // s: start, e: end | r: row, c: column
+                    merges.push({
+                        s: { r: rowIndex, c: 2 },
+                        e: { r: rowIndex, c: 2 + activeCriteria.length - 1 }
+                    });
+                } else {
+                    // Nếu là trắc nghiệm: Điền số liệu bình thường
+                    activeCriteria.forEach(c => {
+                        const evalData = row.lstEvalutionTracking?.find(e => e.EvaluationID === c.EvaluationID);
+                        rowData.push(evalData ? evalData.NumberTracking : 0);
+                    });
+                }
+                rows.push(rowData);
             });
 
-            // 2. Tạo worksheet
-            const worksheet = XLSX.utils.json_to_sheet(excelData);
+            // 3. Thêm dòng tổng
+            const totalRowIndex = rows.length;
+            rows.push([]); // Dòng trống
+            rows.push(["TỔNG SỐ NGƯỜI KHẢO SÁT:", "", fullData.totalSurveys || totalParticipants]);
 
-            // 3. Thêm dòng tổng vào cuối worksheet
-            const lastRowIndex = excelData.length + 1;
-            XLSX.utils.sheet_add_aoa(worksheet, [[
-                "TỔNG SỐ NGƯỜI KHẢO SÁT:",
-                "",
-                fullData.totalSurveys || totalParticipants
-            ]], { origin: `A${lastRowIndex + 1}` });
+            // Merge chữ "TỔNG SỐ..." ở 2 ô đầu dòng cuối
+            merges.push({
+                s: { r: totalRowIndex + 1, c: 0 },
+                e: { r: totalRowIndex + 1, c: 1 }
+            });
 
-            // 4. Style cho worksheet (optional)
-            const range = XLSX.utils.decode_range(worksheet['!ref']);
-            const totalRowIndex = lastRowIndex;
+            // 4. Tạo Workbook và Worksheet
+            const worksheet = XLSX.utils.aoa_to_sheet(rows);
 
-            // Set width cho các cột
+            // Gán mảng merges vào worksheet
+            worksheet['!merges'] = merges;
+
+            // Set độ rộng cột
             worksheet['!cols'] = [
                 { wch: 5 },  // STT
                 { wch: 50 }, // Nội dung câu hỏi
-                ...activeCriteria.map(() => ({ wch: 15 })) // Các cột đánh giá
+                ...activeCriteria.map(() => ({ wch: 12 })) // Các cột đánh giá
             ];
 
             const workbook = XLSX.utils.book_new();

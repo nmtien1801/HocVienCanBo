@@ -92,7 +92,7 @@ const TrackingOrder = () => {
         setIsExporting(true);
 
         try {
-            // Fetch toàn bộ dữ liệu (page=1, limit=TrackingOrderTotal)
+            // 1. Lấy toàn bộ dữ liệu báo cáo
             const fullData = await fetchReport(1, TrackingOrderTotal);
 
             if (!fullData || !fullData.data || fullData.data.length === 0) {
@@ -101,49 +101,72 @@ const TrackingOrder = () => {
                 return;
             }
 
-            // Gộp các câu hỏi trùng nhau từ full data
+            // 2. Nhóm dữ liệu và chuẩn bị danh sách tiêu chí đang chọn
             const fullGroupedData = groupDataByQuestion(fullData.data);
-
             const activeCriteria = EvaluationOrderList.filter(c => selectedCriteria.includes(c.EvaluationID));
 
-            // 1. Dữ liệu các hàng câu hỏi
-            const excelData = fullGroupedData.map((row, index) => {
-                const rowData = {
-                    "STT": index + 1,
-                    "Nội dung câu hỏi": row.TitleCriteriaEvaluation,
-                };
-                activeCriteria.forEach(c => {
-                    const evalData = row.lstEvalutionTracking?.find(e => e.EvaluationID === c.EvaluationID);
-                    rowData[c.EvaluationName] = evalData ? evalData.NumberTracking : 0;
-                });
-                return rowData;
+            // 3. Xây dựng cấu trúc mảng các mảng (AOA) cho Excel
+            // Header row
+            const header = ["STT", "Nội dung câu hỏi", ...activeCriteria.map(c => c.EvaluationName)];
+            const rows = [header];
+            const merges = [];
+
+            fullGroupedData.forEach((row, index) => {
+                const rowIndex = rows.length; // Chỉ số dòng hiện tại (bắt đầu từ 0)
+                const rowData = [
+                    index + 1,
+                    row.TitleCriteriaEvaluation
+                ];
+
+                if (row.TypeCriteria === 2) {
+                    // TRƯỜNG HỢP TỰ LUẬN: Đưa thông báo vào cột C (index 2)
+                    rowData.push(`Có ${row.lstComment?.length || 0} người khảo sát nội dung này`);
+
+                    // Thêm lệnh merge: từ cột index 2 đến hết các cột tiêu chí
+                    merges.push({
+                        s: { r: rowIndex, c: 2 },
+                        e: { r: rowIndex, c: 2 + activeCriteria.length - 1 }
+                    });
+                } else {
+                    // TRƯỜNG HỢP TRẮC NGHIỆM: Điền số liệu từng cột
+                    activeCriteria.forEach(c => {
+                        const evalData = row.lstEvalutionTracking?.find(e => e.EvaluationID === c.EvaluationID);
+                        rowData.push(evalData ? evalData.NumberTracking : 0);
+                    });
+                }
+                rows.push(rowData);
             });
 
-            // 2. Tạo worksheet
-            const worksheet = XLSX.utils.json_to_sheet(excelData);
+            // 4. Thêm dòng tổng kết quả
+            rows.push([]); // Dòng trống cách quãng
+            const totalRowIdx = rows.length;
+            rows.push(["TỔNG SỐ NGƯỜI KHẢO SÁT:", "", fullData.totalSurveys || totalParticipants]);
 
-            // 3. Thêm dòng tổng vào cuối worksheet
-            const lastRowIndex = excelData.length + 1;
-            XLSX.utils.sheet_add_aoa(worksheet, [[
-                "TỔNG SỐ NGƯỜI KHẢO SÁT:",
-                "",
-                fullData.totalSurveys || totalParticipants
-            ]], { origin: `A${lastRowIndex + 1}` });
+            // Merge chữ "TỔNG SỐ..." ở 2 ô đầu của dòng cuối
+            merges.push({
+                s: { r: totalRowIdx, c: 0 },
+                e: { r: totalRowIdx, c: 1 }
+            });
 
-            // 4. Style cho worksheet (optional)
-            const range = XLSX.utils.decode_range(worksheet['!ref']);
-            const totalRowIndex = lastRowIndex;
+            // 5. Khởi tạo Worksheet và Workbook
+            const worksheet = XLSX.utils.aoa_to_sheet(rows);
 
-            // Set width cho các cột
+            // Gán mảng merges vào worksheet
+            worksheet['!merges'] = merges;
+
+            // Định dạng độ rộng cột
             worksheet['!cols'] = [
-                { wch: 5 },  // STT
-                { wch: 50 }, // Nội dung câu hỏi
-                ...activeCriteria.map(() => ({ wch: 15 })) // Các cột đánh giá
+                { wch: 6 },   // STT
+                { wch: 60 },  // Nội dung câu hỏi
+                ...activeCriteria.map(() => ({ wch: 15 })) // Các cột tiêu chí
             ];
 
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Báo cáo");
-            XLSX.writeFile(workbook, `Bao_cao_khao_sat_${new Date().getTime()}.xlsx`);
+
+            // Xuất file
+            const fileName = `Bao_cao_khao_sat_khac_${new Date().getTime()}.xlsx`;
+            XLSX.writeFile(workbook, fileName);
 
             toast.success(`Đã xuất ${fullGroupedData.length} câu hỏi thành công`);
         } catch (error) {
