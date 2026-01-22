@@ -22,19 +22,19 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
     Position: '', // chức vụ
     Office: '',  // cơ quan công tác
     Email: '',
+    
     FullName: '',
     Phone: '',
   });
 
   const [boiDuongInfo, setBoiDuongInfo] = useState({
     FullName: '',
-    UserID: '',
+    Email: '',  // mã số cán bộ, công chức, viên chức
     TrainingSystemName: '', // tên khóa bồi dưỡng
     TimeStart: '',
     ClassName1: '', // đơn vị tổ chức
     UnitName: '',  // địa điểm tổ chức
 
-    Email: '',
     Phone: '',
     Office: '',
     GenderID: '',
@@ -135,8 +135,8 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
       }
 
       if (classTypeID === 2) {
-        const { FullName, UserID, TrainingSystemName, TimeStart, ClassName1, UnitName } = boiDuongInfo;
-        if (!FullName || !UserID || !TrainingSystemName || !TimeStart || !ClassName1 || !UnitName) {
+        const { FullName, Email, TrainingSystemName, TimeStart, ClassName1, UnitName } = boiDuongInfo;
+        if (!FullName || !Email || !TrainingSystemName || !TimeStart || !ClassName1 || !UnitName) {
           toast.error("Vui lòng nhập đầy đủ thông tin hệ bồi dưỡng");
           return;
         }
@@ -385,16 +385,6 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
               </p>
 
               <input
-                type="email"
-                name="Email"
-                required
-                placeholder="Email"
-                className="w-full border rounded-md p-2 text-sm"
-                value={boiDuongInfo.Email}
-                onChange={handleBoiDuongChange}
-              />
-
-              <input
                 type="text"
                 name="FullName"
                 placeholder="Họ và tên"
@@ -405,9 +395,9 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
 
               <input
                 type="text"
-                name="UserID"
-                placeholder="Mã số cán bộ"
-                value={boiDuongInfo.UserID}
+                name="Email"
+                placeholder="Mã số cán bộ, công chức, viên chức"
+                value={boiDuongInfo.Email}
                 onChange={handleBoiDuongChange}
                 className="w-full border rounded-md p-2 text-sm"
               />
