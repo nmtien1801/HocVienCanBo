@@ -22,22 +22,23 @@ export const getReportTrackingTeacher = createAsyncThunk(
       teacherID,
       subjectID,
       page,
-      limit
+      limit,
     );
     return response;
-  }
+  },
 );
 
 export const getReportTrackingOrder = createAsyncThunk(
   "report/getReportTrackingOrder",
-  async ({ templateSurveyID, page, limit }, thunkAPI) => {
+  async ({ templateSurveyID, classTypeID, page, limit }, thunkAPI) => {
     const response = await ApiReport.getReportTrackingOrderApi(
       templateSurveyID,
+      classTypeID,
       page,
-      limit
+      limit,
     );
     return response;
-  }
+  },
 );
 
 export const getReportTrackingOther = createAsyncThunk(
@@ -46,17 +47,17 @@ export const getReportTrackingOther = createAsyncThunk(
     const response = await ApiReport.getReportTrackingOtherApi(page, limit);
 
     return response.data;
-  }
+  },
 );
 
 export const getTemplateTrackingTeacher = createAsyncThunk(
   "report/getTemplateTrackingTeacher",
   async ({ typeTemplate }, thunkAPI) => {
     const response = await ApiReport.getTemplateTrackingTeacherApi(
-      typeTemplate
+      typeTemplate,
     );
     return response;
-  }
+  },
 );
 
 const reportSlice = createSlice({

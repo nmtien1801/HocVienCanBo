@@ -18,7 +18,7 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
   // tên khóa bồi dưỡng
   const formattedOptions = ClassSurveyList.map(item => ({
     ...item,
-    FullDisplayName: `${item.ClassName} ${item.ClassName1}  ${item.TrainingSystemName}`
+    FullDisplayName: `${item.ClassName} - ${item.ClassName1} - ${item.TrainingSystemName}`
   }));
 
   // Thêm state để lưu thông tin Client

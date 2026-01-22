@@ -32,6 +32,7 @@ const TrackingSurveyBD = () => {
         const res = await dispatch(
             getReportTrackingOrder({
                 templateSurveyID: selectedTemplateSurvey,
+                classTypeID: 2,
                 page: customPage,
                 limit: customLimit
             })
