@@ -4,6 +4,7 @@ import SurveyNotification from '../../components/NotifySurvey.jsx';
 import { getTemplateSurveyForClient } from '../../redux/surveySlice.js'
 import { useSelector, useDispatch } from "react-redux";
 import { toast } from 'react-toastify';
+import { getListByType } from '../../redux/learningClassSlice.js';
 
 export default function Home() {
     const navigate = useNavigate();
@@ -12,6 +13,7 @@ export default function Home() {
     // state khảo sát chưa điền
     const [showSurvey, setShowSurvey] = useState(true);
     const { TemplateSurveyForClientList } = useSelector((state) => state.survey);
+    const [classTypeID, setClassTypeID] = useState(1);
 
     useEffect(() => {
         // Fetch danh sách khảo sát chưa điền
@@ -25,6 +27,16 @@ export default function Home() {
 
         fetchPendingSurveys();
     }, []);
+
+    useEffect(() => {
+        // Fetch danh sách lớp theo hệ đào tạo
+        const fetchListByType = async () => {
+            let res = await dispatch(getListByType(classTypeID));
+
+        };
+
+        fetchListByType();
+    }, [classTypeID]);
 
     // --------------------------------------- CRUD
     const handleNavigateToLogin = (type) => {
@@ -143,6 +155,7 @@ export default function Home() {
                     onNavigate={(stateData) =>
                         navigate(`/survey-client-detail`, { state: { apiResponse: stateData } })
                     }
+                    classTypeID={classTypeID} setClassTypeID={setClassTypeID}
                 />
             )}
         </div>

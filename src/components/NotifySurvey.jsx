@@ -3,11 +3,15 @@ import { X, ClipboardList, AlertCircle, ChevronRight, ChevronLeft } from 'lucide
 import ApiSurvey from '../apis/ApiSurvey';
 import { toast } from 'react-toastify';
 import { PermissionSurvey } from '../utils/constants';
+import { useSelector, useDispatch } from "react-redux";
+import DropdownSearch from '../components/FormFields/DropdownSearch.jsx';
 
-const SurveyNotification = ({ surveys = [], onClose, onNavigate }) => {
+const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, setClassTypeID }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const allKeys = Object.keys(PermissionSurvey);
+  const { ClassSurvey } = useSelector((state) => state.learningClass);
+  const [selectedClass, setSelectedClass] = useState('');
 
   // Thêm state để lưu thông tin Client
   const [clientInfo, setClientInfo] = useState({
@@ -175,6 +179,47 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate }) => {
           </div>
         </div>
 
+        {/* CHỌN HỆ ĐÀO TẠO */}
+        {isClientSurvey && <div className="p-4 mt-4">
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setClassTypeID(1)}
+              className={`flex-1 px-3 py-2 rounded-lg border text-sm font-medium transition
+        ${classTypeID === 1
+                  ? 'bg-[#0081cd] text-white border-[#0081cd]'
+                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}
+      `}
+            >
+              Hệ trung cấp
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setClassTypeID(2)}
+              className={`flex-1 px-3 py-2 rounded-lg border text-sm font-medium transition
+        ${classTypeID === 2
+                  ? 'bg-[#0081cd] text-white border-[#0081cd]'
+                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}
+      `}
+            >
+              Hệ bồi dưỡng
+            </button>
+          </div>
+
+          {/* DROPDOWN */}
+          {ClassSurvey.length > 0 && <div className="mt-4">
+            <DropdownSearch
+              options={ClassSurvey}
+              placeholder="------ chọn lớp khảo sát ------"
+              labelKey="ClassName"
+              valueKey="ClassID"
+              onChange={(e) => setSelectedClass(e.ClassID)}
+            />
+          </div>}
+
+        </div>}
+
         {/* KHU VỰC CAROUSEL */}
         <div className="p-4 relative">
           {/* Nút điều hướng trái */}
@@ -238,7 +283,7 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate }) => {
                 onChange={handleClientInfoChange}
                 className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-[#0081cd] focus:border-[#0081cd]"
               />
-               <input
+              <input
                 type="text"
                 name="Office"
                 placeholder="Đơn vị công tác"
@@ -271,7 +316,7 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate }) => {
           </button>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 

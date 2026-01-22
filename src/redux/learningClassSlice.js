@@ -2,7 +2,8 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import ApiLearningClass from "../apis/ApiLearningClass.js";
 
 const initialState = {
-  ClassLearn: []
+  ClassLearn: [],
+  ClassSurvey: [],
 };
 
 export const getClassLearnByUserID = createAsyncThunk(
@@ -10,7 +11,15 @@ export const getClassLearnByUserID = createAsyncThunk(
   async (thunkAPI) => {
     const response = await ApiLearningClass.getClassLearnByUserIDApi();
     return response;
-  }
+  },
+);
+
+export const getListByType = createAsyncThunk(
+  "learningClass/getListByType",
+  async (classTypeID) => {
+    const response = await ApiLearningClass.getListByTypeApi(classTypeID);
+    return response;
+  },
 );
 
 const learningClassSlice = createSlice({
@@ -32,6 +41,16 @@ const learningClassSlice = createSlice({
         }
       })
       .addCase(getClassLearnByUserID.rejected, (state, action) => {});
+
+    // getListByType
+    builder
+      .addCase(getListByType.pending, (state) => {})
+      .addCase(getListByType.fulfilled, (state, action) => {
+        if (action.payload) {
+          state.ClassSurvey = action.payload.data || [];
+        }
+      })
+      .addCase(getListByType.rejected, (state, action) => {});
   },
 });
 

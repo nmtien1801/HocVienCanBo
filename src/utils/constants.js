@@ -7,6 +7,11 @@ const TypeUserIDCons = {
   Administrator: 3,
 };
 
+const ClassTypeID = {
+  1: "Trung cấp",
+  2: "Bồi dưỡng"
+};
+
 const formatDate = (isoDate) => {
   if (isoDate && isoDate !== "0001-01-01T00:00:00") {
     return moment(isoDate).format("DD/MM/YYYY");
@@ -20,7 +25,7 @@ const formatToISODate = (displayDate) => {
   const m = moment(
     displayDate,
     ["YYYY-MM-DDTHH:mm:ss.SSS", "DD/MM/YYYY"],
-    true
+    true,
   );
 
   if (!m.isValid()) return "01/01/0001";
@@ -123,4 +128,5 @@ export {
   StatusID,
   formatToInputDate,
   TypeTemplateID,
+  ClassTypeID,
 };

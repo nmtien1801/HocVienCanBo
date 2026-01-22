@@ -253,6 +253,7 @@ const ManagerSurvey = () => {
         if (category) {
             setTemplateForm({
                 TemplateSurveyID: category.templateMeta?.TemplateSurveyID ?? '',
+                ClassTypeID: category.templateMeta?.ClassTypeID ?? 1,
                 TypeTemplate: 1,    // khảo sát giảng viên
                 Title: category.templateMeta?.Title ?? category.name ?? '',
                 ShorDescription: category.templateMeta?.ShorDescription ?? category.description ?? '',
