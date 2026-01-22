@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, ClipboardList, AlertCircle, ChevronRight, ChevronLeft } from 'lucide-react';
 import ApiSurvey from '../apis/ApiSurvey';
 import { toast } from 'react-toastify';
-import { PermissionSurvey } from '../utils/constants';
+import { PermissionSurvey, formatDate } from '../utils/constants';
 import { useSelector, useDispatch } from "react-redux";
 import DropdownSearch from '../components/FormFields/DropdownSearch.jsx';
 import { getTrainingSystemAddressByUserID } from '../redux/learningClassSlice.js';
@@ -19,10 +19,11 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
   const [trungCapInfo, setTrungCapInfo] = useState({
     Age: '',
     GenderID: '',
-    Position: '',
-    Office: '',
+    Position: '', // chức vụ
+    Office: '',  // cơ quan công tác
     Email: '',
     FullName: '',
+    Phone: '',
   });
 
   const [boiDuongInfo, setBoiDuongInfo] = useState({
@@ -31,8 +32,26 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
     TrainingSystemName: '', // tên khóa bồi dưỡng
     TimeStart: '',
     ClassName1: '', // đơn vị tổ chức
-    AddressLearn: ''  // địa điểm tổ chức
+    UnitName: '',  // địa điểm tổ chức
+
+    Email: '',
+    Phone: '',
+    Office: '',
+    GenderID: '',
+    Position: '',
   });
+
+  useEffect(() => {
+    if (TrainingSystemAddress && classTypeID === 2) {
+      setBoiDuongInfo(prev => ({
+        ...prev,
+        TrainingSystemName: TrainingSystemAddress.TrainingSystemName || '',
+        ClassName1: TrainingSystemAddress.ClassName1 || '',
+        TimeStart: formatDate(TrainingSystemAddress.TimeStart) || '',
+        UnitName: TrainingSystemAddress.UnitName || ''
+      }));
+    }
+  }, [TrainingSystemAddress, classTypeID]);
 
   // Hàm xử lý thay đổi input
   const handleBoiDuongChange = (e) => {
@@ -116,25 +135,20 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
       }
 
       if (classTypeID === 2) {
-        const { FullName, UserID, TrainingSystemName, TimeStart, ClassName1, AddressLearn } = boiDuongInfo;
-        if (!FullName || !UserID || !TrainingSystemName || !TimeStart || !ClassName1 || !AddressLearn) {
+        const { FullName, UserID, TrainingSystemName, TimeStart, ClassName1, UnitName } = boiDuongInfo;
+        if (!FullName || !UserID || !TrainingSystemName || !TimeStart || !ClassName1 || !UnitName) {
           toast.error("Vui lòng nhập đầy đủ thông tin hệ bồi dưỡng");
           return;
         }
       }
 
-      // let res = await ApiSurvey.CreateSurveyClientApi({
-      //   ...survey,
-      //   Email: clientInfo.Email,
-      //   FullName: clientInfo.FullName,
-      //   Phone: clientInfo.Phone,
-      //   Office: clientInfo.Office
-      // });
-
       let payload = {
         ...survey,
         ClassTypeID: classTypeID,
+        TrainingSystemID: TrainingSystemAddress ? TrainingSystemAddress.TrainingSystemID : null,
         ClassID: selectedClass ? selectedClass : null,
+        UnitID: TrainingSystemAddress ? TrainingSystemAddress.UnitID : null,
+        AddressID: TrainingSystemAddress ? TrainingSystemAddress.AddressID : null,
         ...(classTypeID === 2 ? boiDuongInfo : trungCapInfo)
       };
 
@@ -244,7 +258,7 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
         </div>
 
         {/* CHỌN HỆ ĐÀO TẠO */}
-        {isClientSurvey && <div className="p-4 mt-4">
+        {isClientSurvey && <div className="p-4">
           <div className="flex gap-2">
             <button
               type="button"
@@ -285,7 +299,7 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
         </div>}
 
         {/* KHU VỰC CAROUSEL */}
-        <div className="p-4 relative">
+        <div className="px-4 pb-4 relative">
           {/* Nút điều hướng trái */}
           {displaySurveys.length > 1 && (
             <button
@@ -322,7 +336,7 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
           {isClientSurvey && classTypeID === 1 && (
             <div className="mt-4 pt-3 border-t border-gray-100 space-y-3">
               <p className="font-semibold text-gray-700 text-sm">
-                Thông tin học viên (Hệ bồi dưỡng)
+                Thông tin học viên (Hệ trung cấp)
               </p>
 
               <input
@@ -335,37 +349,14 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
                 onChange={handleTrungCapChange}
               />
 
-               <input
-                type="text"
-                name="FullName"
-                required
-                placeholder="Họ và tên"
-                className="w-full border rounded-md p-2 text-sm"
-                value={trungCapInfo.FullName}
-                onChange={handleTrungCapChange}
-              />
-
-              <input
-                type="number"
-                name="Age"
-                placeholder="Tuổi"
-                min={18}
-                max={100}
-                value={trungCapInfo.Age}
-                onChange={handleTrungCapChange}
-                className="w-full border rounded-md p-2 text-sm"
-              />
-
-              <select
-                name="GenderID"
-                value={trungCapInfo.GenderID}
-                onChange={handleTrungCapChange}
-                className="w-full border rounded-md p-2 text-sm"
-              >
-                <option value="">-- Giới tính --</option>
-                <option value="1">Nam</option>
-                <option value="2">Nữ</option>
-              </select>
+              <div className="flex gap-2">
+                <input type="number" name="Age" placeholder="Tuổi" min={18} max={100} value={trungCapInfo.Age} onChange={handleTrungCapChange} className="w-1/2 border rounded-md p-2 text-sm" />
+                <select name="GenderID" value={trungCapInfo.GenderID} onChange={handleTrungCapChange} className="w-1/2 border rounded-md p-2 text-sm">
+                  <option value="">-- Giới tính --</option>
+                  <option value="1">Nam</option>
+                  <option value="2">Nữ</option>
+                </select>
+              </div>
 
               <input
                 type="text"
@@ -390,8 +381,18 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
           {isClientSurvey && classTypeID === 2 && (
             <div className="mt-4 pt-3 border-t border-gray-100 space-y-3">
               <p className="font-semibold text-gray-700 text-sm">
-                Thông tin khóa học (Hệ trung cấp)
+                Thông tin khóa học (Hệ bồi dưỡng)
               </p>
+
+              <input
+                type="email"
+                name="Email"
+                required
+                placeholder="Email"
+                className="w-full border rounded-md p-2 text-sm"
+                value={boiDuongInfo.Email}
+                onChange={handleBoiDuongChange}
+              />
 
               <input
                 type="text"
@@ -440,9 +441,9 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
 
               <input
                 type="text"
-                name="AddressLearn"
+                name="UnitName"
                 placeholder="Địa điểm tổ chức"
-                value={boiDuongInfo.AddressLearn}
+                value={boiDuongInfo.UnitName}
                 onChange={handleBoiDuongChange}
                 className="w-full border rounded-md p-2 text-sm"
               />
