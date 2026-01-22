@@ -5,12 +5,14 @@ import { toast } from 'react-toastify';
 import { PermissionSurvey } from '../utils/constants';
 import { useSelector, useDispatch } from "react-redux";
 import DropdownSearch from '../components/FormFields/DropdownSearch.jsx';
+import { getTrainingSystemAddressByUserID } from '../redux/learningClassSlice.js';
 
 const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, setClassTypeID }) => {
+  const dispatch = useDispatch();
   const [isVisible, setIsVisible] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const allKeys = Object.keys(PermissionSurvey);
-  const { ClassSurvey } = useSelector((state) => state.learningClass);
+  const { ClassSurveyList, TrainingSystemAddress } = useSelector((state) => state.learningClass);
   const [selectedClass, setSelectedClass] = useState('');
 
   // Thêm state để lưu thông tin Client
@@ -45,6 +47,17 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
       handleClose(false);
     }
   }, [displaySurveys]);
+
+  useEffect(() => {
+    // Fetch lớp theo hệ đào tạo
+    const fetchClassByType = async () => {
+      let res = await dispatch(getTrainingSystemAddressByUserID(selectedClass));
+    };
+
+    if (selectedClass) {
+      fetchClassByType();
+    }
+  }, [selectedClass]);
 
   // ------------------------------------------------ CRUD
   const handleClose = (shouldCallOnClose = true) => {
@@ -208,9 +221,9 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
           </div>
 
           {/* DROPDOWN */}
-          {ClassSurvey.length > 0 && <div className="mt-4">
+          {ClassSurveyList.length > 0 && <div className="mt-4">
             <DropdownSearch
-              options={ClassSurvey}
+              options={ClassSurveyList}
               placeholder="------ chọn lớp khảo sát ------"
               labelKey="ClassName"
               valueKey="ClassID"

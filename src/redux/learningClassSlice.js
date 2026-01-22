@@ -3,7 +3,8 @@ import ApiLearningClass from "../apis/ApiLearningClass.js";
 
 const initialState = {
   ClassLearn: [],
-  ClassSurvey: [],
+  ClassSurveyList: [],
+  TrainingSystemAddress: {},
 };
 
 export const getClassLearnByUserID = createAsyncThunk(
@@ -18,6 +19,16 @@ export const getListByType = createAsyncThunk(
   "learningClass/getListByType",
   async (classTypeID) => {
     const response = await ApiLearningClass.getListByTypeApi(classTypeID);
+    return response;
+  },
+);
+
+export const getTrainingSystemAddressByUserID = createAsyncThunk(
+  "learningClass/getTrainingSystemAddressByUserID",
+  async (classID) => {
+    const response = await ApiLearningClass.getTrainingSystemAddressByUserIDApi(
+      classID,
+    );
     return response;
   },
 );
@@ -47,10 +58,23 @@ const learningClassSlice = createSlice({
       .addCase(getListByType.pending, (state) => {})
       .addCase(getListByType.fulfilled, (state, action) => {
         if (action.payload) {
-          state.ClassSurvey = action.payload.data || [];
+          state.ClassSurveyList = action.payload.data || [];
         }
       })
       .addCase(getListByType.rejected, (state, action) => {});
+
+    // getTrainingSystemAddressByUserID
+    builder
+      .addCase(getTrainingSystemAddressByUserID.pending, (state) => {})
+      .addCase(getTrainingSystemAddressByUserID.fulfilled, (state, action) => {
+        if (action.payload) {
+          state.TrainingSystemAddress = action.payload.data || [];
+        }
+      })
+      .addCase(
+        getTrainingSystemAddressByUserID.rejected,
+        (state, action) => {},
+      );
   },
 });
 
