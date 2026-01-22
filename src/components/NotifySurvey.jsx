@@ -16,17 +16,48 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
   const [selectedClass, setSelectedClass] = useState('');
 
   // Thêm state để lưu thông tin Client
-  const [clientInfo, setClientInfo] = useState({
-    FullName: '',
+  const [trungCapInfo, setTrungCapInfo] = useState({
+    Age: '',
+    GenderID: '',
+    Position: '',
+    Office: '',
     Email: '',
-    Phone: '',
-    Office: ''
+    FullName: '',
+  });
+
+  const [boiDuongInfo, setBoiDuongInfo] = useState({
+    FullName: '',
+    UserID: '',
+    TrainingSystemName: '', // tên khóa bồi dưỡng
+    TimeStart: '',
+    ClassName1: '', // đơn vị tổ chức
+    AddressLearn: ''  // địa điểm tổ chức
   });
 
   // Hàm xử lý thay đổi input
-  const handleClientInfoChange = (e) => {
+  const handleBoiDuongChange = (e) => {
     const { name, value } = e.target;
-    setClientInfo(prev => ({ ...prev, [name]: value }));
+    setBoiDuongInfo(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleTrungCapChange = (e) => {
+    const { name, value } = e.target;
+    if (name === 'Age') {
+      // Cho phép xoá
+      if (value === '') {
+        setTrungCapInfo(prev => ({ ...prev, Age: '' }));
+        return;
+      }
+
+      // Chỉ cho nhập số
+      if (!/^\d+$/.test(value)) return;
+
+      const age = Number(value);
+
+      // Chỉ chặn khi > 100
+      if (age > 100) return;
+    }
+    setTrungCapInfo(prev => ({ ...prev, [name]: value }));
   };
 
   // check quyền
@@ -71,23 +102,43 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
   const handleSurveyClick = async (survey) => {
     if (survey.Permission === +clientPermissionKey) {
       // client submit      
-      if (!clientInfo.FullName || !clientInfo.Email || !clientInfo.Phone || !clientInfo.Office) {
-        toast.error("Vui lòng nhập đầy đủ Tên, Email, và Số điện thoại.");
+      if (!classTypeID) {
+        toast.error("Vui lòng chọn hệ đào tạo");
         return;
       }
 
-      if (!validateEmail(clientInfo.Email.trim())) {
-        toast.error("Vui lòng nhập đúng định dạng Email.");
-        return;
+      if (classTypeID === 1) {
+        const { Age, GenderID, Position, Office } = trungCapInfo;
+        if (!Age || !GenderID || !Position || !Office) {
+          toast.error("Vui lòng nhập đầy đủ thông tin hệ trung cấp");
+          return;
+        }
       }
 
-      let res = await ApiSurvey.CreateSurveyClientApi({
+      if (classTypeID === 2) {
+        const { FullName, UserID, TrainingSystemName, TimeStart, ClassName1, AddressLearn } = boiDuongInfo;
+        if (!FullName || !UserID || !TrainingSystemName || !TimeStart || !ClassName1 || !AddressLearn) {
+          toast.error("Vui lòng nhập đầy đủ thông tin hệ bồi dưỡng");
+          return;
+        }
+      }
+
+      // let res = await ApiSurvey.CreateSurveyClientApi({
+      //   ...survey,
+      //   Email: clientInfo.Email,
+      //   FullName: clientInfo.FullName,
+      //   Phone: clientInfo.Phone,
+      //   Office: clientInfo.Office
+      // });
+
+      let payload = {
         ...survey,
-        Email: clientInfo.Email,
-        FullName: clientInfo.FullName,
-        Phone: clientInfo.Phone,
-        Office: clientInfo.Office
-      });
+        ClassTypeID: classTypeID,
+        ClassID: selectedClass ? selectedClass : null,
+        ...(classTypeID === 2 ? boiDuongInfo : trungCapInfo)
+      };
+
+      let res = await ApiSurvey.CreateSurveyClientApi(payload);
 
       if (res.message) {
         toast.error(res.message);
@@ -267,42 +318,133 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
             </div>
           </div>
 
-          {isClientSurvey && (
+          {/* Thông tin khảo sát */}
+          {isClientSurvey && classTypeID === 1 && (
             <div className="mt-4 pt-3 border-t border-gray-100 space-y-3">
               <p className="font-semibold text-gray-700 text-sm">
-                Vui lòng nhập thông tin liên hệ:
+                Thông tin học viên (Hệ bồi dưỡng)
               </p>
-              <input
-                type="text"
-                name="FullName"
-                placeholder="Họ và Tên"
-                value={clientInfo.FullName}
-                onChange={handleClientInfoChange}
-                className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-[#0081cd] focus:border-[#0081cd]"
-              />
+
               <input
                 type="email"
                 name="Email"
+                required
                 placeholder="Email"
-                value={clientInfo.Email}
-                onChange={handleClientInfoChange}
-                className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-[#0081cd] focus:border-[#0081cd]"
+                className="w-full border rounded-md p-2 text-sm"
+                value={trungCapInfo.Email}
+                onChange={handleTrungCapChange}
               />
+
+               <input
+                type="text"
+                name="FullName"
+                required
+                placeholder="Họ và tên"
+                className="w-full border rounded-md p-2 text-sm"
+                value={trungCapInfo.FullName}
+                onChange={handleTrungCapChange}
+              />
+
               <input
-                type="tel"
-                name="Phone"
-                placeholder="Số điện thoại"
-                value={clientInfo.Phone}
-                onChange={handleClientInfoChange}
-                className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-[#0081cd] focus:border-[#0081cd]"
+                type="number"
+                name="Age"
+                placeholder="Tuổi"
+                min={18}
+                max={100}
+                value={trungCapInfo.Age}
+                onChange={handleTrungCapChange}
+                className="w-full border rounded-md p-2 text-sm"
               />
+
+              <select
+                name="GenderID"
+                value={trungCapInfo.GenderID}
+                onChange={handleTrungCapChange}
+                className="w-full border rounded-md p-2 text-sm"
+              >
+                <option value="">-- Giới tính --</option>
+                <option value="1">Nam</option>
+                <option value="2">Nữ</option>
+              </select>
+
+              <input
+                type="text"
+                name="Position"
+                placeholder="Chức vụ"
+                value={trungCapInfo.Position}
+                onChange={handleTrungCapChange}
+                className="w-full border rounded-md p-2 text-sm"
+              />
+
               <input
                 type="text"
                 name="Office"
-                placeholder="Đơn vị công tác"
-                value={clientInfo.Office}
-                onChange={handleClientInfoChange}
-                className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-[#0081cd] focus:border-[#0081cd]"
+                placeholder="Cơ quan công tác"
+                value={trungCapInfo.Office}
+                onChange={handleTrungCapChange}
+                className="w-full border rounded-md p-2 text-sm"
+              />
+            </div>
+          )}
+
+          {isClientSurvey && classTypeID === 2 && (
+            <div className="mt-4 pt-3 border-t border-gray-100 space-y-3">
+              <p className="font-semibold text-gray-700 text-sm">
+                Thông tin khóa học (Hệ trung cấp)
+              </p>
+
+              <input
+                type="text"
+                name="FullName"
+                placeholder="Họ và tên"
+                value={boiDuongInfo.FullName}
+                onChange={handleBoiDuongChange}
+                className="w-full border rounded-md p-2 text-sm"
+              />
+
+              <input
+                type="text"
+                name="UserID"
+                placeholder="Mã số cán bộ"
+                value={boiDuongInfo.UserID}
+                onChange={handleBoiDuongChange}
+                className="w-full border rounded-md p-2 text-sm"
+              />
+
+              <input
+                type="text"
+                name="TrainingSystemName"
+                placeholder="Tên khóa bồi dưỡng"
+                value={boiDuongInfo.TrainingSystemName}
+                onChange={handleBoiDuongChange}
+                className="w-full border rounded-md p-2 text-sm"
+              />
+
+              <input
+                type="text"
+                name="TimeStart"
+                placeholder="Thời gian tổ chức"
+                value={boiDuongInfo.TimeStart}
+                onChange={handleBoiDuongChange}
+                className="w-full border rounded-md p-2 text-sm"
+              />
+
+              <input
+                type="text"
+                name="ClassName1"
+                placeholder="Đơn vị tổ chức"
+                value={boiDuongInfo.ClassName1}
+                onChange={handleBoiDuongChange}
+                className="w-full border rounded-md p-2 text-sm"
+              />
+
+              <input
+                type="text"
+                name="AddressLearn"
+                placeholder="Địa điểm tổ chức"
+                value={boiDuongInfo.AddressLearn}
+                onChange={handleBoiDuongChange}
+                className="w-full border rounded-md p-2 text-sm"
               />
             </div>
           )}

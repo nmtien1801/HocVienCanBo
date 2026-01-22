@@ -266,7 +266,7 @@ const ManagerSurveyOther = () => {
             if (res.message) {
                 toast.error(res.message)
             } else {
-                toast.success("thêm mới phiếu khảo sát thành công")
+                toast.success("cập nhật phiếu khảo sát thành công")
                 setShowTemplateModal(false);
                 setTemplateSurveyID(null);
                 fetchList();
