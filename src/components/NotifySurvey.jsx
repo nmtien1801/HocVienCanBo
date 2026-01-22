@@ -15,6 +15,12 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
   const { ClassSurveyList, TrainingSystemAddress } = useSelector((state) => state.learningClass);
   const [selectedClass, setSelectedClass] = useState('');
 
+  // tên khóa bồi dưỡng
+  const formattedOptions = ClassSurveyList.map(item => ({
+    ...item,
+    FullDisplayName: `${item.ClassName} ${item.ClassName1}  ${item.TrainingSystemName}`
+  }));
+
   // Thêm state để lưu thông tin Client
   const [trungCapInfo, setTrungCapInfo] = useState({
     Age: '',
@@ -22,7 +28,7 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
     Position: '', // chức vụ
     Office: '',  // cơ quan công tác
     Email: '',
-    
+
     FullName: '',
     Phone: '',
   });
@@ -30,7 +36,6 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
   const [boiDuongInfo, setBoiDuongInfo] = useState({
     FullName: '',
     Email: '',  // mã số cán bộ, công chức, viên chức
-    TrainingSystemName: '', // tên khóa bồi dưỡng
     TimeStart: '',
     ClassName1: '', // đơn vị tổ chức
     UnitName: '',  // địa điểm tổ chức
@@ -45,7 +50,6 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
     if (TrainingSystemAddress && classTypeID === 2) {
       setBoiDuongInfo(prev => ({
         ...prev,
-        TrainingSystemName: TrainingSystemAddress.TrainingSystemName || '',
         ClassName1: TrainingSystemAddress.ClassName1 || '',
         TimeStart: formatDate(TrainingSystemAddress.TimeStart) || '',
         UnitName: TrainingSystemAddress.UnitName || ''
@@ -135,8 +139,8 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
       }
 
       if (classTypeID === 2) {
-        const { FullName, Email, TrainingSystemName, TimeStart, ClassName1, UnitName } = boiDuongInfo;
-        if (!FullName || !Email || !TrainingSystemName || !TimeStart || !ClassName1 || !UnitName) {
+        const { FullName, Email, TimeStart, ClassName1, UnitName } = boiDuongInfo;
+        if (!FullName || !Email || !TimeStart || !ClassName1 || !UnitName) {
           toast.error("Vui lòng nhập đầy đủ thông tin hệ bồi dưỡng");
           return;
         }
@@ -284,18 +288,6 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
               Hệ bồi dưỡng
             </button>
           </div>
-
-          {/* DROPDOWN */}
-          {ClassSurveyList.length > 0 && <div className="mt-4">
-            <DropdownSearch
-              options={ClassSurveyList}
-              placeholder="------ chọn lớp khảo sát ------"
-              labelKey="ClassName"
-              valueKey="ClassID"
-              onChange={(e) => setSelectedClass(e.ClassID)}
-            />
-          </div>}
-
         </div>}
 
         {/* KHU VỰC CAROUSEL */}
@@ -334,7 +326,7 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
 
           {/* Thông tin khảo sát */}
           {isClientSurvey && classTypeID === 1 && (
-            <div className="mt-4 pt-3 border-t border-gray-100 space-y-3">
+            <div className="space-y-3">
               <p className="font-semibold text-gray-700 text-sm">
                 Thông tin học viên (Hệ trung cấp)
               </p>
@@ -402,14 +394,16 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
                 className="w-full border rounded-md p-2 text-sm"
               />
 
-              <input
-                type="text"
-                name="TrainingSystemName"
-                placeholder="Tên khóa bồi dưỡng"
-                value={boiDuongInfo.TrainingSystemName}
-                onChange={handleBoiDuongChange}
-                className="w-full border rounded-md p-2 text-sm"
-              />
+              {/* DROPDOWN */}
+              {ClassSurveyList.length > 0 && <div className="">
+                <DropdownSearch
+                  options={formattedOptions}
+                  placeholder="------ Chọn khóa bồi dưỡng ------"
+                  labelKey="FullDisplayName"
+                  valueKey="ClassID"
+                  onChange={(e) => setSelectedClass(e.ClassID)}
+                />
+              </div>}
 
               <input
                 type="text"
