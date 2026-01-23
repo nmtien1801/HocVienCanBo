@@ -13,7 +13,7 @@ export default function Home() {
     // state khảo sát chưa điền
     const [showSurvey, setShowSurvey] = useState(true);
     const { TemplateSurveyForClientList } = useSelector((state) => state.survey);
-    const [classTypeID, setClassTypeID] = useState(1);
+    const [classTypeID, setClassTypeID] = useState(2);
 
     useEffect(() => {
         // Fetch danh sách khảo sát chưa điền

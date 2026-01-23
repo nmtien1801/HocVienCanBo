@@ -3,7 +3,7 @@ import QuestionPicker from '../question/QuestionPicker';
 import {
     Plus, Edit, Trash2, ChevronRight, ChevronDown, ChevronLeft,
     FolderOpen, Folder, FileText, Save, X, Search, BookOpen, ListChecks,
-    ChevronRight as ChevronRightIcon, Copy
+    ChevronRight as ChevronRightIcon, Copy, Check
 } from 'lucide-react';
 import FormTemplateSurvey from './FormTemplateSurvey';
 import FormTemplateCategory from './FormTemplateCategory.jsx';
@@ -189,6 +189,10 @@ const ManagerSurvey = () => {
         }
         setExpandedGroups(newSet);
     };
+
+    const handleCopy = async (category) => {
+        let res = await ApiTemplateSurveys.CopyTemplateSurveyApi({ TemplateSurveyID: category.templateMeta.TemplateSurveyID })
+    }
 
     // ------------------- XỬ LÝ NHÓM (CATEGORY/GROUP) -------------------
 
@@ -483,7 +487,18 @@ const ManagerSurvey = () => {
                     {isExpanded ? <FolderOpen className="w-6 h-6 text-blue-700 flex-shrink-0" /> : <Folder className="w-6 h-6 text-blue-700 flex-shrink-0" />}
 
                     <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-bold text-gray-800">{category.name}</h3>
+                        <div className="flex items-center gap-2">
+                            <h3 className="text-lg font-bold text-gray-800">{category.name}</h3>
+
+                            {/* Nút Copy */}
+                            <button
+                                onClick={() => handleCopy(category)}
+                                className="p-1 hover:bg-gray-100 rounded-md transition-colors text-gray-400 hover:text-[#0081cd] cursor-pointer"
+                                title="tạo sắn mẫu phiếu copy"
+                            >
+                                <Check size={16} className="text-green-500" />
+                            </button>
+                        </div>
                         {category.description && (<p className="text-sm text-gray-600 mt-1">{category.description}</p>)}
                         <div className="flex gap-3 mt-2 text-xs text-gray-500">
                             <span>{category.groups.length} nhóm</span>

@@ -92,11 +92,11 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
 
   const currentSurvey = displaySurveys.length > 0 ? displaySurveys[currentIndex] : null;
   const clientPermissionKey = +allKeys[2]
-  const isClientSurvey = surveys.some(s => s.Permission === clientPermissionKey);
+  const isClientSurvey = currentSurvey && currentSurvey.Permission === clientPermissionKey;
 
   // Hiển thị Modal sau khi mount để kích hoạt Transition
   useEffect(() => {
-    if (surveys.length > 0) {
+    if (displaySurveys.length > 0) {
       setIsVisible(true);
       if (currentIndex >= displaySurveys.length) {
         setCurrentIndex(0);
@@ -105,7 +105,7 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
       // Nếu không có khảo sát, đóng popup
       // handleClose(false);
     }
-  }, [surveys, displaySurveys]);
+  }, [displaySurveys]);
 
 
   useEffect(() => {
@@ -223,8 +223,8 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
 
 
   // KHÔNG HIỂN THỊ NẾU KHÔNG CÓ DỮ LIỆU HOẶC CHƯA MOUNT
-  if (surveys.length === 0) return null;
-  const daysRemaining = currentSurvey ? getDaysRemaining(currentSurvey.ToDate) : 0;
+  if (displaySurveys.length === 0 || !currentSurvey) return null;
+  const daysRemaining = getDaysRemaining(currentSurvey.ToDate);
   const urgencyColor = getUrgencyColor(daysRemaining);
 
 
@@ -302,174 +302,170 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
         </div>}
 
         {/* KHU VỰC CAROUSEL */}
-        {displaySurveys.length > 0 && (
-          <div className="px-4 pb-4 relative">
-            {/* Nút điều hướng trái */}
-            {displaySurveys.length > 1 && (
-              <button
-                onClick={goToPrev}
-                className="absolute left-0 top-[10%] -translate-y-1/2 p-1 bg-white/70 rounded-full shadow-md z-10 text-gray-700 hover:bg-white transition-colors ml-2"
-                aria-label="Khảo sát trước"
-              >
-                <ChevronLeft size={18} />
-              </button>
-            )}
-
-            {/* Nội dung Khảo sát hiện tại */}
-            <div className="min-h-[100px] transition-opacity duration-300">
-              <div className="border-b border-gray-100 pb-3">
-                <h3 className="font-bold text-gray-800 text-sm mb-1">
-                  {currentSurvey.Title}
-                </h3>
-                <p className="text-xs text-gray-600 mb-2 my-3">
-                  {currentSurvey.PermissionName}
-                </p>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-500">
-                    {currentIndex + 1} / {displaySurveys.length}
-                  </span>
-                  <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium ${urgencyColor}`}>
-                    {daysRemaining <= 0 ? <>Quá hạn</> : `Còn ${daysRemaining} ngày`}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Thông tin khảo sát */}
-            {isClientSurvey && classTypeID === 1 && (
-              <div className="space-y-3">
-                <p className="font-semibold text-gray-700 text-sm">
-                  Thông tin học viên (Hệ trung cấp)
-                </p>
-
-                <input
-                  type="email"
-                  name="Email"
-                  required
-                  placeholder="Email"
-                  className="w-full border rounded-md p-2 text-sm"
-                  value={trungCapInfo.Email}
-                  onChange={handleTrungCapChange}
-                />
-
-                <div className="flex gap-2">
-                  <input type="number" name="Age" placeholder="Tuổi" min={18} max={100} value={trungCapInfo.Age} onChange={handleTrungCapChange} className="w-1/2 border rounded-md p-2 text-sm" />
-                  <select name="GenderID" value={trungCapInfo.GenderID} onChange={handleTrungCapChange} className="w-1/2 border rounded-md p-2 text-sm">
-                    <option value="">-- Giới tính --</option>
-                    <option value="1">Nam</option>
-                    <option value="2">Nữ</option>
-                  </select>
-                </div>
-
-                <input
-                  type="text"
-                  name="Position"
-                  placeholder="Chức vụ"
-                  value={trungCapInfo.Position}
-                  onChange={handleTrungCapChange}
-                  className="w-full border rounded-md p-2 text-sm"
-                />
-
-                <input
-                  type="text"
-                  name="Office"
-                  placeholder="Cơ quan công tác"
-                  value={trungCapInfo.Office}
-                  onChange={handleTrungCapChange}
-                  className="w-full border rounded-md p-2 text-sm"
-                />
-              </div>
-            )}
-
-            {isClientSurvey && classTypeID === 2 && (
-              <div className="space-y-3">
-                <p className="font-semibold text-gray-700 text-sm">
-                  Thông tin khóa học (Hệ bồi dưỡng)
-                </p>
-
-                <input
-                  type="text"
-                  name="FullName"
-                  placeholder="Họ và tên"
-                  value={boiDuongInfo.FullName}
-                  onChange={handleBoiDuongChange}
-                  className="w-full border rounded-md p-2 text-sm"
-                />
-
-                <input
-                  type="text"
-                  name="Email"
-                  placeholder="Mã số cán bộ, công chức, viên chức"
-                  value={boiDuongInfo.Email}
-                  onChange={handleBoiDuongChange}
-                  className="w-full border rounded-md p-2 text-sm"
-                />
-
-                {/* DROPDOWN */}
-                {ClassSurveyList.length > 0 && <div className="">
-                  <DropdownSearch
-                    options={formattedOptions}
-                    placeholder="------ Chọn khóa bồi dưỡng ------"
-                    labelKey="FullDisplayName"
-                    valueKey="ClassID"
-                    onChange={(e) => setSelectedClass(e.ClassID)}
-                  />
-                </div>}
-
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    name="TimeStart"
-                    placeholder="Thời gian tổ chức"
-                    value={boiDuongInfo.TimeStart}
-                    onChange={handleBoiDuongChange}
-                    className="w-1/2 border rounded-md p-2 text-sm"
-                  />
-                  <input
-                    type="text"
-                    name="UnitName"
-                    placeholder="Địa điểm tổ chức"
-                    value={boiDuongInfo.UnitName}
-                    onChange={handleBoiDuongChange}
-                    className="w-1/2 border rounded-md p-2 text-sm"
-                  />
-                </div>
-
-                <input
-                  type="text"
-                  name="ClassName1"
-                  placeholder="Đơn vị tổ chức"
-                  value={boiDuongInfo.ClassName1}
-                  onChange={handleBoiDuongChange}
-                  className="w-full border rounded-md p-2 text-sm"
-                />
-              </div>
-            )}
-
-            {/* Nút điều hướng phải */}
-            {displaySurveys.length > 1 && (
-              <button
-                onClick={goToNext}
-                className="absolute right-0 top-[10%] -translate-y-1/2 p-1 bg-white/70 rounded-full shadow-md z-10 text-gray-700 hover:bg-white transition-colors mr-2"
-                aria-label="Khảo sát tiếp theo"
-              >
-                <ChevronRight size={18} />
-              </button>
-            )}
-          </div>
-        )}
-
-        <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-end">
-          {displaySurveys.length > 0 && (
+        <div className="px-4 pb-4 relative">
+          {/* Nút điều hướng trái */}
+          {displaySurveys.length > 1 && (
             <button
-              onClick={() => handleSurveyClick(currentSurvey)}
-              className="flex items-center gap-1 px-4 py-1.5 text-sm font-semibold text-white bg-[#0081cd] rounded-lg hover:bg-[#026aa8] transition-colors shadow-md cursor-pointer"
+              onClick={goToPrev}
+              className="absolute left-0 top-1/2 -translate-y-1/2 p-1 bg-white/70 rounded-full shadow-md z-10 text-gray-700 hover:bg-white transition-colors ml-2"
+              aria-label="Khảo sát trước"
             >
-              Khảo sát ngay
-              <ChevronRight size={16} />
+              <ChevronLeft size={18} />
             </button>
           )}
+
+          {/* Nội dung Khảo sát hiện tại */}
+          <div className="min-h-[100px] transition-opacity duration-300">
+            <div className="border-b border-gray-100 pb-3">
+              <h3 className="font-bold text-gray-800 text-sm mb-1">
+                {currentSurvey.Title}
+              </h3>
+              <p className="text-xs text-gray-600 mb-2 my-3">
+                {currentSurvey.PermissionName}
+              </p>
+
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-500">
+                  {currentIndex + 1} / {displaySurveys.length}
+                </span>
+                <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium ${urgencyColor}`}>
+                  {daysRemaining <= 0 ? <>Quá hạn</> : `Còn ${daysRemaining} ngày`}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Thông tin khảo sát */}
+          {isClientSurvey && classTypeID === 1 && (
+            <div className="space-y-3">
+              <p className="font-semibold text-gray-700 text-sm">
+                Thông tin học viên (Hệ trung cấp)
+              </p>
+
+              <input
+                type="email"
+                name="Email"
+                required
+                placeholder="Email"
+                className="w-full border rounded-md p-2 text-sm"
+                value={trungCapInfo.Email}
+                onChange={handleTrungCapChange}
+              />
+
+              <div className="flex gap-2">
+                <input type="number" name="Age" placeholder="Tuổi" min={18} max={100} value={trungCapInfo.Age} onChange={handleTrungCapChange} className="w-1/2 border rounded-md p-2 text-sm" />
+                <select name="GenderID" value={trungCapInfo.GenderID} onChange={handleTrungCapChange} className="w-1/2 border rounded-md p-2 text-sm">
+                  <option value="">-- Giới tính --</option>
+                  <option value="1">Nam</option>
+                  <option value="2">Nữ</option>
+                </select>
+              </div>
+
+              <input
+                type="text"
+                name="Position"
+                placeholder="Chức vụ"
+                value={trungCapInfo.Position}
+                onChange={handleTrungCapChange}
+                className="w-full border rounded-md p-2 text-sm"
+              />
+
+              <input
+                type="text"
+                name="Office"
+                placeholder="Cơ quan công tác"
+                value={trungCapInfo.Office}
+                onChange={handleTrungCapChange}
+                className="w-full border rounded-md p-2 text-sm"
+              />
+            </div>
+          )}
+
+          {isClientSurvey && classTypeID === 2 && (
+            <div className="space-y-3">
+              <p className="font-semibold text-gray-700 text-sm">
+                Thông tin khóa học (Hệ bồi dưỡng)
+              </p>
+
+              <input
+                type="text"
+                name="FullName"
+                placeholder="Họ và tên"
+                value={boiDuongInfo.FullName}
+                onChange={handleBoiDuongChange}
+                className="w-full border rounded-md p-2 text-sm"
+              />
+
+              <input
+                type="text"
+                name="Email"
+                placeholder="Mã số cán bộ, công chức, viên chức"
+                value={boiDuongInfo.Email}
+                onChange={handleBoiDuongChange}
+                className="w-full border rounded-md p-2 text-sm"
+              />
+
+              {/* DROPDOWN */}
+              {ClassSurveyList.length > 0 && <div className="">
+                <DropdownSearch
+                  options={formattedOptions}
+                  placeholder="------ Chọn khóa bồi dưỡng ------"
+                  labelKey="FullDisplayName"
+                  valueKey="ClassID"
+                  onChange={(e) => setSelectedClass(e.ClassID)}
+                />
+              </div>}
+
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  name="TimeStart"
+                  placeholder="Thời gian tổ chức"
+                  value={boiDuongInfo.TimeStart}
+                  onChange={handleBoiDuongChange}
+                  className="w-1/2 border rounded-md p-2 text-sm"
+                />
+                <input
+                  type="text"
+                  name="UnitName"
+                  placeholder="Địa điểm tổ chức"
+                  value={boiDuongInfo.UnitName}
+                  onChange={handleBoiDuongChange}
+                  className="w-1/2 border rounded-md p-2 text-sm"
+                />
+              </div>
+
+              <input
+                type="text"
+                name="ClassName1"
+                placeholder="Đơn vị tổ chức"
+                value={boiDuongInfo.ClassName1}
+                onChange={handleBoiDuongChange}
+                className="w-full border rounded-md p-2 text-sm"
+              />
+            </div>
+          )}
+
+          {/* Nút điều hướng phải */}
+          {displaySurveys.length > 1 && (
+            <button
+              onClick={goToNext}
+              className="absolute right-0 top-1/2 -translate-y-1/2 p-1 bg-white/70 rounded-full shadow-md z-10 text-gray-700 hover:bg-white transition-colors mr-2"
+              aria-label="Khảo sát tiếp theo"
+            >
+              <ChevronRight size={18} />
+            </button>
+          )}
+        </div>
+
+        <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-end">
+          <button
+            onClick={() => handleSurveyClick(currentSurvey)}
+            className="flex items-center gap-1 px-4 py-1.5 text-sm font-semibold text-white bg-[#0081cd] rounded-lg hover:bg-[#026aa8] transition-colors shadow-md cursor-pointer"
+          >
+            Khảo sát ngay
+            <ChevronRight size={16} />
+          </button>
         </div>
       </div>
     </div >

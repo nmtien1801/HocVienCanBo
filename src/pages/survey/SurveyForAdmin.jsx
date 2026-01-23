@@ -25,7 +25,7 @@ export default function SurveyForAdmin() {
     useEffect(() => {
         const fetchTemplateList = async () => {
             const type = activeTab === "surveyedOther" ? 1 : 2;
-            const res = await dispatch(getTemplateTrackingTeacher({ typeTemplate: type }));
+            const res = await dispatch(getTemplateTrackingTeacher({ typeTemplate: type , classTypeID: 0}));
 
             if (res?.payload?.message) {
                 toast.error(res.payload.message);
