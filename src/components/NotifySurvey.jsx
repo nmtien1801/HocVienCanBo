@@ -102,10 +102,13 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
         setCurrentIndex(0);
       }
     } else {
-      // Nếu không có khảo sát, đóng popup
-      // handleClose(false);
+      // Chỉ đóng hẳn popup nếu THỰC SỰ không có khảo sát nào ở cả 2 hệ
+      const hasAnySurvey = surveys.length > 0;
+      if (!hasAnySurvey) {
+        setIsVisible(false);
+      }
     }
-  }, [displaySurveys]);
+  }, [displaySurveys, surveys]);
 
 
   useEffect(() => {
@@ -223,7 +226,8 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
 
 
   // KHÔNG HIỂN THỊ NẾU KHÔNG CÓ DỮ LIỆU HOẶC CHƯA MOUNT
-  if (displaySurveys.length === 0 || !currentSurvey) return null;
+  if (surveys.length === 0) return null; // Không có bất kỳ khảo sát nào thì mới ẩn hoàn toàn
+  if (displaySurveys.length === 0) return null; // Không có khảo sát khớp với ClassTypeID hiện tại cũng ẩn nội dung
   const daysRemaining = getDaysRemaining(currentSurvey.ToDate);
   const urgencyColor = getUrgencyColor(daysRemaining);
 

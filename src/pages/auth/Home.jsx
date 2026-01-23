@@ -29,6 +29,19 @@ export default function Home() {
     }, []);
 
     useEffect(() => {
+        // Tự động kiểm tra và chuyển hệ nếu hệ 1 không có khảo sát
+        if (TemplateSurveyForClientList && TemplateSurveyForClientList.length > 0) {
+            const hasType1 = TemplateSurveyForClientList.some(s => s.ClassTypeID === 1);
+            const hasType2 = TemplateSurveyForClientList.some(s => s.ClassTypeID === 2);
+
+            // Nếu hiện tại đang là 1 nhưng không có khảo sát loại 1, mà lại có loại 2
+            if (classTypeID === 1 && !hasType1 && hasType2) {
+                setClassTypeID(2);
+            }
+        }
+    }, [TemplateSurveyForClientList]);
+
+    useEffect(() => {
         // Fetch danh sách lớp theo hệ đào tạo
         const fetchListByType = async () => {
             let res = await dispatch(getListByType(classTypeID));
