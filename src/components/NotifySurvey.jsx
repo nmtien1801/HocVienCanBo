@@ -311,7 +311,7 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
           {displaySurveys.length > 1 && (
             <button
               onClick={goToPrev}
-              className="absolute left-0 top-1/2 -translate-y-1/2 p-1 bg-white/70 rounded-full shadow-md z-10 text-gray-700 hover:bg-white transition-colors ml-2"
+              className="absolute left-0 top-[10%] -translate-y-1/2 p-1 bg-white/70 rounded-full shadow-md z-10 text-gray-700 hover:bg-white transition-colors ml-2"
               aria-label="Khảo sát trước"
             >
               <ChevronLeft size={18} />
@@ -454,7 +454,7 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
           {displaySurveys.length > 1 && (
             <button
               onClick={goToNext}
-              className="absolute right-0 top-1/2 -translate-y-1/2 p-1 bg-white/70 rounded-full shadow-md z-10 text-gray-700 hover:bg-white transition-colors mr-2"
+              className="absolute right-0 top-[10%] -translate-y-1/2 p-1 bg-white/70 rounded-full shadow-md z-10 text-gray-700 hover:bg-white transition-colors mr-2"
               aria-label="Khảo sát tiếp theo"
             >
               <ChevronRight size={18} />
