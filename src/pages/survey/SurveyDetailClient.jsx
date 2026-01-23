@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
 import ApiSurvey from '../../apis/ApiSurvey.js'
+import ApiTemplateSurveys from '../../apis/ApiTemplateSurveys.js'
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { getTemplateSurveyForClient } from '../../redux/surveySlice.js'
+import { useSelector, useDispatch } from "react-redux";
+
 import { toast } from "react-toastify";
 
 // --- Sub-Component: Một dòng câu hỏi (Giữ nguyên logic của bạn) ---
@@ -56,6 +59,9 @@ export default function SurveyDetailClient() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
+    const { TemplateSurveyForClientList } = useSelector((state) => state.survey);
+    const [survey, setSurvey] = useState([]);
+console.log('dscsdcsdc', survey);
 
     const [surveyData, setSurveyData] = useState(null);
     const [surveyCates, setSurveyCates] = useState([]);
@@ -63,6 +69,7 @@ export default function SurveyDetailClient() {
     const [answers, setAnswers] = useState({});
 
     const isSubmit = searchParams.get('submit')?.toLowerCase() === 'true';
+    const templateSurveyID = searchParams.get('templateSurveyID');
     const [isInfoConfirmed, setIsInfoConfirmed] = useState(!isSubmit);
 
     const [userInfo, setUserInfo] = useState({
@@ -93,6 +100,30 @@ export default function SurveyDetailClient() {
         fetchSurveyByID();
     }, [searchParams]);
 
+    useEffect(() => {
+        // Fetch danh sách khảo sát chưa điền
+        const fetchPendingSurveys = async () => {
+            const res = await dispatch(getTemplateSurveyForClient());
+
+            if (res.message) {
+                toast.error(res.message);
+            }
+        };
+
+        // Fetch mẫu khảo sát theo templateSurveyID
+        const fetchTemplateSurveyID = async () => {
+            const res = await ApiTemplateSurveys.getTemplateSurveyByIDApi(templateSurveyID)
+            setSurvey(res.data);
+           
+            if (res.message) {
+                toast.error(res.message);
+            }
+        };
+
+        fetchPendingSurveys();
+        fetchTemplateSurveyID();
+    }, []);
+
     // Các hàm xử lý thay đổi (CẦN THIẾT)
     const handleOptionChange = (qId, evalId, evalName) => {
         setAnswers(prev => ({ ...prev, [qId]: { EvaluationID: evalId, ContentAnswer: evalName } }));
@@ -111,11 +142,10 @@ export default function SurveyDetailClient() {
 
         let payload = {
             ...survey,
-            ClassTypeID: classTypeID,
             TrainingSystemID: TrainingSystemAddress ? TrainingSystemAddress.TrainingSystemID : null,
-            ClassID: selectedClass ? selectedClass : null,
-            UnitID: TrainingSystemAddress ? TrainingSystemAddress.UnitID : null,
-            AddressID: TrainingSystemAddress ? TrainingSystemAddress.AddressID : null,
+            ClassID: null,
+            UnitID:  null,
+            AddressID:  null,
             ...(classTypeID === 2 ? boiDuongInfo : trungCapInfo)
         };
 
