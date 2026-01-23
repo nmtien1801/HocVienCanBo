@@ -14,7 +14,7 @@ const TrackingSurveyBD = () => {
     const { ClassSurveyList } = useSelector((state) => state.learningClass);
     const [selectedTemplateSurvey, setSelectedTemplateSurvey] = useState(0);
     const [totalParticipants, setTotalParticipants] = useState(0);
-    const [selectedClass, setSelectedClass] = useState('');
+    const [selectedClass, setSelectedClass] = useState(null);
 
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(20);
@@ -312,8 +312,9 @@ const TrackingSurveyBD = () => {
 
                     <div className="md:col-span-4 flex gap-2 h-full items-end">
                         <button
-                            className="flex-1 bg-[#0081cd] hover:bg-blue-600 text-white px-4 py-2.5 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors shadow-sm"
+                            className="flex-1 bg-[#0081cd] hover:bg-blue-600 text-white px-4 py-2.5 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#0081cd]"
                             onClick={handleSearch}
+                            disabled={isLoading || selectedTemplateSurvey === 0 || selectedClass === null}
                         >
                             <Search size={16} />
                             <span className="whitespace-nowrap">Tìm kiếm</span>
