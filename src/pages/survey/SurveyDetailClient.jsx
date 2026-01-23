@@ -3,8 +3,9 @@ import ApiSurvey from '../../apis/ApiSurvey.js'
 import ApiTemplateSurveys from '../../apis/ApiTemplateSurveys.js'
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getTemplateSurveyForClient } from '../../redux/surveySlice.js'
+import { getTrainingSystemAddressByUserID } from '../../redux/learningClassSlice.js';
 import { useSelector, useDispatch } from "react-redux";
-
+import DropdownSearch from '../../components/FormFields/DropdownSearch.jsx';
 import { toast } from "react-toastify";
 
 // --- Sub-Component: Một dòng câu hỏi (Giữ nguyên logic của bạn) ---
@@ -59,9 +60,8 @@ export default function SurveyDetailClient() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const { TemplateSurveyForClientList } = useSelector((state) => state.survey);
+    const { TemplateSurveyForClientList, ClassSurveyList, TrainingSystemAddress } = useSelector((state) => state.survey);
     const [survey, setSurvey] = useState([]);
-console.log('dscsdcsdc', survey);
 
     const [surveyData, setSurveyData] = useState(null);
     const [surveyCates, setSurveyCates] = useState([]);
@@ -71,6 +71,8 @@ console.log('dscsdcsdc', survey);
     const isSubmit = searchParams.get('submit')?.toLowerCase() === 'true';
     const templateSurveyID = searchParams.get('templateSurveyID');
     const [isInfoConfirmed, setIsInfoConfirmed] = useState(!isSubmit);
+    const [classTypeID, setClassTypeID] = useState(searchParams.get('classTypeID') || '1');
+    const [selectedClass, setSelectedClass] = useState('');
 
     const [userInfo, setUserInfo] = useState({
         FullName: '',
@@ -78,11 +80,35 @@ console.log('dscsdcsdc', survey);
         Phone: ''
     });
 
+    // Thêm state cho trung cấp và bồi dưỡng
+    const [trungCapInfo, setTrungCapInfo] = useState({
+        Age: '',
+        GenderID: '',
+        Position: '',
+        Office: '',
+        Email: '',
+        FullName: '',
+        Phone: ''
+    });
+
+    const [boiDuongInfo, setBoiDuongInfo] = useState({
+        FullName: '',
+        Email: '',
+        TimeStart: '',
+        ClassName1: '',
+        UnitName: '',
+        Phone: '',
+        Office: '',
+        GenderID: '',
+        Position: ''
+    });
+
     // Fetch dữ liệu từ API
     useEffect(() => {
         const fetchSurveyByID = async () => {
             const idDetail = searchParams.get('id');
             let res = await ApiSurvey.getSurveyByIDApi(idDetail);
+
             if (res.data) {
                 setSurveyData(res.data);
                 setSurveyCates(res.data.lstSurveyCates);
@@ -114,7 +140,7 @@ console.log('dscsdcsdc', survey);
         const fetchTemplateSurveyID = async () => {
             const res = await ApiTemplateSurveys.getTemplateSurveyByIDApi(templateSurveyID)
             setSurvey(res.data);
-           
+
             if (res.message) {
                 toast.error(res.message);
             }
@@ -123,6 +149,26 @@ console.log('dscsdcsdc', survey);
         fetchPendingSurveys();
         fetchTemplateSurveyID();
     }, []);
+
+    useEffect(() => {
+        if (TrainingSystemAddress && classTypeID === 2) {
+            setBoiDuongInfo(prev => ({
+                ...prev,
+                ClassName1: TrainingSystemAddress.ClassName1 || '',
+                TimeStart: TrainingSystemAddress.TimeStart || '',
+                UnitName: TrainingSystemAddress.UnitName || ''
+            }));
+        }
+    }, [TrainingSystemAddress, classTypeID]);
+
+    useEffect(() => {
+        const fetchClassByType = async () => {
+            if (selectedClass) {
+                await dispatch(getTrainingSystemAddressByUserID(selectedClass));
+            }
+        };
+        fetchClassByType();
+    }, [selectedClass]);
 
     // Các hàm xử lý thay đổi (CẦN THIẾT)
     const handleOptionChange = (qId, evalId, evalName) => {
@@ -133,32 +179,62 @@ console.log('dscsdcsdc', survey);
         setAnswers(prev => ({ ...prev, [qId]: { EvaluationID: null, ContentAnswer: content } }));
     };
 
-    const handleConfirmInfo = async () => {
-        if (!userInfo.FullName || !userInfo.Email || !userInfo.Phone) {
-            toast.warning("Vui lòng nhập đầy đủ thông tin để bắt đầu.");
-            return;
+    const handleTrungCapChange = (e) => {
+        const { name, value } = e.target;
+        if (name === 'Age') {
+            if (value === '' || (!isNaN(value) && Number(value) >= 18 && Number(value) <= 100)) {
+                setTrungCapInfo(prev => ({ ...prev, [name]: value }));
+            }
+        } else {
+            setTrungCapInfo(prev => ({ ...prev, [name]: value }));
         }
+    };
+
+    const handleBoiDuongChange = (e) => {
+        const { name, value } = e.target;
+        setBoiDuongInfo(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleConfirmInfo = async () => {
+        if (classTypeID === '1') {
+            const { Age, GenderID, Position, Office } = trungCapInfo;
+            if (!Age || !GenderID || !Position || !Office) {
+                toast.warning("Vui lòng nhập đầy đủ thông tin hệ trung cấp.");
+                return;
+            }
+        } else if (classTypeID === '2') {
+            const { FullName, Email, TimeStart, ClassName1, UnitName } = boiDuongInfo;
+            if (!FullName || !Email || !TimeStart || !ClassName1 || !UnitName) {
+                toast.warning("Vui lòng nhập đầy đủ thông tin hệ bồi dưỡng.");
+                return;
+            }
+        }
+
         setIsInfoConfirmed(true);
 
-        let payload = {
+        const payload = {
             ...survey,
+            ClassTypeID: classTypeID,
             TrainingSystemID: TrainingSystemAddress ? TrainingSystemAddress.TrainingSystemID : null,
-            ClassID: null,
-            UnitID:  null,
-            AddressID:  null,
+            ClassID: selectedClass || null,
+            UnitID: TrainingSystemAddress ? TrainingSystemAddress.UnitID : null,
+            AddressID: TrainingSystemAddress ? TrainingSystemAddress.AddressID : null,
             ...(classTypeID === 2 ? boiDuongInfo : trungCapInfo)
         };
 
         let res = await ApiSurvey.CreateSurveyClientApi(payload);
+        console.log('scsdcsd ', res);
+
 
         if (res.message) {
             toast.error(res.message);
         } else {
-            handleClose();
-            onNavigate(res);
+            setSurveyData(res);
+            setSurveyCates(res.lstSurveyCates || []);
+            setLstEvaluations(res.lstEvaluations || []);
+            setAnswers({});
+            window.scrollTo(0, 0);
         }
-
-        window.scrollTo(0, 0);
     };
 
     const handleSubmit = async () => {
@@ -181,7 +257,7 @@ console.log('dscsdcsdc', survey);
                 ...answers[id],
                 IsAnswer: true
             })),
-            ...(isSubmit && userInfo)
+            ...(isSubmit && (classTypeID === '1' ? trungCapInfo : boiDuongInfo))
         };
 
         let res = await ApiSurvey.UpdateSurveyAnswerClientApi(payload);
@@ -211,27 +287,78 @@ console.log('dscsdcsdc', survey);
                             <p className="text-gray-500 mt-2">Vui lòng cung cấp thông tin định danh để truy cập nội dung phiếu khảo sát</p>
                         </div>
 
-                        <div className="max-w-md w-full space-y-4">
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Họ và tên <span className="text-red-500">*</span></label>
-                                <input type="text" name="FullName" value={userInfo.FullName} onChange={(e) => setUserInfo({ ...userInfo, FullName: e.target.value })}
-                                    className="w-full border border-gray-300 rounded-lg p-3 outline-none focus:ring-2 focus:ring-[#026aa8]" placeholder="Nhập họ và tên..." />
+                        {/* CHỌN HỆ ĐÀO TẠO */}
+                        <div className="max-w-md w-full mb-6">
+                            <div className="flex gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setClassTypeID('1')}
+                                    className={`flex-1 px-3 py-2 rounded-lg border text-sm font-medium transition ${classTypeID === '1'
+                                        ? 'bg-[#0081cd] text-white border-[#0081cd]'
+                                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                                        }`}
+                                >
+                                    Hệ trung cấp
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setClassTypeID('2')}
+                                    className={`flex-1 px-3 py-2 rounded-lg border text-sm font-medium transition ${classTypeID === '2'
+                                        ? 'bg-[#0081cd] text-white border-[#0081cd]'
+                                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                                        }`}
+                                >
+                                    Hệ bồi dưỡng
+                                </button>
                             </div>
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Email <span className="text-red-500">*</span></label>
-                                <input type="email" name="Email" value={userInfo.Email} onChange={(e) => setUserInfo({ ...userInfo, Email: e.target.value })}
-                                    className="w-full border border-gray-300 rounded-lg p-3 outline-none focus:ring-2 focus:ring-[#026aa8]" placeholder="email@example.com" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Số điện thoại <span className="text-red-500">*</span></label>
-                                <input type="text" name="Phone" value={userInfo.Phone} onChange={(e) => setUserInfo({ ...userInfo, Phone: e.target.value })}
-                                    className="w-full border border-gray-300 rounded-lg p-3 outline-none focus:ring-2 focus:ring-[#026aa8]" placeholder="Số điện thoại..." />
-                            </div>
-
-                            <button onClick={handleConfirmInfo} className="w-full mt-6 py-4 bg-[#026aa8] text-white font-bold rounded-xl shadow-lg hover:bg-[#024f7d] transition-all active:scale-95 cursor-pointer">
-                                XÁC NHẬN ĐỂ XEM PHIẾU
-                            </button>
                         </div>
+
+                        {/* FORM THEO HỆ */}
+                        {classTypeID === '1' && (
+                            <div className="max-w-md w-full space-y-4">
+                                <p className="font-semibold text-gray-700 text-sm">Thông tin học viên (Hệ trung cấp)</p>
+                                <input type="email" name="Email" placeholder="Email" value={trungCapInfo.Email} onChange={handleTrungCapChange} className="w-full border rounded-md p-2 text-sm" />
+                                <div className="flex gap-2">
+                                    <input type="number" name="Age" placeholder="Tuổi" min={18} max={100} value={trungCapInfo.Age} onChange={handleTrungCapChange} className="w-1/2 border rounded-md p-2 text-sm" />
+                                    <select name="GenderID" value={trungCapInfo.GenderID} onChange={handleTrungCapChange} className="w-1/2 border rounded-md p-2 text-sm">
+                                        <option value="">-- Giới tính --</option>
+                                        <option value="1">Nam</option>
+                                        <option value="2">Nữ</option>
+                                    </select>
+                                </div>
+                                <input type="text" name="Position" placeholder="Chức vụ" value={trungCapInfo.Position} onChange={handleTrungCapChange} className="w-full border rounded-md p-2 text-sm" />
+                                <input type="text" name="Office" placeholder="Cơ quan công tác" value={trungCapInfo.Office} onChange={handleTrungCapChange} className="w-full border rounded-md p-2 text-sm" />
+                            </div>
+                        )}
+
+                        {classTypeID === '2' && (
+                            <div className="max-w-md w-full space-y-4">
+                                <p className="font-semibold text-gray-700 text-sm">Thông tin khóa học (Hệ bồi dưỡng)</p>
+                                <input type="text" name="FullName" placeholder="Họ và tên" value={boiDuongInfo.FullName} onChange={handleBoiDuongChange} className="w-full border rounded-md p-2 text-sm" />
+                                <input type="text" name="Email" placeholder="Mã số cán bộ, công chức, viên chức" value={boiDuongInfo.Email} onChange={handleBoiDuongChange} className="w-full border rounded-md p-2 text-sm" />
+                                {ClassSurveyList.length > 0 && (
+                                    <DropdownSearch
+                                        options={ClassSurveyList.map(item => ({
+                                            ...item,
+                                            FullDisplayName: `${item.ClassName} - ${item.ClassName1} - ${item.TrainingSystemName}`
+                                        }))}
+                                        placeholder="------ Chọn khóa bồi dưỡng ------"
+                                        labelKey="FullDisplayName"
+                                        valueKey="ClassID"
+                                        onChange={(e) => setSelectedClass(e.ClassID)}
+                                    />
+                                )}
+                                <div className="flex gap-2">
+                                    <input type="text" name="TimeStart" placeholder="Thời gian tổ chức" value={boiDuongInfo.TimeStart} onChange={handleBoiDuongChange} className="w-1/2 border rounded-md p-2 text-sm" />
+                                    <input type="text" name="UnitName" placeholder="Địa điểm tổ chức" value={boiDuongInfo.UnitName} onChange={handleBoiDuongChange} className="w-1/2 border rounded-md p-2 text-sm" />
+                                </div>
+                                <input type="text" name="ClassName1" placeholder="Đơn vị tổ chức" value={boiDuongInfo.ClassName1} onChange={handleBoiDuongChange} className="w-full border rounded-md p-2 text-sm" />
+                            </div>
+                        )}
+
+                        <button onClick={handleConfirmInfo} className="w-full max-w-md mt-6 py-4 bg-[#026aa8] text-white font-bold rounded-xl shadow-lg hover:bg-[#024f7d] transition-all active:scale-95 cursor-pointer">
+                            XÁC NHẬN ĐỂ XEM PHIẾU
+                        </button>
                     </div>
                 ) : (
                     /* BƯỚC 2: PHIẾU KHẢO SÁT */
@@ -246,13 +373,6 @@ console.log('dscsdcsdc', survey);
                         </div>
 
                         <div className="p-6 md:p-8">
-                            {isSubmit && (
-                                <div className="mb-6 p-3 bg-green-50 text-green-700 rounded border border-green-100 text-sm flex justify-between items-center">
-                                    <span>Đang làm phiếu: <b>{userInfo.FullName}</b></span>
-                                    <button onClick={() => setIsInfoConfirmed(false)} className="underline font-bold text-[#026aa8]">Sửa thông tin</button>
-                                </div>
-                            )}
-
                             {surveyCates?.map((section, sIndex) => (
                                 <div key={sIndex} className="mb-10">
                                     <h3 className="font-bold text-[#026aa8] text-lg mb-4 bg-gray-50 p-3 rounded border border-gray-100">
