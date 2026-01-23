@@ -384,7 +384,7 @@ export default function Dashboard() {
                         surveys={SurveyForTeacherStudentList}
                         onClose={() => setShowSurvey(false)}
                         onNavigate={(stateData) =>
-                            navigate(`/survey-other-detail`, { state: { apiResponse: stateData } })
+                            navigate(`/survey-other-detail?id=${stateData.SurveyID}&submit=false`, { state: { apiResponse: stateData } })
                         }
                     />
                 )}

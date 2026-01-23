@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import ApiSurvey from '../../apis/ApiSurvey.js'
-import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from "react-toastify";
 
 // --- Sub-Component: Một dòng câu hỏi ---
@@ -61,11 +61,13 @@ const QuestionRow = ({ stt, question, lstEvaluations, values, onChange, onChange
 export default function SurveyDetailClient() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const location = useLocation();
-    const apiResponse = location.state?.apiResponse;
+    const [searchParams] = useSearchParams();
+    const isSubmit = searchParams.get('submit')?.toLowerCase() === 'true';
     const [surveyData, setSurveyData] = useState([]);
     const [surveyCates, setSurveyCates] = useState([]);
     const [lstEvaluations, setLstEvaluations] = useState([]);
+
+   
 
     // ---------------------------------------------- lấy chi tiết phiếu khảo sát
     // chọn khi đã khảo sát
@@ -90,19 +92,26 @@ export default function SurveyDetailClient() {
     // fetch data
     useEffect(() => {
         const fetchSurveyByID = async () => {
-            setSurveyData(apiResponse);
-            setSurveyCates(apiResponse.lstSurveyCates)
-            setLstEvaluations(apiResponse.lstEvaluations)
+            const idDetail = searchParams.get('id');
+            let res = await ApiSurvey.getSurveyByIDApi(idDetail)
+
+            setSurveyData(res.data);
+            setSurveyCates(res.data.lstSurveyCates)
+            setLstEvaluations(res.data.lstEvaluations)
 
             // >>> THÊM LOGIC NẠP CÂU TRẢ LỜI ĐÃ LƯU VÀO STATE ANSWERS <<<
-            if (apiResponse.lstSurveyCates && apiResponse.lstSurveyCates.length > 0) {
-                const savedAnswers = normalizeSavedAnswers(apiResponse.lstSurveyCates);
+            if (res.data.lstSurveyCates && res.data.lstSurveyCates.length > 0) {
+                const savedAnswers = normalizeSavedAnswers(res.data.lstSurveyCates);
                 setAnswers(savedAnswers);
+            }
+
+            if (res.Message) {
+                toast.error(res.message);
             }
         };
 
         fetchSurveyByID();
-    }, [dispatch]);
+    }, [dispatch, searchParams]);
 
     const [answers, setAnswers] = useState({});
 
@@ -246,6 +255,7 @@ export default function SurveyDetailClient() {
                                             values={answers}
                                             onChange={handleOptionChange}
                                             onChangeFeedback={handleFeedbackChange}
+                                            isSubmit={isSubmit}
                                         />
                                     ))}
                                 </div>
@@ -254,14 +264,21 @@ export default function SurveyDetailClient() {
                     })}
 
                     {/* Nút Submit */}
-                    <div className="flex justify-center md:justify-end gap-4 mt-8 pt-6 border-t border-gray-200">
-                        <button
-                            onClick={handleSubmit}
-                            className="px-8 py-2 bg-[#026aa8] text-white font-bold rounded shadow hover:opacity-90 transition-all transform active:scale-95"
-                        >
-                            Gửi khảo sát
-                        </button>
-                    </div>
+                    {isSubmit ?
+                        <span className="text-red-600">Xin chân thành cảm ơn sự hợp tác của các bạn!</span>
+                        :
+                        <div className="flex justify-center md:justify-end gap-4 mt-8 pt-6 border-t border-gray-200">
+                            <button className="px-6 py-2 bg-gray-100 text-gray-700 font-semibold rounded hover:bg-gray-200 transition-colors" onClick={() => navigate('/home')}>
+                                Hủy bỏ
+                            </button>
+                            <button
+                                onClick={handleSubmit}
+                                className="px-8 py-2 bg-[#026aa8] text-white font-bold rounded shadow hover:opacity-90 transition-all transform active:scale-95"
+                            >
+                                Gửi khảo sát
+                            </button>
+                        </div>
+                    }
 
                 </div>
 

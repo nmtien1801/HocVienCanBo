@@ -3,7 +3,7 @@ import QuestionPicker from '../question/QuestionPicker';
 import {
     Plus, Edit, Trash2, ChevronRight, ChevronDown, ChevronLeft,
     FolderOpen, Folder, FileText, Save, X, Search, BookOpen, ListChecks,
-    ChevronRight as ChevronRightIcon
+    ChevronRight as ChevronRightIcon, Copy
 } from 'lucide-react';
 import FormTemplateSurvey from './FormTemplateSurvey';
 import FormTemplateCategory from './FormTemplateCategory.jsx';
@@ -545,6 +545,21 @@ const ManagerSurvey = () => {
                                 title="Chọn Tiêu chí"
                             >
                                 <ListChecks className="w-4 h-4" />
+                            </button>
+
+                            {/* --- Nút Copy Link --- */}
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    category.templateMeta.Permission === 3 ? 
+                                        navigator.clipboard.writeText(`${window.location.origin}/survey-client-detail?id=${category.id}&submit=false`) : 
+                                        navigator.clipboard.writeText(`${window.location.origin}/survey-detail?id=${category.id}&submit=false`);
+                                    toast.success('Link copied!');
+                                }}
+                                className="p-1 text-green-600 hover:bg-green-50 rounded"
+                                title="Copy link"
+                            >
+                                <Copy className="w-4 h-4" />
                             </button>
                         </div>
                     </div>

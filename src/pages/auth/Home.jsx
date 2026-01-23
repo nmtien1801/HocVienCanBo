@@ -153,7 +153,7 @@ export default function Home() {
                     surveys={TemplateSurveyForClientList}
                     onClose={() => setShowSurvey(false)}
                     onNavigate={(stateData) =>
-                        navigate(`/survey-client-detail`, { state: { apiResponse: stateData } })
+                        navigate(`/survey-client-detail?id=${stateData.SurveyID}&submit=false`, { state: { apiResponse: stateData } })
                     }
                     classTypeID={classTypeID} setClassTypeID={setClassTypeID}
                 />
