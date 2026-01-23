@@ -59,7 +59,7 @@ export const getReportTrackingOrderDB = createAsyncThunk(
 export const getReportTrackingOther = createAsyncThunk(
   "report/getReportTrackingOther",
   async ({ page, limit }, thunkAPI) => {
-    const response = await ApiReport.getReportTrackingOtherApi(page, limit);
+    const response = await ApiReport.getListSurveyOtherApi(page, limit);
 
     return response.data;
   },

@@ -28,7 +28,7 @@ export default function SurveyTeacher() {
         };
 
         fetchSurveyOther();
-    }, [dispatch, currentPage]);
+    }, [currentPage]);
 
     // -------------------------------------------------- Action
     const handleDetailSurvey = async (item) => {
@@ -80,7 +80,7 @@ export default function SurveyTeacher() {
                                                     {item.TemplateSurveyName}
                                                 </h3>
                                                 <div className="font-semibold text-[#337ab7] text-sm transition-colors group-hover:text-gray-800">
-                                                    Ngày khảo sát: {formatToInputDate(item.DateCreated)} 
+                                                    Ngày khảo sát: {formatToInputDate(item.DateCreated)}
                                                 </div>
                                             </div>
                                         </div>
