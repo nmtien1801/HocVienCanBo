@@ -84,7 +84,13 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
   };
 
   // check quyền
-  const displaySurveys = surveys;
+  const displaySurveys = React.useMemo(() => {
+    if (!classTypeID) return surveys;
+
+    return surveys.filter(s => s.ClassTypeID === classTypeID);
+  }, [surveys, classTypeID]);
+console.log('sssssssss ', displaySurveys);
+
   const currentSurvey = displaySurveys.length > 0 ? displaySurveys[currentIndex] : null;
   const clientPermissionKey = +allKeys[2]
   const isClientSurvey = currentSurvey && currentSurvey.Permission === clientPermissionKey;
@@ -98,9 +104,10 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
       }
     } else {
       // Nếu không có khảo sát, đóng popup
-      handleClose(false);
+      // handleClose(false);
     }
   }, [displaySurveys]);
+
 
   useEffect(() => {
     // Fetch lớp theo hệ đào tạo
@@ -112,6 +119,11 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
       fetchClassByType();
     }
   }, [selectedClass]);
+
+  // reset carousel
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [classTypeID]);
 
   // ------------------------------------------------ CRUD
   const handleClose = (shouldCallOnClose = true) => {

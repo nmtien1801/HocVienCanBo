@@ -50,7 +50,7 @@ const TrackingTeacherBD = () => {
 
     useEffect(() => {
         const fetchPendingSurveys = async () => {
-            const res = await dispatch(getTemplateTrackingTeacher({ typeTemplate: 2 , classTypeID: 2}));
+            const res = await dispatch(getTemplateTrackingTeacher({ typeTemplate: 1 , classTypeID: 2}));
 
             if (res.message) {
                 toast.error(res.message);
