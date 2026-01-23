@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { BarChart3, CheckCircle2, Search, FileDown, Users, Filter, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { getReportTrackingOrder } from '../../redux/reportSlice.js';
+import { getReportTrackingOrder, getTemplateTrackingTeacher } from '../../redux/reportSlice.js';
 import { useSelector, useDispatch } from "react-redux";
 import DropdownSearch from '../../components/FormFields/DropdownSearch.jsx';
-import { getTemplateTrackingTeacher } from '../../redux/reportSlice.js'
 import * as XLSX from 'xlsx';
 
 const TrackingOrder = () => {
@@ -29,7 +28,6 @@ const TrackingOrder = () => {
         const res = await dispatch(
             getReportTrackingOrder({
                 templateSurveyID: selectedTemplateSurvey,
-                classTypeID: 1,
                 page: customPage,
                 limit: customLimit
             })
@@ -48,7 +46,7 @@ const TrackingOrder = () => {
 
     useEffect(() => {
         const fetchPendingSurveys = async () => {
-            const res = await dispatch(getTemplateTrackingTeacher({ typeTemplate: 2 }));
+            const res = await dispatch(getTemplateTrackingTeacher({ typeTemplate: 2, classTypeID : 1 })); // typeTemplate = 2 (Khác)
 
             if (res.message) {
                 toast.error(res.message);

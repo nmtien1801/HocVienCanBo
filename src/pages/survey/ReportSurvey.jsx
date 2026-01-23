@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { BarChart3, CheckCircle2, Search, FileDown, Users, Filter, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { getReportTrackingTeacher } from '../../redux/reportSlice.js';
+import { getReportTrackingTeacher, getTemplateTrackingTeacher } from '../../redux/reportSlice.js';
 import { useSelector, useDispatch } from "react-redux";
 import DropdownSearch from '../../components/FormFields/DropdownSearch.jsx';
 import { getSubjectLearnAll } from '../../redux/scheduleSlice.js';
 import { getAllTeacher } from '../../redux/teacherSlice.js';
-import { getTemplateTrackingTeacher } from '../../redux/reportSlice.js'
 import * as XLSX from 'xlsx';
 
 const ReportSurvey = () => {
@@ -67,7 +66,7 @@ const ReportSurvey = () => {
         };
 
         const fetchPendingSurveys = async () => {
-            const res = await dispatch(getTemplateTrackingTeacher({ typeTemplate: 1 }));
+            const res = await dispatch(getTemplateTrackingTeacher({ typeTemplate: 1 , classTypeID: 1}));
 
             if (res.message) {
                 toast.error(res.message);
