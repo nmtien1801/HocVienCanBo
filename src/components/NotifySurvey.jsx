@@ -371,7 +371,7 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
           )}
 
           {isClientSurvey && classTypeID === 2 && (
-            <div className="mt-4 pt-3 border-t border-gray-100 space-y-3">
+            <div className="space-y-3">
               <p className="font-semibold text-gray-700 text-sm">
                 Thông tin khóa học (Hệ bồi dưỡng)
               </p>
@@ -405,29 +405,30 @@ const SurveyNotification = ({ surveys = [], onClose, onNavigate, classTypeID, se
                 />
               </div>}
 
-              <input
-                type="text"
-                name="TimeStart"
-                placeholder="Thời gian tổ chức"
-                value={boiDuongInfo.TimeStart}
-                onChange={handleBoiDuongChange}
-                className="w-full border rounded-md p-2 text-sm"
-              />
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  name="TimeStart"
+                  placeholder="Thời gian tổ chức"
+                  value={boiDuongInfo.TimeStart}
+                  onChange={handleBoiDuongChange}
+                  className="w-1/2 border rounded-md p-2 text-sm"
+                />
+                <input
+                  type="text"
+                  name="UnitName"
+                  placeholder="Địa điểm tổ chức"
+                  value={boiDuongInfo.UnitName}
+                  onChange={handleBoiDuongChange}
+                  className="w-1/2 border rounded-md p-2 text-sm"
+                />
+              </div>
 
               <input
                 type="text"
                 name="ClassName1"
                 placeholder="Đơn vị tổ chức"
                 value={boiDuongInfo.ClassName1}
-                onChange={handleBoiDuongChange}
-                className="w-full border rounded-md p-2 text-sm"
-              />
-
-              <input
-                type="text"
-                name="UnitName"
-                placeholder="Địa điểm tổ chức"
-                value={boiDuongInfo.UnitName}
                 onChange={handleBoiDuongChange}
                 className="w-full border rounded-md p-2 text-sm"
               />

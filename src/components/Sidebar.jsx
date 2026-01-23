@@ -70,6 +70,9 @@ export default function SlideBar({ isSidebarOpen, onToggleSidebar }) {
     userInfo?.TypeUserID === TypeUserIDCons.Administrator
       ? { label: 'Báo cáo khảo sát DB', path: '/tracking-survay-BD' }
       : null,
+    userInfo?.TypeUserID === TypeUserIDCons.Administrator
+      ? { label: 'Báo cáo giảng viên DB', path: '/tracking-teacher-BD' }
+      : null,
   ].filter(Boolean)
 
   const scheduleItems = [

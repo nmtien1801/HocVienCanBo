@@ -55,6 +55,7 @@ import ReportOther from "../pages/survey/ReportOther.jsx";
 import TrackingOrther from "../pages/survey/TrackingOrther.jsx";
 import SurveyForAdmin from "../pages/survey/SurveyForAdmin.jsx";
 import TrackingSurveyBD from "../pages/survey/TrackingSurveyBD.jsx";
+import TrackingTeacherBD from "../pages/survey/TrackingTeacherBD.jsx";
 
 const ProtectedRoute = ({ children, userInfo, isLoading, hasCheckedAuth }) => {
   if (isLoading || !hasCheckedAuth) {
@@ -205,6 +206,7 @@ function RouterRoot() {
           <Route path="danh-sach-khao-sat" element={<SurveyTeacher />} />
           <Route path="tracking-order" element={<TrackingOrther />} />
           <Route path="tracking-survay-BD" element={<TrackingSurveyBD />} />
+          <Route path="tracking-teacher-BD" element={<TrackingTeacherBD />} />
 
           {/* router survey */}
           <Route path="manager-survey-teacher" element={<SurveyManager />} />
