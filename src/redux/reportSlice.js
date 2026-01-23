@@ -12,6 +12,9 @@ const initialState = {
   TrackingOrderList: [],
   TrackingOrderTotal: 0,
   EvaluationOrderList: [],
+  TrackingOrderBDList: [],
+  TrackingOrderBDTotal: 0,
+  EvaluationOrderBDList: [],
 };
 
 export const getReportTrackingTeacher = createAsyncThunk(
@@ -33,6 +36,19 @@ export const getReportTrackingOrder = createAsyncThunk(
   async ({ templateSurveyID, page, limit }, thunkAPI) => {
     const response = await ApiReport.getReportTrackingOrderApi(
       templateSurveyID,
+      page,
+      limit,
+    );
+    return response;
+  },
+);
+
+export const getReportTrackingOrderDB = createAsyncThunk(
+  "report/getReportTrackingOrderDB",
+  async ({ templateSurveyID, classID, page, limit }, thunkAPI) => {
+    const response = await ApiReport.getReportTrackingOrderDBApi(
+      templateSurveyID,
+      classID,
       page,
       limit,
     );
@@ -117,6 +133,19 @@ const reportSlice = createSlice({
         state.TrackingOrderTotal = action.payload?.data?.totals || 0;
       })
       .addCase(getReportTrackingOrder.rejected, (state, action) => {});
+
+    // getReportTrackingOrderDB
+    builder
+      .addCase(getReportTrackingOrderDB.pending, (state) => {
+        state.TrackingOrderBDList = [];
+        state.TrackingOrderBDTotal = 0;
+      })
+      .addCase(getReportTrackingOrderDB.fulfilled, (state, action) => {
+        state.EvaluationOrderBDList = action.payload?.data?.lstEvalution || [];
+        state.TrackingOrderBDList = action.payload?.data?.data || [];
+        state.TrackingOrderBDTotal = action.payload?.data?.totals || 0;
+      })
+      .addCase(getReportTrackingOrderDB.rejected, (state, action) => {});
   },
 });
 

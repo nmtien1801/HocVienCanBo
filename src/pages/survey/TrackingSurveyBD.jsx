@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { BarChart3, CheckCircle2, Search, FileDown, Users, Filter, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { getReportTrackingOrder, getTemplateTrackingTeacher } from '../../redux/reportSlice.js';
+import { getReportTrackingOrderDB, getTemplateTrackingTeacher } from '../../redux/reportSlice.js';
 import { useSelector, useDispatch } from "react-redux";
 import DropdownSearch from '../../components/FormFields/DropdownSearch.jsx';
 import { getListByType } from '../../redux/learningClassSlice.js';
@@ -10,7 +10,7 @@ import * as XLSX from 'xlsx';
 const TrackingSurveyBD = () => {
     const dispatch = useDispatch();
 
-    const { TemplateTrackingTeacherList, EvaluationOrderList, TrackingOrderList, TrackingOrderTotal } = useSelector((state) => state.report);
+    const { TemplateTrackingTeacherList, EvaluationOrderBDList, TrackingOrderBDList, TrackingOrderBDTotal } = useSelector((state) => state.report);
     const { ClassSurveyList } = useSelector((state) => state.learningClass);
     const [selectedTemplateSurvey, setSelectedTemplateSurvey] = useState(0);
     const [totalParticipants, setTotalParticipants] = useState(0);
@@ -29,15 +29,15 @@ const TrackingSurveyBD = () => {
     const fetchReport = async (customPage = page, customLimit = limit) => {
         setIsLoading(true); // Bật loading
         const res = await dispatch(
-            getReportTrackingOrder({
+            getReportTrackingOrderDB({
                 templateSurveyID: selectedTemplateSurvey,
-                classTypeID: 2,
+                classID: selectedClass,
                 page: customPage,
                 limit: customLimit
             })
         );
 
-        if (res.payload?.message) {
+        if (res?.payload && res.payload?.message) {
             toast.error(res.payload?.message || "Lỗi tải dữ liệu");
             setIsLoading(false);
             return null;
@@ -50,7 +50,7 @@ const TrackingSurveyBD = () => {
 
     useEffect(() => {
         const fetchPendingSurveys = async () => {
-            const res = await dispatch(getTemplateTrackingTeacher({ typeTemplate: 2 , classTypeID: 2}));
+            const res = await dispatch(getTemplateTrackingTeacher({ typeTemplate: 1 , classTypeID: 2}));
 
             if (res.message) {
                 toast.error(res.message);
@@ -94,7 +94,7 @@ const TrackingSurveyBD = () => {
 
     // ----------------------------------- EXPORT EXCEL FULL DATA
     const handleExportExcel = async () => {
-        if (!TrackingOrderTotal || TrackingOrderTotal === 0) {
+        if (!TrackingOrderBDTotal || TrackingOrderBDTotal === 0) {
             toast.warning("Không có dữ liệu để xuất");
             return;
         }
@@ -103,7 +103,7 @@ const TrackingSurveyBD = () => {
 
         try {
             // 1. Lấy toàn bộ dữ liệu báo cáo
-            const fullData = await fetchReport(1, TrackingOrderTotal);
+            const fullData = await fetchReport(1, TrackingOrderBDTotal);
 
             if (!fullData || !fullData.data || fullData.data.length === 0) {
                 toast.warning("Không thể lấy dữ liệu đầy đủ");
@@ -113,7 +113,7 @@ const TrackingSurveyBD = () => {
 
             // 2. Nhóm dữ liệu và chuẩn bị danh sách tiêu chí đang chọn
             const fullGroupedData = groupDataByQuestion(fullData.data);
-            const activeCriteria = EvaluationOrderList.filter(c => selectedCriteria.includes(c.EvaluationID));
+            const activeCriteria = EvaluationOrderBDList.filter(c => selectedCriteria.includes(c.EvaluationID));
 
             // 3. Xây dựng cấu trúc mảng các mảng (AOA) cho Excel
             // Header row
@@ -227,10 +227,10 @@ const TrackingSurveyBD = () => {
     const [selectedCriteria, setSelectedCriteria] = useState([]);
 
     useEffect(() => {
-        if (EvaluationOrderList.length > 0) {
-            setSelectedCriteria(EvaluationOrderList.map(item => item.EvaluationID));
+        if (EvaluationOrderBDList.length > 0) {
+            setSelectedCriteria(EvaluationOrderBDList.map(item => item.EvaluationID));
         }
-    }, [EvaluationOrderList]);
+    }, [EvaluationOrderBDList]);
 
     // Hàm gộp dữ liệu (tách riêng để tái sử dụng)
     const groupDataByQuestion = (dataList) => {
@@ -260,10 +260,10 @@ const TrackingSurveyBD = () => {
 
     // Gộp các câu hỏi trùng nhau cho trang hiện tại
     const groupedReportList = useMemo(() => {
-        return groupDataByQuestion(TrackingOrderList);
-    }, [TrackingOrderList]);
+        return groupDataByQuestion(TrackingOrderBDList);
+    }, [TrackingOrderBDList]);
 
-    const totalPages = Math.ceil(TrackingOrderTotal / limit);
+    const totalPages = Math.ceil(TrackingOrderBDTotal / limit);
 
     return (
         <div className="p-6 bg-gray-50 min-h-screen">
@@ -324,7 +324,7 @@ const TrackingSurveyBD = () => {
                                  disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-teal-600"
                             onClick={handleExportExcel}
                             title="Xuất Excel"
-                            disabled={isLoading || isExporting || selectedTemplateSurvey === 0 || TrackingOrderTotal === 0}
+                            disabled={isLoading || isExporting || selectedTemplateSurvey === 0 || TrackingOrderBDTotal === 0}
                         >
                             {isExporting ? (
                                 <>
@@ -348,7 +348,7 @@ const TrackingSurveyBD = () => {
                         Chọn tiêu chí hiển thị trên bảng:
                     </h3>
                     <div className="flex flex-wrap gap-4">
-                        {EvaluationOrderList.map(item => (
+                        {EvaluationOrderBDList.map(item => (
                             <label key={item.EvaluationID} className="flex items-center gap-2 cursor-pointer group">
                                 <input
                                     type="checkbox"
@@ -372,7 +372,7 @@ const TrackingSurveyBD = () => {
                                 <tr className="bg-gray-50 border-b border-gray-200">
                                     <th className="p-4 text-sm font-bold text-gray-700 w-16">STT</th>
                                     <th className="p-4 text-sm font-bold text-gray-700">Nội dung câu hỏi</th>
-                                    {EvaluationOrderList.filter(c => selectedCriteria.includes(c.EvaluationID)).map(c => (
+                                    {EvaluationOrderBDList.filter(c => selectedCriteria.includes(c.EvaluationID)).map(c => (
                                         <th key={c.EvaluationID} className="p-4 text-sm font-bold text-center text-[#026aa8] bg-blue-50/50 w-20">
                                             {c.EvaluationName}
                                         </th>
@@ -423,7 +423,7 @@ const TrackingSurveyBD = () => {
                                                         ) : (
                                                             /* TRƯỜNG HỢP CÂU HỎI TRẮC NGHIỆM */
                                                             <>
-                                                                {EvaluationOrderList.filter(c => selectedCriteria.includes(c.EvaluationID)).map(c => {
+                                                                {EvaluationOrderBDList.filter(c => selectedCriteria.includes(c.EvaluationID)).map(c => {
                                                                     const evaluationData = row.lstEvalutionTracking?.find(e => e.EvaluationID === c.EvaluationID);
                                                                     return (
                                                                         <td key={c.EvaluationID} className="p-4 text-sm text-center text-gray-600">
@@ -517,7 +517,7 @@ const TrackingSurveyBD = () => {
                                     <option value={20}>20</option>
                                     <option value={50}>50</option>
                                 </select>
-                                <span className="text-sm text-gray-600">trên tổng số {TrackingOrderTotal} dòng</span>
+                                <span className="text-sm text-gray-600">trên tổng số {TrackingOrderBDTotal} dòng</span>
                             </div>
                         </div>
                     )}
