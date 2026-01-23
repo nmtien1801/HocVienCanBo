@@ -563,8 +563,8 @@ const ManagerSurveyOther = () => {
 
                                     const link =
                                         category.templateMeta.Permission === 3
-                                            ? `${baseUrl}#/survey-client-detail?id=${category.id}&submit=false`
-                                            : `${baseUrl}#/survey-other-detail?id=${category.id}&submit=false`;
+                                            ? `${baseUrl}#/survey-client-detail?id=${category.id}&submit=true`
+                                            : `${baseUrl}#/survey-other-detail?id=${category.id}&submit=true`;
 
                                     navigator.clipboard.writeText(link);
                                     toast.success("Link copied!");
