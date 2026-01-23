@@ -191,8 +191,21 @@ const ManagerSurvey = () => {
     };
 
     const handleCopy = async (category) => {
-        let res = await ApiTemplateSurveys.CopyTemplateSurveyApi({ TemplateSurveyID: category.templateMeta.TemplateSurveyID })
-    }
+        const isConfirm = window.confirm("Bạn có muốn tạo bản sao mẫu phiếu này không?");
+
+        if (!isConfirm) return;
+
+        let res = await ApiTemplateSurveys.CopyTemplateSurveyApi({
+            TemplateSurveyID: category.templateMeta.TemplateSurveyID
+        });
+
+        if (res?.message) {
+            toast.error(res.message);
+        } else {
+            toast.success("Đã copy mẫu phiếu thành công!");
+        }
+    };
+
 
     // ------------------- XỬ LÝ NHÓM (CATEGORY/GROUP) -------------------
 
@@ -490,13 +503,16 @@ const ManagerSurvey = () => {
                         <div className="flex items-center gap-2">
                             <h3 className="text-lg font-bold text-gray-800">{category.name}</h3>
 
-                            {/* Nút Copy */}
                             <button
                                 onClick={() => handleCopy(category)}
-                                className="p-1 hover:bg-gray-100 rounded-md transition-colors text-gray-400 hover:text-[#0081cd] cursor-pointer"
-                                title="tạo sắn mẫu phiếu copy"
+                                className="flex items-center gap-1 px-2 py-1 text-xs
+                                        text-gray-500 hover:text-[#0081cd]
+                                        hover:bg-[#0081cd]/10 rounded-md
+                                        transition-all cursor-pointer"
+                                title="Tạo sẵn mẫu phiếu (copy link)"
                             >
-                                <Check size={16} className="text-green-500" />
+                                <Copy size={14} />
+                                <span>Copy</span>
                             </button>
                         </div>
                         {category.description && (<p className="text-sm text-gray-600 mt-1">{category.description}</p>)}

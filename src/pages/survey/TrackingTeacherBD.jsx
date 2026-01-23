@@ -1,21 +1,27 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { BarChart3, CheckCircle2, Search, FileDown, Users, Filter, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { getReportTrackingOrderDB, getTemplateTrackingTeacher } from '../../redux/reportSlice.js';
+import { getReportTrackingTeacher, getTemplateTrackingTeacher } from '../../redux/reportSlice.js';
 import { useSelector, useDispatch } from "react-redux";
 import DropdownSearch from '../../components/FormFields/DropdownSearch.jsx';
-import { getListByType } from '../../redux/learningClassSlice.js';
+import { getSubjectLearnAll } from '../../redux/scheduleSlice.js';
+import { getAllTeacher } from '../../redux/teacherSlice.js';
 import * as XLSX from 'xlsx';
 
 const TrackingTeacherBD = () => {
     const dispatch = useDispatch();
 
-    const { TemplateTrackingTeacherList, EvaluationOrderBDList, TrackingOrderBDList, TrackingOrderBDTotal } = useSelector((state) => state.report);
-    const { ClassSurveyList } = useSelector((state) => state.learningClass);
+    // Lấy dữ liệu từ Redux (Giả sử cấu trúc slice của bạn)
+    const { TemplateTrackingTeacherList, EvaluationList, SurveyReportList, SurveyReportTotal } = useSelector((state) => state.report);
+    const { teacherList } = useSelector((state) => state.teacher);
+    const { subjectLearnAll } = useSelector((state) => state.schedule);
+    const [selectedSubject, setSelectedSubject] = useState(0);
+    const [selectedTeacher, setSelectedTeacher] = useState(0);
     const [selectedTemplateSurvey, setSelectedTemplateSurvey] = useState(0);
     const [totalParticipants, setTotalParticipants] = useState(0);
-    const [selectedClass, setSelectedClass] = useState('');
+    const [isTypeCriteria, setIsTypeCriteria] = useState(true); // true: trắc nghiệm, false: tự luận
 
+    // ---------------------------------------------------  PHÂN TRANG
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(20);
     const [isLoading, setIsLoading] = useState(false);
@@ -29,9 +35,10 @@ const TrackingTeacherBD = () => {
     const fetchReport = async (customPage = page, customLimit = limit) => {
         setIsLoading(true); // Bật loading
         const res = await dispatch(
-            getReportTrackingOrderDB({
+            getReportTrackingTeacher({
                 templateSurveyID: selectedTemplateSurvey,
-                classID: selectedClass,
+                teacherID: selectedTeacher,
+                subjectID: selectedSubject,
                 page: customPage,
                 limit: customLimit
             })
@@ -42,13 +49,22 @@ const TrackingTeacherBD = () => {
             setIsLoading(false);
             return null;
         } else {
-            setTotalParticipants(res.payload.data.totalSurveys);
+            setTotalParticipants(res.payload?.data?.totalSurveys);
             setIsLoading(false);
             return res.payload.data;
         }
+        setIsLoading(false); // Tắt loading dù thành công hay lỗi
     };
 
+    // Gọi lại API khi filter hoặc phân trang thay đổi
     useEffect(() => {
+        const fetchSubjectLearnAll = async () => {
+            let res = await dispatch(getSubjectLearnAll());
+            if (!res.payload || !res.payload.data) {
+                toast.error(res.payload?.message || 'Không thể tải danh sách môn học');
+            }
+        };
+
         const fetchPendingSurveys = async () => {
             const res = await dispatch(getTemplateTrackingTeacher({ typeTemplate: 1 , classTypeID: 2}));
 
@@ -57,19 +73,25 @@ const TrackingTeacherBD = () => {
             }
         };
 
-        // Fetch danh sách lớp theo hệ bồi dưỡng
-        const fetchListByType = async () => {
-            let res = await dispatch(getListByType(2));
+        const fetchTeacher = async () => {
+            const res = await dispatch(getAllTeacher());
 
+            if (res.message) {
+                toast.error(res.message);
+            }
         };
 
-        fetchListByType();
+
+        if (subjectLearnAll.length === 0) {
+            fetchSubjectLearnAll();
+        }
         fetchPendingSurveys();
+        fetchTeacher();
     }, [dispatch]);
 
     // ----------------------------------------------------------- CRUD
     useEffect(() => {
-        if (selectedTemplateSurvey !== 0) {
+        if (selectedTemplateSurvey !== 0) { // Chỉ gọi khi đã chọn mẫu
             fetchReport();
         }
     }, [page, limit]);
@@ -80,6 +102,7 @@ const TrackingTeacherBD = () => {
         );
     };
 
+    // tìm kiếm
     const handleSearch = () => {
         setPage(1);
         fetchReport();
@@ -90,101 +113,6 @@ const TrackingTeacherBD = () => {
         setCurrentComments(row.lstComment || []);
         setSelectedQuestionTitle(row.TitleCriteriaEvaluation);
         setShowCommentModal(true);
-    };
-
-    // ----------------------------------- EXPORT EXCEL FULL DATA
-    const handleExportExcel = async () => {
-        if (!TrackingOrderBDTotal || TrackingOrderBDTotal === 0) {
-            toast.warning("Không có dữ liệu để xuất");
-            return;
-        }
-
-        setIsExporting(true);
-
-        try {
-            // 1. Lấy toàn bộ dữ liệu báo cáo
-            const fullData = await fetchReport(1, TrackingOrderBDTotal);
-
-            if (!fullData || !fullData.data || fullData.data.length === 0) {
-                toast.warning("Không thể lấy dữ liệu đầy đủ");
-                setIsExporting(false);
-                return;
-            }
-
-            // 2. Nhóm dữ liệu và chuẩn bị danh sách tiêu chí đang chọn
-            const fullGroupedData = groupDataByQuestion(fullData.data);
-            const activeCriteria = EvaluationOrderBDList.filter(c => selectedCriteria.includes(c.EvaluationID));
-
-            // 3. Xây dựng cấu trúc mảng các mảng (AOA) cho Excel
-            // Header row
-            const header = ["STT", "Nội dung câu hỏi", ...activeCriteria.map(c => c.EvaluationName)];
-            const rows = [header];
-            const merges = [];
-
-            fullGroupedData.forEach((row, index) => {
-                const rowIndex = rows.length; // Chỉ số dòng hiện tại (bắt đầu từ 0)
-                const rowData = [
-                    index + 1,
-                    row.TitleCriteriaEvaluation
-                ];
-
-                if (row.TypeCriteria === 2) {
-                    // TRƯỜNG HỢP TỰ LUẬN: Đưa thông báo vào cột C (index 2)
-                    rowData.push(`Có ${row.lstComment?.length || 0} người khảo sát nội dung này`);
-
-                    // Thêm lệnh merge: từ cột index 2 đến hết các cột tiêu chí
-                    merges.push({
-                        s: { r: rowIndex, c: 2 },
-                        e: { r: rowIndex, c: 2 + activeCriteria.length - 1 }
-                    });
-                } else {
-                    // TRƯỜNG HỢP TRẮC NGHIỆM: Điền số liệu từng cột
-                    activeCriteria.forEach(c => {
-                        const evalData = row.lstEvalutionTracking?.find(e => e.EvaluationID === c.EvaluationID);
-                        rowData.push(evalData ? evalData.NumberTracking : 0);
-                    });
-                }
-                rows.push(rowData);
-            });
-
-            // 4. Thêm dòng tổng kết quả
-            rows.push([]); // Dòng trống cách quãng
-            const totalRowIdx = rows.length;
-            rows.push(["TỔNG SỐ NGƯỜI KHẢO SÁT:", "", fullData.totalSurveys || totalParticipants]);
-
-            // Merge chữ "TỔNG SỐ..." ở 2 ô đầu của dòng cuối
-            merges.push({
-                s: { r: totalRowIdx, c: 0 },
-                e: { r: totalRowIdx, c: 1 }
-            });
-
-            // 5. Khởi tạo Worksheet và Workbook
-            const worksheet = XLSX.utils.aoa_to_sheet(rows);
-
-            // Gán mảng merges vào worksheet
-            worksheet['!merges'] = merges;
-
-            // Định dạng độ rộng cột
-            worksheet['!cols'] = [
-                { wch: 6 },   // STT
-                { wch: 60 },  // Nội dung câu hỏi
-                ...activeCriteria.map(() => ({ wch: 15 })) // Các cột tiêu chí
-            ];
-
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Báo cáo");
-
-            // Xuất file
-            const fileName = `Bao_cao_khao_sat_khac_${new Date().getTime()}.xlsx`;
-            XLSX.writeFile(workbook, fileName);
-
-            toast.success(`Đã xuất ${fullGroupedData.length} câu hỏi thành công`);
-        } catch (error) {
-            console.error("Export error:", error);
-            toast.error('Lỗi khi xuất file Excel');
-        } finally {
-            setIsExporting(false);
-        }
     };
 
     // Xuất các comment trong modal ra Excel
@@ -223,16 +151,108 @@ const TrackingTeacherBD = () => {
         }
     };
 
+    // xuất excel
+    const handleExportExcel = async () => {
+        if (!SurveyReportTotal || SurveyReportTotal === 0) {
+            toast.warning("Không có dữ liệu để xuất");
+            return;
+        }
+
+        setIsExporting(true);
+
+        try {
+            const fullData = await fetchReport(1, SurveyReportTotal);
+
+            if (!fullData || !fullData.data || fullData.data.length === 0) {
+                toast.warning("Không thể lấy dữ liệu đầy đủ");
+                setIsExporting(false);
+                return;
+            }
+
+            const fullGroupedData = groupDataByQuestion(fullData.data);
+            const activeCriteria = EvaluationList.filter(c => selectedCriteria.includes(c.EvaluationID));
+
+            // 1. Chuẩn bị dữ liệu thô (mảng các mảng) thay vì JSON để dễ kiểm soát merge
+            // Header
+            const header = ["STT", "Nội dung câu hỏi", ...activeCriteria.map(c => c.EvaluationName)];
+            const rows = [header];
+            const merges = [];
+
+            // 2. Duyệt dữ liệu và tính toán vị trí merge
+            fullGroupedData.forEach((row, index) => {
+                const rowIndex = rows.length; // Vị trí dòng hiện tại trong file Excel (0-indexed)
+                const rowData = [
+                    index + 1,
+                    row.TitleCriteriaEvaluation
+                ];
+
+                if (row.TypeCriteria === 2) {
+                    // Nếu là tự luận: Thêm nội dung vào cột thứ 3, các cột sau để trống
+                    rowData.push(`Có ${row.lstComment?.length || 0} người khảo sát nội dung này`);
+
+                    // Thêm lệnh merge: từ cột 2 (C) đến cột cuối cùng của hàng này
+                    // s: start, e: end | r: row, c: column
+                    merges.push({
+                        s: { r: rowIndex, c: 2 },
+                        e: { r: rowIndex, c: 2 + activeCriteria.length - 1 }
+                    });
+                } else {
+                    // Nếu là trắc nghiệm: Điền số liệu bình thường
+                    activeCriteria.forEach(c => {
+                        const evalData = row.lstEvalutionTracking?.find(e => e.EvaluationID === c.EvaluationID);
+                        rowData.push(evalData ? evalData.NumberTracking : 0);
+                    });
+                }
+                rows.push(rowData);
+            });
+
+            // 3. Thêm dòng tổng
+            const totalRowIndex = rows.length;
+            rows.push([]); // Dòng trống
+            rows.push(["TỔNG SỐ NGƯỜI KHẢO SÁT:", "", fullData.totalSurveys || totalParticipants]);
+
+            // Merge chữ "TỔNG SỐ..." ở 2 ô đầu dòng cuối
+            merges.push({
+                s: { r: totalRowIndex + 1, c: 0 },
+                e: { r: totalRowIndex + 1, c: 1 }
+            });
+
+            // 4. Tạo Workbook và Worksheet
+            const worksheet = XLSX.utils.aoa_to_sheet(rows);
+
+            // Gán mảng merges vào worksheet
+            worksheet['!merges'] = merges;
+
+            // Set độ rộng cột
+            worksheet['!cols'] = [
+                { wch: 5 },  // STT
+                { wch: 50 }, // Nội dung câu hỏi
+                ...activeCriteria.map(() => ({ wch: 12 })) // Các cột đánh giá
+            ];
+
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Báo cáo");
+            XLSX.writeFile(workbook, `Bao_cao_khao_sat_${new Date().getTime()}.xlsx`);
+
+            toast.success(`Đã xuất ${fullGroupedData.length} câu hỏi thành công`);
+        } catch (error) {
+            console.error("Export error:", error);
+            toast.error('Lỗi khi xuất file Excel');
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
     // --------------------------------------------------------- LOGIC HIỂN THỊ CỘT
     const [selectedCriteria, setSelectedCriteria] = useState([]);
 
     useEffect(() => {
-        if (EvaluationOrderBDList.length > 0) {
-            setSelectedCriteria(EvaluationOrderBDList.map(item => item.EvaluationID));
+        if (EvaluationList.length > 0) {
+            setSelectedCriteria(EvaluationList.map(item => item.EvaluationID));
         }
-    }, [EvaluationOrderBDList]);
+    }, [EvaluationList]);
 
-    // Hàm gộp dữ liệu (tách riêng để tái sử dụng)
+    // Gộp các câu hỏi trùng nhau
     const groupDataByQuestion = (dataList) => {
         if (!dataList || dataList.length === 0) return [];
 
@@ -260,10 +280,11 @@ const TrackingTeacherBD = () => {
 
     // Gộp các câu hỏi trùng nhau cho trang hiện tại
     const groupedReportList = useMemo(() => {
-        return groupDataByQuestion(TrackingOrderBDList);
-    }, [TrackingOrderBDList]);
+        return groupDataByQuestion(SurveyReportList);
+    }, [SurveyReportList]);
 
-    const totalPages = Math.ceil(TrackingOrderBDTotal / limit);
+    // Tính tổng số trang
+    const totalPages = Math.ceil(SurveyReportTotal / limit);
 
     return (
         <div className="p-6 bg-gray-50 min-h-screen">
@@ -279,64 +300,56 @@ const TrackingTeacherBD = () => {
                 </div>
 
                 {/* BỘ LỌC */}
-                <div className="grid grid-cols-1 md:grid-cols-10 gap-4 mb-6 bg-white p-4 rounded-xl shadow-sm border border-gray-200 items-end">
-                    <div className="md:col-span-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Mẫu khảo sát */}
-                        <div className="flex flex-col gap-1">
-                            <label className="text-xs font-bold text-gray-600 uppercase">
-                                Mẫu khảo sát
-                            </label>
-                            <DropdownSearch
-                                options={TemplateTrackingTeacherList}
-                                placeholder="------ chọn mẫu khảo sát ------"
-                                labelKey="Title"
-                                valueKey="TemplateSurveyID"
-                                onChange={(e) => setSelectedTemplateSurvey(e.TemplateSurveyID)}
-                            />
-                        </div>
-
-                        {/* Dropdown mới */}
-                        <div className="flex flex-col gap-1">
-                            <label className="text-xs font-bold text-gray-600 uppercase">
-                                Lớp
-                            </label>
-                            <DropdownSearch
-                                options={ClassSurveyList}
-                                placeholder="------ chọn lớp khảo sát ------"
-                                labelKey="ClassName"
-                                valueKey="ClassID"
-                                onChange={(e) => setSelectedClass(e.ClassID)}
-                            />
-                        </div>
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mb-6 bg-white p-4 rounded-xl shadow-sm border border-gray-200 items-end">
+                    <div className="flex flex-col gap-1 md:col-span-3">
+                        <label className="text-xs font-bold text-gray-600 uppercase">Mẫu khảo sát</label>
+                        <DropdownSearch
+                            options={TemplateTrackingTeacherList}
+                            placeholder="------ chọn mẫu khảo sát ------"
+                            labelKey="Title"
+                            valueKey="TemplateSurveyID"
+                            onChange={(e) => setSelectedTemplateSurvey(e.TemplateSurveyID)}
+                        />
                     </div>
 
-                    <div className="md:col-span-4 flex gap-2 h-full items-end">
+                    <div className="flex flex-col gap-1 md:col-span-3">
+                        <label className="text-xs font-bold text-gray-600 uppercase">Giảng viên</label>
+                        <DropdownSearch
+                            options={teacherList}
+                            placeholder="------ chọn giảng viên ------"
+                            labelKey="TeacherName"
+                            valueKey="TeacherID"
+                            onChange={(e) => setSelectedTeacher(e.TeacherID)}
+                        />
+                    </div>
+
+                    <div className="flex flex-col gap-1 md:col-span-3">
+                        <label className="text-xs font-bold text-gray-600 uppercase">Môn học</label>
+                        <DropdownSearch
+                            options={subjectLearnAll}
+                            placeholder="------ chọn môn học ------"
+                            labelKey="SubjectName"
+                            valueKey="SubjectID"
+                            onChange={(e) => setSelectedSubject(e.SubjectID)}
+                        />
+                    </div>
+
+                    <div className="md:col-span-3 flex gap-2">
                         <button
-                            className="flex-1 bg-[#0081cd] hover:bg-blue-600 text-white px-4 py-2.5 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors shadow-sm"
+                            className="bg-[#0081cd] hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 text-sm transition-colors flex-1"
                             onClick={handleSearch}
                         >
                             <Search size={16} />
-                            <span className="whitespace-nowrap">Tìm kiếm</span>
+                            Tìm kiếm
                         </button>
-
                         <button
-                            className="flex-1 bg-teal-600 hover:bg-teal-700 text-white px-4 py-2.5 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-all shadow-sm
-                                 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-teal-600"
+                            className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 text-sm transition-all 
+                                disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-teal-600"
                             onClick={handleExportExcel}
                             title="Xuất Excel"
-                            disabled={isLoading || isExporting || selectedTemplateSurvey === 0 || TrackingOrderBDTotal === 0}
+                            disabled={isLoading || selectedTemplateSurvey === 0 || selectedTeacher === 0}
                         >
-                            {isExporting ? (
-                                <>
-                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                    <span className="whitespace-nowrap">Đang xuất...</span>
-                                </>
-                            ) : (
-                                <>
-                                    <FileDown size={16} />
-                                    <span className="whitespace-nowrap">Xuất Excel</span>
-                                </>
-                            )}
+                            <FileDown size={16} /> Xuất Excel
                         </button>
                     </div>
                 </div>
@@ -348,7 +361,7 @@ const TrackingTeacherBD = () => {
                         Chọn tiêu chí hiển thị trên bảng:
                     </h3>
                     <div className="flex flex-wrap gap-4">
-                        {EvaluationOrderBDList.map(item => (
+                        {EvaluationList.map(item => (
                             <label key={item.EvaluationID} className="flex items-center gap-2 cursor-pointer group">
                                 <input
                                     type="checkbox"
@@ -372,7 +385,7 @@ const TrackingTeacherBD = () => {
                                 <tr className="bg-gray-50 border-b border-gray-200">
                                     <th className="p-4 text-sm font-bold text-gray-700 w-16">STT</th>
                                     <th className="p-4 text-sm font-bold text-gray-700">Nội dung câu hỏi</th>
-                                    {EvaluationOrderBDList.filter(c => selectedCriteria.includes(c.EvaluationID)).map(c => (
+                                    {EvaluationList.filter(c => selectedCriteria.includes(c.EvaluationID)).map(c => (
                                         <th key={c.EvaluationID} className="p-4 text-sm font-bold text-center text-[#026aa8] bg-blue-50/50 w-20">
                                             {c.EvaluationName}
                                         </th>
@@ -423,7 +436,7 @@ const TrackingTeacherBD = () => {
                                                         ) : (
                                                             /* TRƯỜNG HỢP CÂU HỎI TRẮC NGHIỆM */
                                                             <>
-                                                                {EvaluationOrderBDList.filter(c => selectedCriteria.includes(c.EvaluationID)).map(c => {
+                                                                {EvaluationList.filter(c => selectedCriteria.includes(c.EvaluationID)).map(c => {
                                                                     const evaluationData = row.lstEvalutionTracking?.find(e => e.EvaluationID === c.EvaluationID);
                                                                     return (
                                                                         <td key={c.EvaluationID} className="p-4 text-sm text-center text-gray-600">
@@ -460,67 +473,52 @@ const TrackingTeacherBD = () => {
                     </div>
 
                     {/* SECTION 4: PHÂN TRANG */}
-                    {totalPages > 0 && (
-                        <div className="p-4 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4 bg-gray-50">
-                            <div className="flex items-center gap-1">
+                    <div className="p-4 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4 bg-gray-50">
+                        <div className="flex items-center gap-1">
+                            <button
+                                onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+                                disabled={page === 1}
+                                className="p-2 border border-gray-300 rounded-lg hover:bg-white disabled:opacity-50 transition-all"
+                            >
+                                <ChevronLeft size={18} />
+                            </button>
+
+                            {[...Array(totalPages)].map((_, i) => (
                                 <button
-                                    onClick={() => setPage(prev => Math.max(prev - 1, 1))}
-                                    disabled={page === 1}
-                                    className="p-2 border border-gray-300 rounded-lg hover:bg-white disabled:opacity-50 transition-all"
+                                    key={i + 1}
+                                    onClick={() => setPage(i + 1)}
+                                    className={`w-10 h-10 rounded-lg text-sm font-medium transition-all ${page === i + 1
+                                        ? 'bg-[#0081cd] text-white shadow-md'
+                                        : 'hover:bg-white border border-transparent hover:border-gray-300'
+                                        }`}
                                 >
-                                    <ChevronLeft size={18} />
+                                    {i + 1}
                                 </button>
+                            ))}
 
-                                {[...Array(Math.min(totalPages, 5))].map((_, i) => {
-                                    let pageNumber;
-                                    if (totalPages <= 5) {
-                                        pageNumber = i + 1;
-                                    } else if (page <= 3) {
-                                        pageNumber = i + 1;
-                                    } else if (page >= totalPages - 2) {
-                                        pageNumber = totalPages - 4 + i;
-                                    } else {
-                                        pageNumber = page - 2 + i;
-                                    }
-
-                                    return (
-                                        <button
-                                            key={pageNumber}
-                                            onClick={() => setPage(pageNumber)}
-                                            className={`w-10 h-10 rounded-lg text-sm font-medium transition-all ${page === pageNumber
-                                                ? 'bg-[#0081cd] text-white shadow-md'
-                                                : 'hover:bg-white border border-transparent hover:border-gray-300'
-                                                }`}
-                                        >
-                                            {pageNumber}
-                                        </button>
-                                    );
-                                })}
-
-                                <button
-                                    onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
-                                    disabled={page === totalPages || totalPages === 0}
-                                    className="p-2 border border-gray-300 rounded-lg hover:bg-white disabled:opacity-50 transition-all"
-                                >
-                                    <ChevronRight size={18} />
-                                </button>
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm text-gray-600">Hiển thị</span>
-                                <select
-                                    value={limit}
-                                    onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}
-                                    className="border border-gray-300 rounded p-1 text-sm outline-none"
-                                >
-                                    <option value={10}>10</option>
-                                    <option value={20}>20</option>
-                                    <option value={50}>50</option>
-                                </select>
-                                <span className="text-sm text-gray-600">trên tổng số {TrackingOrderBDTotal} dòng</span>
-                            </div>
+                            <button
+                                onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
+                                disabled={page === totalPages || totalPages === 0}
+                                className="p-2 border border-gray-300 rounded-lg hover:bg-white disabled:opacity-50 transition-all"
+                            >
+                                <ChevronRight size={18} />
+                            </button>
                         </div>
-                    )}
+
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm text-gray-600">Hiển thị</span>
+                            <select
+                                value={limit}
+                                onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}
+                                className="border border-gray-300 rounded p-1 text-sm outline-none"
+                            >
+                                <option value={10}>10</option>
+                                <option value={20}>20</option>
+                                <option value={50}>50</option>
+                            </select>
+                            <span className="text-sm text-gray-600">trên tổng số {SurveyReportTotal} dòng</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -611,7 +609,7 @@ const TrackingTeacherBD = () => {
                     </div>
                 </div>
             )}
-        </div>
+        </div >
     );
 };
 

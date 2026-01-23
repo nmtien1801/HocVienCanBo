@@ -177,6 +177,23 @@ const ManagerSurveyOther = () => {
         setExpandedGroups(newSet);
     };
 
+    const handleCopy = async (category) => {
+        const isConfirm = window.confirm("Bạn có muốn tạo bản sao mẫu phiếu này không?");
+
+        if (!isConfirm) return;
+
+        let res = await ApiTemplateSurveys.CopyTemplateSurveyApi({
+            TemplateSurveyID: category.templateMeta.TemplateSurveyID
+        });
+
+        if (res?.message) {
+            toast.error(res.message);
+        } else {
+            toast.success("Đã copy mẫu phiếu thành công!");
+        }
+    };
+
+
     // ------------------- XỬ LÝ NHÓM (CATEGORY/GROUP) -------------------
 
     // 1. Mở modal Thêm mới nhóm
@@ -472,7 +489,21 @@ const ManagerSurveyOther = () => {
                     {isExpanded ? <FolderOpen className="w-6 h-6 text-blue-700 flex-shrink-0" /> : <Folder className="w-6 h-6 text-blue-700 flex-shrink-0" />}
 
                     <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-bold text-gray-800">{category.name}</h3>
+                        <div className="flex items-center gap-2">
+                            <h3 className="text-lg font-bold text-gray-800">{category.name}</h3>
+
+                            <button
+                                onClick={() => handleCopy(category)}
+                                className="flex items-center gap-1 px-2 py-1 text-xs
+                                        text-gray-500 hover:text-[#0081cd]
+                                        hover:bg-[#0081cd]/10 rounded-md
+                                        transition-all cursor-pointer"
+                                title="Tạo sẵn mẫu phiếu (copy link)"
+                            >
+                                <Copy size={14} />
+                                <span>Copy</span>
+                            </button>
+                        </div>
                         {category.description && (<p className="text-sm text-gray-600 mt-1">{category.description}</p>)}
                         <div className="flex gap-3 mt-2 text-xs text-gray-500">
                             <span>{category.groups.length} nhóm</span>
