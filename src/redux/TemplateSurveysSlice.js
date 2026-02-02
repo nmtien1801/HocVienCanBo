@@ -12,10 +12,11 @@ const initialState = {
 
 export const getTemplateSurvey = createAsyncThunk(
   "templateSurveys/getTemplateSurvey",
-  async ({ key, typeTemplate, statusID, page, limit }, thunkAPI) => {
+  async ({ key, typeTemplate, classTypeID, statusID, page, limit }, thunkAPI) => {
     const response = await ApiTemplateSurveys.getTemplateSurveyApi(
       key,
       typeTemplate,
+      classTypeID,
       statusID,
       page,
       limit

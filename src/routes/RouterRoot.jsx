@@ -185,18 +185,6 @@ function RouterRoot() {
           }
         />
 
-        <Route path="survey-detail" element={
-          <PublicRoute userInfo={userInfo} isLoading={isLoading} hasCheckedAuth={hasCheckedAuth}>
-            <SurveyDetail />
-          </PublicRoute>
-        } />
-        
-        <Route path="survey-other-detail" element={
-          <PublicRoute userInfo={userInfo} isLoading={isLoading} hasCheckedAuth={hasCheckedAuth}>
-            <SurveyDetailOther />
-          </PublicRoute>
-        } />
-
         {/* private route */}
         <Route
           path="/"
@@ -224,7 +212,8 @@ function RouterRoot() {
           <Route path="manager-survey-teacher" element={<SurveyManager />} />
           <Route path="manager-survey-other" element={<ManagerSurveyOther />} />
           <Route path="manager-question" element={<ManagerQuestion />} />
-
+          <Route path="survey-detail" element={<SurveyDetail />} />
+          <Route path="survey-other-detail" element={<SurveyDetailOther />} />
           <Route path="report-survey" element={<ReportSurvey />} />
           <Route path="report-survey-other" element={<ReportOther />} />
           <Route path="survey-user" element={<SurveyForAdmin />} />

@@ -32,7 +32,7 @@ export default function SurveyTeacher() {
 
     // -------------------------------------------------- Action
     const handleDetailSurvey = async (item) => {
-        navigate(`/survey-detail?id=${item.SurveyID}&submit=true`)
+        navigate(`/survey-detail?id=${item.SurveyID}&submit=${item.StatusID}`);
     }
 
     // --------------------------------------------------------- 3. Tính toán tổng số trang ---

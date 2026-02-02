@@ -95,6 +95,7 @@ export default function SurveyDetailClient() {
 
             if (idDetail) {
                 let res = await ApiSurvey.getSurveyByIDApi(idDetail);
+                
                 if (res?.data) {
                     setSurveyData(res.data);
                     setSurveyCates(res.data.lstSurveyCates || []);
@@ -113,6 +114,7 @@ export default function SurveyDetailClient() {
 
             if (tID) {
                 let resTemplate = await ApiTemplateSurveys.getTemplateSurveyByIDApi(tID);
+
                 if (resTemplate?.data) {
                     setSurveyTemplate(resTemplate.data);
                     if (resTemplate.data.ClassTypeID) setClassTypeID(resTemplate.data.ClassTypeID.toString());
@@ -221,6 +223,7 @@ export default function SurveyDetailClient() {
                 {!isInfoConfirmed ? (
                     <div className="p-8 md:p-12 flex flex-col items-center bg-white">
                         <h2 className="text-2xl font-bold text-gray-800 mb-2 text-center">Xác nhận thông tin</h2>
+                        <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">{surveyTemplate?.Title}</h2>
                         <p className="text-gray-500 mb-8 text-center italic">Bạn đang thực hiện khảo sát dành cho: <b className="text-[#026aa8]">{classTypeID == '1' ? 'Hệ Trung Cấp' : 'Hệ Bồi Dưỡng'}</b></p>
 
                         {classTypeID == '1' && (

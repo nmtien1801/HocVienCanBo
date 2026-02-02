@@ -15,6 +15,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import { StatusID } from '../../utils/constants.js'
 import FormEvaluation from './FormEvaluation.jsx'
+import { ClassTypeID, PermissionSurvey } from '../../utils/constants.js'
 
 const QuestionTypeLabels = {
     1: 'Câu hỏi khảo sát',
@@ -36,7 +37,7 @@ const ManagerSurveyOther = () => {
     const [editMode, setEditMode] = useState(null); // Có thể xóa nếu không dùng sửa inline
 
     const [showTemplateModal, setShowTemplateModal] = useState(false);
-    const [templateForm, setTemplateForm] = useState({ TemplateSurveyID: '', TypeTemplate: 2, Title: '', ShorDescription: '', Requiments: '', StatusID: true, ImagePath: '', Permission: 0 });
+    const [templateForm, setTemplateForm] = useState({ TemplateSurveyID: '', TypeTemplate: 2, Title: '', ShorDescription: '', Requiments: '', StatusID: true, ImagePath: '', Permission: 0, ClassTypeID: 1 });
     const [templateSurveyID, setTemplateSurveyID] = useState(null);
 
     // STATE CHO TemplateSurveyCriteria (bảng quản lý câu hỏi + nhóm)
@@ -80,6 +81,7 @@ const ManagerSurveyOther = () => {
             await dispatch(getTemplateSurvey({
                 key: searchTerm,
                 typeTemplate: 2, // khảo sát khác
+                classTypeID: templateForm.ClassTypeID,
                 statusID: filterStatus ? true : false,
                 page: currentPage,
                 limit: limit
@@ -509,6 +511,10 @@ const ManagerSurveyOther = () => {
                             <span>{category.groups.length} nhóm</span>
                             <span>•</span>
                             <span>{category.groups.reduce((sum, grp) => sum + grp.questions.length, 0)} câu hỏi</span>
+                            <span>•</span>
+                            <span>
+                                {PermissionSurvey[category.templateMeta.Permission]}
+                            </span>
                         </div>
                     </div>
 
@@ -555,25 +561,23 @@ const ManagerSurveyOther = () => {
                                 <ListChecks className="w-4 h-4" />
                             </button>
 
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
+                            {/* --- Nút Copy Link --- */}
+                            {category.templateMeta.Permission === 3 && (
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        const baseUrl = `${window.location.origin}${window.location.pathname}`;
+                                        const link = `${baseUrl}#/survey-client-detail?id=${category.id}&submit=true&templateSurveyID=${category.templateMeta.TemplateSurveyID}`;
 
-                                    const baseUrl = `${window.location.origin}${window.location.pathname}`;
-
-                                    const link =
-                                        category.templateMeta.Permission === 3
-                                            ? `${baseUrl}#/survey-client-detail?id=${category.id}&submit=true&templateSurveyID=${category.templateMeta.TemplateSurveyID}`
-                                            : `${baseUrl}#/survey-other-detail?id=${category.id}&submit=true&templateSurveyID=${category.templateMeta.TemplateSurveyID}`;
-
-                                    navigator.clipboard.writeText(link);
-                                    toast.success("Link copied!");
-                                }}
-                                className="p-1 text-green-600 hover:bg-green-50 rounded"
-                                title="Copy link"
-                            >
-                                <Copy className="w-4 h-4" />
-                            </button>
+                                        navigator.clipboard.writeText(link);
+                                        toast.success("Link copied!");
+                                    }}
+                                    className="p-1 text-green-600 hover:bg-green-50 rounded"
+                                    title="Copy link"
+                                >
+                                    <Copy className="w-4 h-4" />
+                                </button>
+                            )}
 
                         </div>
                     </div>
@@ -694,6 +698,25 @@ const ManagerSurveyOther = () => {
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                             />
+                        </div>
+
+                        <div className="flex items-center gap-3 flex-1 min-w-[200px]">
+                            <label className="text-gray-600 text-sm whitespace-nowrap">Hệ đào tạo</label>
+                            <select
+                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500 transition"
+                                value={templateForm.ClassTypeID}
+                                onChange={(e) => {
+                                    setTemplateForm(prev => ({
+                                        ...prev,
+                                        ClassTypeID: Number(e.target.value)
+                                    }));
+                                    setCurrentPage(1);
+                                }}
+                            >
+                                {Object.entries(ClassTypeID).map(([key, label]) => (
+                                    <option key={key} value={key}>{label}</option>
+                                ))}
+                            </select>
                         </div>
 
                         <div className="flex items-center gap-3 flex-1 min-w-[150px]">
